@@ -6,6 +6,8 @@ import * as E from '../js/engine.js';
 import * as D from '../js/data.js';
 
 applyRelease();
+// Historical grouping remains available for baseline comparisons. The released D4 is tested in monster-d4.test.mjs.
+const { MONSTER_D4 } = await import('../js/monster-d4.js'); MONSTER_D4.on = false;
 const key = (f) => JSON.stringify(f, Object.keys(f).sort());
 const count = (faces) => faces.reduce((m, f) => m.set(key(f), (m.get(key(f)) || 0) + 1), new Map());
 const all = Object.entries(D.MONSTERS).filter(([, m]) => Array.isArray(m.faces) && m.faces.length);

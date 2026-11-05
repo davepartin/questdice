@@ -1,0 +1,6 @@
+knight  cleared Act I 3/3, Act II 1/3, Act III 0/3, defeats 6.7 a campaign | casts: Cleave 40, Counterstrike 43, Rally Cry 48
+ranger  cleared Act I 2/3, Act II 1/3, Act III 0/3, defeats 7.0 a campaign | casts: Aimed Shot 58, Hunter's Mark 5, Volley 17
+wizard  cleared Act I 2/3, Act II 1/3, Act III 1/3, defeats 7.3 a campaign | casts: Arc Bolt 142, Frog Morph 59, Storm Coil 113
+dwarf   cleared Act I 3/3, Act II 2/3, Act III 2/3, defeats 5.3 a campaign | casts: Anvil Strike 148, Grudge 28, Stonehide 64
+bard    cleared Act I 1/3, Act II 0/3, Act III 0/3, defeats 4.3 a campaign | casts: Mending Song 7, Lucky Verse 57, Rising Ballad 5
+all classes: cleared the whole campaign 3/15

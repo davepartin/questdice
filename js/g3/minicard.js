@@ -44,31 +44,50 @@ export function demoData(enemies) {
 }
 
 // The card's facts (battle3d's facts(e)): { hp, maxHp, move, block, speed, die: { rolled, rows: [{ nums, word, dice, icon, tone, lit }] } }
-// The move die (Dave, 2 Nov 2026): every monster rolls a d6 against its six faces each round. The face it rolled is coloured in; the rest are
+// The move die (Dave, 2 Nov 2026): every monster rolls a d4 against its four faces each round. The face it rolled is coloured in; the rest are
 // outlined, with their numbers, so the odds can be read. A move that did not come from the die (a Slam it wound up, asleep) shows above it.
 const nums = (xs) => (xs.length > 1 && xs.every((x, i) => !i || x === xs[i - 1] + 1) ? `${xs[0]}–${xs[xs.length - 1]}` : xs.join('·'));
-// A physical d6 sits on each miniature; forced moves have no rolled face.
+// A numbered tetrahedron sits at the top right; saved six-face rounds retain their old pip die.
 const PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
-function moveDie(face, move) {
-  const pips = PIPS[face];
-  return h('span', { class: `mnc-picture-die${pips ? '' : ' unrolled'}`, role: 'img', 'aria-label': pips ? `Move die rolled ${face}` : `No move die roll${move ? `: ${move}` : ''}` },
-    ...(pips ? Array.from({ length: 9 }, (_, i) => h('i', { class: pips.includes(i) ? 'pip' : '' })) : [h('b', {}, move === 'SLEEP' ? 'Z' : '–')]));
+function paintDie(el, face) {
+  el.dataset.face = String(face);
+  if (el.dataset.sides === '4') el.querySelector('b').textContent = String(face);
+  else [...el.children].forEach((p, j) => p.classList.toggle('pip', (PIPS[face] || []).includes(j)));
+}
+function moveDie(face, move, sides = 6) {
+  const valid = Number.isInteger(face) && face >= 1 && face <= sides;
+  const el = h('span', { class: `mnc-picture-die${sides === 4 ? ' d4' : ''}${valid ? '' : ' unrolled'}`, role: 'img',
+    'data-sides': sides, 'aria-label': valid ? `D${sides} move die rolled ${face}` : `D${sides}: Special move${move ? `: ${move}` : ''}` },
+    ...(sides === 4 || !valid ? [h('b', {}, valid ? String(face) : move === 'SLEEP' ? 'Z' : '–')] : Array.from({ length: 9 }, () => h('i'))));
+  if (valid) paintDie(el, face);
+  return el;
+}
+function timingFooter(t) {
+  const color = POWERS[t.id]?.c || '#a99e8c';
+  return h('div', { class: `mnc-special-area mnc-timing ${t.active ? 'active' : 'inactive'}`, style: `--rc:${color}`, 'data-phase': t.phase },
+    h('div', { class: 'mnc-timing-head' }, h('span', { class: 'mnc-special-label' }, 'Special'), h('span', { class: 'mnc-cadence' }, t.badge)),
+    h('div', { class: 'mnc-timing-body' },
+      h('b', { class: 'mnc-timing-name' }, t.name),
+      t.steps ? h('div', { class: 'mnc-cycle', 'aria-label': 'Special cycle' }, ...t.steps.map(s => h('span', { class: s.current ? 'current' : '', 'aria-current': s.current ? 'step' : null }, s.label))) : null,
+      h('div', { class: 'mnc-timing-rule' }, t.line),
+      t.next ? h('div', { class: 'mnc-timing-next' }, t.next) : null,
+      t.remaining != null ? h('div', { class: 'mnc-summon-count' }, h('span', { class: 'mnc-summon-pips', 'aria-hidden': 'true' }, ...Array.from({ length: Math.min(6, t.capacity) }, (_, i) => h('i', { class: i < t.remaining ? 'available' : '' }))), `${t.remaining} summon${t.remaining === 1 ? '' : 's'} left`) : null));
 }
 function cardFacts(F, specials) {
   const pct = Math.max(0, Math.min(100, (100 * F.hp) / Math.max(1, F.maxHp)));
-  const m = F.move; const D6 = F.die; const fromDie = !!(D6?.rolled && D6.rows.some((r) => r.lit));
-  const moveBox = m && !fromDie ? h('div', { class: `mnc-move tone-${m.tone || 'none'}` }, h('small', {}, 'This round'),
+  const m = F.move; const DIE = F.die; const fromDie = !!(DIE?.rolled && DIE.rows.some((r) => r.lit));
+  const moveBox = m && !fromDie && F.special?.phase !== 'windup' ? h('div', { class: `mnc-move tone-${m.tone || 'none'}` }, h('small', {}, 'This round'),
     h('div', { class: 'mnc-move-main' }, HK.icon(m.icon || 'atk'), h('b', {}, m.word), m.dice ? h('span', { class: 'mnc-dice' }, m.dice) : null), m.line ? h('div', { class: 'mnc-move-line' }, m.line) : null) : null;
-  const dieBox = D6?.rows?.length ? h('div', { class: 'mnc-die' },
-    fromDie ? null : h('small', { class: 'mnc-die-head' }, m ? 'Move die · rolls again next round' : 'Move die · d6 each round'), // (a rolled die says it already: Dave, 3 Nov 'too much data')
-    ...D6.rows.map((r) => h('div', { class: `mnc-face tone-${r.tone || 'none'}${r.lit ? ' on' : ''}` },
+  const dieBox = DIE?.rows?.length ? h('div', { class: 'mnc-die' },
+    fromDie || F.special ? null : h('small', { class: 'mnc-die-head' }, m ? 'Move die · rolls again next round' : `Move die · d${DIE.sides || 6} each round`), // (a rolled die says it already: Dave, 3 Nov 'too much data')
+    ...DIE.rows.map((r) => h('div', { class: `mnc-face tone-${r.tone || 'none'}${r.lit ? ' on' : ''}` },
       h('div', { class: 'mnc-face-main' }, h('span', { class: 'mnc-n' }, nums(r.nums)), HK.icon(r.icon || 'atk'), h('b', {}, r.word), r.lit && r.dice ? h('span', { class: 'mnc-dice' }, r.dice) : null), // only the rolled move shows its dice (Dave, 3 Nov)
       r.lit && m?.line ? h('div', { class: 'mnc-move-line' }, m.line) : null))) : null;
   return [
     h('div', { class: `mnc-life${pct <= 30 ? ' low' : ''}` }, h('span', { class: 'mnc-life-n' }, HK.icon('heal'), h('b', {}, String(F.hp)), ` / ${F.maxHp} life`), h('i', { class: 'mnc-life-bar' }, h('i', { style: `width:${pct}%` }))),
     moveBox, dieBox,
     h('div', { class: 'mnc-facts-line' }, 'Block ', h('b', {}, F.block), ' · Speed ', h('b', {}, F.speed)), // one quiet line (the Special's box speaks for itself)
-    h('div', { class: `mnc-special-area${specials.some(r => r.classList.contains('on')) ? ' active' : ' inactive'}` },
+    F.special ? timingFooter(F.special) : h('div', { class: `mnc-special-area${specials.some(r => r.classList.contains('on')) ? ' active' : ' inactive'}` },
       h('div', { class: 'mnc-special-label' }, specials.some(r => r.classList.contains('on')) ? 'Special · Active' : specials.length ? 'Special · Inactive' : 'Special · None'),
       specials.length ? h('div', { class: 'mnc-rows' }, ...specials) : null),
   ].filter(Boolean);
@@ -89,15 +108,15 @@ export function open({ enemies = [], plans = {}, owns = {}, mode = 'solo', imgOf
     const lit = POWERS[now];
     const stats = [['HP', Math.round(Math.max(0, e.hp) * M.hp)], ['ARM', e.armor || 0], ['DIE', String(e.powerDie || 'd8').replace(/^d/, 'd')], ['INIT', initOf(e) ?? '–']];
     const rows = list.map((k) => { const P = POWERS[k]; const isOn = k === now;
-      return h('div', { class: `mnc-row${isOn ? ' on' : ''}`, style: `--rc:${P.c}`, 'data-power': k }, h('div', { class: 'mnc-kw' }, h('b', {}, P.name)),
-        isOn ? h('div', { class: 'mnc-goal' }, scale(P.goal(plan), M.goal)) : null, isOn ? h('div', { class: 'mnc-does' }, P.does(plan, { kid })) : null); });
+      return h('div', { class: `mnc-row${isOn ? ' on' : ''}`, style: `--rc:${P.c}`, 'data-power': k }, h('div', { class: 'mnc-kw' }, h('b', {}, e.special?.name || P.name)),
+        isOn ? h('div', { class: 'mnc-goal' }, scale(P.goal(plan), M.goal)) : null, isOn ? h('div', { class: 'mnc-does' }, P.does(plan, { kid: typeof kid === 'function' ? kid(e) : kid }).replaceAll('Slam', e.special?.name || 'Slam')) : null); });
     // Dave (2 Nov 2026): the card answers the targeting questions. How much life is left? What will it do this round, with which dice?
     // Does it block, with what? How fast is it? Is its Special on? (battle3d's facts(e) reads the same numbers as the plaque.)
     const F = facts?.(e); const body = F ? cardFacts(F, rows.filter((r) => r.dataset.power !== 'fights')) : [h('div', { class: 'mnc-stats' }, ...stats.map(([k, v]) => h('span', {}, h('i', {}, k), String(v)))), h('div', { class: 'mnc-rows' }, ...rows)];
     const card = h('div', { class: `mnc-card${F ? ' facts' : ''}`, style: `--c:${lit.c};--i:${i};--r:${(i - (n - 1) / 2) * 3}deg;--die-paper:${dieColors[i % dieColors.length]}`, 'data-uid': e.uid, role: 'button', tabindex: '0',
       'aria-label': F ? `${e.name}: ${F.hp} of ${F.maxHp} life. ${F.die?.rolled ? `Move die rolled ${F.die.rolled}. ` : ''}This round: ${F.move ? `${F.move.word} ${F.move.dice || ''}, ${F.move.line}` : 'nothing'}. Block ${F.block}. Speed ${F.speed}.` : e.name,
       onclick: () => { sel = i; paint(); } },
-      h('div', { class: 'mnc-top' }, h('div', { class: 'mnc-pic' }, h('img', { src: imgOf(e) || '', alt: '' })), F ? moveDie(F.die?.rolled, F.move?.word) : null, h('span', { class: 'mnc-tag' }, M.tag)),
+      h('div', { class: 'mnc-top' }, h('div', { class: 'mnc-pic' }, h('img', { src: imgOf(e) || '', alt: '' })), F ? moveDie(F.die?.rolled, F.move?.word, F.die?.sides) : null, h('span', { class: 'mnc-tag' }, M.tag)),
       h('div', { class: 'mnc-title' }, e.name), ...body);
     stack.append(card);
   });
@@ -113,17 +132,17 @@ export function open({ enemies = [], plans = {}, owns = {}, mode = 'solo', imgOf
   const rolls = [...stack.querySelectorAll('.mnc-picture-die:not(.unrolled)')];
   const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reveal && rolls.length && !reduce) {
-    const finalFaces = rolls.map(d => [...d.children].map(p => p.classList.contains('pip')));
+    const finalFaces = rolls.map(d => Number(d.dataset.face));
     // Dave (3 Nov 2026): the dice should look like they roll. They spin and bounce (CSS), the face flicks fast and then slower, and after two
     // seconds each lands on its number; only then does the move it rolled (and an active Special) light up with a gold border.
     veil.classList.add('mnc-revealing'); go.disabled = true; let tick = 0; let t = 0; const END = 2000;
     const flick = () => {
       if (!veil.isConnected) return;
-      rolls.forEach((d, i) => { const face = 1 + ((tick * 5 + i * 2) % 6); [...d.children].forEach((p, j) => p.classList.toggle('pip', PIPS[face].includes(j))); }); tick++;
+      rolls.forEach((d, i) => paintDie(d, 1 + ((tick * 5 + i * 3) % Number(d.dataset.sides)))); tick++;
       const gap = 70 + Math.round(230 * (t / END) ** 2); t += gap; if (t < END - 120) setTimeout(flick, gap); // 70ms apart at first, ~300ms at the end
     };
     flick();
-    setTimeout(() => { if (!veil.isConnected) return; rolls.forEach((d, i) => [...d.children].forEach((p, j) => p.classList.toggle('pip', finalFaces[i][j]))); veil.classList.remove('mnc-revealing'); veil.classList.add('mnc-revealed'); go.disabled = false; }, END); // two seconds of rolling, then the result
+    setTimeout(() => { if (!veil.isConnected) return; rolls.forEach((d, i) => paintDie(d, finalFaces[i])); veil.classList.remove('mnc-revealing'); veil.classList.add('mnc-revealed'); go.disabled = false; }, END); // two seconds of rolling, then the result
   }
   return veil;
 }
