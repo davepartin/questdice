@@ -24,7 +24,7 @@ test('Grudge: 2 magic every round, attack = damage that got past your block last
   const h = dw(); h.powerLevel = { grudge: 2 }; const b2 = fight(h); b2.magic = 5; b2.lastHurt = 7; castPower(b2, 'grudge'); assert.equal(b2.mods.atk, 13);
   for (const l of [0, 1]) assert.ok(/\+3/.test(upgradeLine(cardsOf(dw())[1], l))); assert.ok(shortLine(cardsOf(dw())[1], 0) && effectLine(cardsOf(dw())[1]));
 });
-test('Stonehide releases 32 block at 4 charges, and Shield Bash is learnable, not a starter', () => {
-  const k = cardsOf(dw())[2]; assert.equal(chargeGain(k, 4).block, 32);
+test('Stonehide releases 40 block at 4 charges (T31: 8 a step), and Shield Bash is learnable, not a starter', () => {
+  const k = cardsOf(dw())[2]; assert.equal(chargeGain(k, 4).block, 40);
   const h = dw(); assert.ok(!cardsOf(h).some((c) => c.id === 'bulwark'));
 });

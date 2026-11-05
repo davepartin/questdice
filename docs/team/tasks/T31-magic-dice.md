@@ -66,10 +66,24 @@ Per magic, in red-equivalents (`charge` cards at four charges):
 | Rising Ballad | 20 attack + 16 heal at 4 charges | 8.5 | a little high; the Bard is the bots' weakest class: left alone |
 | Counterstrike, Hunter's Mark, Grudge, Lucky Verse, Frog Morph | every-round and trick cards | — | Hunter's Mark is seldom cast by the bot: +3 pierce is thin for 2 magic |
 
-## The proposal being tested
+## Shipped first step (build 20261106a2)
 
-Storm Coil 3 a step (was 4): 20 attack and 10 splash at four charges, about 7.9. Volley 5 a step (was 4): 28 pierce, about 7.4.
-Stonehide 8 a step (was 6): 40 block, about 5.5. Hunter's Mark +4 pierce (was +3). Results below.
+Storm Coil 3 a step (was 4): 20 attack and 10 splash at four charges, about 7.9 a magic (was 9.5). Volley 5 a step (was 4): 28 pierce,
+about 7.4 (was 6.3). Stonehide 8 a step (was 6): 40 block, about 5.5 (was 4.4). Hunter's Mark +4 pierce (was +3).
+
+The same 12 bot campaigns per class, before and after (`node tools/t31-campaign.mjs 12`, `T31_PATCH` for the proposal): Ranger cleared
+Act III 0 → 1 of 12, Wizard 4 → 6, Dwarf 5 → 5 (identical: the extra Stonehide block was always more than the monsters hit for, which
+fits block being worth about half). All classes: 9 → 12 of 36 whole campaigns. Within the noise: the cards come into line with the
+price table without tipping the game. Tests updated to the new numbers; one old rule ("pierce stays a little under attack") now reads
+"near attack", because the bots measured a pierce point at 1.05 attack.
+
+**Bot caveat:** the bot casts some cards rarely (Mending Song, Rising Ballad, Hunter's Mark), so class against class it is not a fair
+judge; it is fair for one card before and after. The Bard and Ranger look weakest to the bot; that is likely the bot, and worth a human
+look before any class is buffed.
+
+**Left for Dave:** Anvil Strike prices low by the table (2.5 a magic) and Rising Ballad a little high (8.5), but the Dwarf is the bots'
+strongest class and the Bard its weakest, so neither was touched. For pierce to feel "much more powerful", some monsters need real
+armour (a bestiary question).
 
 ## Side games (mockups for Dave; `node dev/t31-side-games.mjs`)
 

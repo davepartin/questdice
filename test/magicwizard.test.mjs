@@ -14,4 +14,4 @@ test('Frog Morph loads a pair for 3 magic, max 3 pairs; its Use rolls a d6 (test
   const k = cardsOf(wiz()).find((c) => c.id === 'polymorph'); assert.equal(k.kind, 'charge'); assert.equal(k.max, 3); assert.equal(k.cost, 3); assert.equal(k.costLv, undefined, 'no Level III discount');
   const b = fight(); b.magic = 9; assert.ok(castPower(b, 'polymorph')); assert.equal(b.magic, 6); assert.equal(b.charge.polymorph, 1); assert.equal(b.mods.frog || 0, 0, 'storing a charge frogs nothing');
 });
-test('Storm Coil releases 24 at 4 charges, half splashing', () => { const k = cardsOf(wiz()).find((c) => c.id === 'coil'); assert.equal(chargeGain(k, 4).atk, 24); assert.equal(k.splash, 'half'); });
+test('Storm Coil releases 20 at 4 charges (T31: 3 a step), half splashing', () => { const k = cardsOf(wiz()).find((c) => c.id === 'coil'); assert.equal(chargeGain(k, 4).atk, 20); assert.equal(k.splash, 'half'); });

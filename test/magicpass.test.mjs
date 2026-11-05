@@ -26,8 +26,8 @@ test('party Riposte: leftover block hits the target back', () => {
   assert.ok(b.fighters[0].riposte === false);
   void hp0;
 });
-test('balance (PROPOSED): Hunter\'s Mark +3 pierce / +6 gold; Lucky Verse 5 / 10; every starter can be used again next round', () => {
-  const m = cardsOf(hero('ranger', 'R')).find((k) => k.id === 'mark'); assert.equal(m.fx.pierce, 3); assert.equal(m.markGold, 6);
+test('balance: Hunter\'s Mark +4 pierce (T31) / +6 gold; Lucky Verse 5 / 10; every starter can be used again next round', () => {
+  const m = cardsOf(hero('ranger', 'R')).find((k) => k.id === 'mark'); assert.equal(m.fx.pierce, 4); assert.equal(m.markGold, 6);
   assert.deepEqual(LUCK, { mid: 5, top: 10 });
   for (const cls of ['ranger', 'knight', 'wizard', 'dwarf', 'bard']) for (const k of cardsOf(hero(cls, 'X'))) assert.ok(k.atwill, `${k.name} is every round`);
 });

@@ -39,12 +39,12 @@ test('charge powers: the listed charges and total are what a release pays, at ev
   }
 });
 
-test('Storm Coil reads the way the engine pays it: 3, 5, 7, 9 now and 5, 7, 9, 11 after the first upgrade (mw1, PROPOSED per 4)', () => {
+test('Storm Coil reads the way the engine pays it: 2, 4, 6, 8 now and 4, 6, 8, 10 after the first upgrade (T31 per 3)', () => {
   const coil = all.find((x) => x.k.id === 'coil').k;
-  assert.equal(shortLine(coil, 0), 'Total 24 attack');
-  assert.equal(shortLine(coil, 1), 'Total 32 attack');
-  assert.ok(effectLine(coil, { level: 0 }).includes('3, 5, 7, 9 attack. Total 24.'));
-  assert.ok(effectLine(coil, { level: 1 }).includes('5, 7, 9, 11 attack. Total 32.'));
+  assert.equal(shortLine(coil, 0), 'Total 20 attack');
+  assert.equal(shortLine(coil, 1), 'Total 28 attack');
+  assert.ok(effectLine(coil, { level: 0 }).includes('2, 4, 6, 8 attack. Total 20.'));
+  assert.ok(effectLine(coil, { level: 1 }).includes('4, 6, 8, 10 attack. Total 28.'));
 });
 
 test('round powers: the sample rounds shown are what a cast in that round gives', () => {

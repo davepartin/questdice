@@ -578,7 +578,7 @@ test('a charge power stores magic across rounds and releases it as one big hit w
   beginReset(b); startRoll(b); assert.equal(castPower(b, 'coil').charged, 3);
   assert.equal(castPower(b, 'coil', { release: true }), null, 'stored this round: release next round');
   beginReset(b); startRoll(b);
-  const r = castPower(b, 'coil', { release: true }); assert.equal(r.total, 15); assert.equal(b.mods.atk, 15); assert.equal(b.mods.splash, 7); // mw1 PROPOSED per 4: 3 + 5 + 7
+  const r = castPower(b, 'coil', { release: true }); assert.equal(r.total, 12); assert.equal(b.mods.atk, 12); assert.equal(b.mods.splash, 6); // T31 per 3: 2 + 4 + 6
   assert.equal(castPower(b, 'coil', { release: true }), null); assert.equal(b.charge.coil, 0);
 });
 
@@ -814,7 +814,7 @@ test('Acts I–III lock story foes; difficulty never swaps the cast', async () =
   assert.deepEqual(questsFor(ascent)[0].enemies, encounterFor(ascent));
 });
 
-test('power levels add a quarter, a quarter more, then half more (at least 1, 2, 4): level 3 doubles; pierce stays a little under attack', async () => {
+test('power levels add a quarter, a quarter more, then half more (at least 1, 2, 4): level 3 doubles; pierce stays near attack', async () => {
   const { scaleNum, chargeGain, chargeSteps, healCostOf } = await import('../js/engine.js');
   assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(3, l)), [3, 4, 5, 7]);
   assert.deepEqual([0, 1, 2, 3].map((l) => scaleNum(5, l)), [5, 6, 8, 10]);
@@ -828,12 +828,13 @@ test('power levels add a quarter, a quarter more, then half more (at least 1, 2,
   const { CLASSES } = await import('../js/data.js');
   const fxOf = (c) => (c.kind === 'charge' ? (typeof c.per === 'number' ? { atk: c.per } : c.per) : c.fx) || {};
   const all = Object.values(CLASSES).flatMap((c) => c.cards);
-  // for each pierce power, the strongest attack power of the same kind is a little stronger
+  // a pierce point is priced about like an attack point (T31: the bots measured 1.05 attack a pierce point), so no pierce power runs far past
+  // the strongest attack power of its kind
   for (const c of all.filter((x) => fxOf(x).pierce)) {
     if (c.kind === 'dice' || c.kind === 'scale') continue;
     const best = Math.max(...all.filter((x) => x.kind === c.kind && fxOf(x).atk && !x.dice).map((x) => fxOf(x).atk));
-    const ok = c.kind === 'charge' ? fxOf(c).pierce <= best : fxOf(c).pierce < best; // mw1: Storm Coil per 4 ties Volley's 4 pierce; the coil's half splash keeps it ahead
-    assert.ok(ok, `${c.name} pierce ${fxOf(c).pierce} should sit under the best ${c.kind} attack ${best}`);
+    const ok = c.kind === 'charge' ? fxOf(c).pierce <= best + 1 : fxOf(c).pierce <= best; // T31: Volley 5 a step, the best attack charge 4
+    assert.ok(ok, `${c.name} pierce ${fxOf(c).pierce} should sit near the best ${c.kind} attack ${best}`);
   }
 });
 

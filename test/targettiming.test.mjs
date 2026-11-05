@@ -23,10 +23,10 @@ test('which powers are targeted: Polymorph, Hunter’s Mark and the supers; noth
 
 test('before the roll a power can be used: it costs magic and sets its counters; the roll keeps them', () => {
   const { b } = fight('ranger'); assert.equal(b.phase, 'reset'); assert.equal(b.board, null);
-  const r = E.castPower(b, 'mark'); assert.ok(r, 'Hunter’s Mark before the roll'); assert.equal(b.magic, 10); assert.equal(b.mods.pierce, 3); const gold = b.markGold; assert.ok(gold >= 5);
+  const r = E.castPower(b, 'mark'); assert.ok(r, 'Hunter’s Mark before the roll'); assert.equal(b.magic, 10); assert.equal(b.mods.pierce, 4); const gold = b.markGold; assert.ok(gold >= 5);
   assert.ok(E.castPower(b, 'volley'), 'a charge before the roll'); assert.equal(b.charge.volley, 1);
   assert.equal(E.castPower(b, 'mark'), null, 'once a round');
-  E.startRoll(b); assert.equal(b.phase, 'shape'); assert.equal(b.mods.pierce, 3, 'the roll does not clear what you used before it'); assert.equal(b.markGold, gold);
+  E.startRoll(b); assert.equal(b.phase, 'shape'); assert.equal(b.mods.pierce, 4, 'the roll does not clear what you used before it'); assert.equal(b.markGold, gold);
 });
 
 test('heal works any time before the lock; a pre-roll Polymorph still freezes the monster you lock in on', () => {
