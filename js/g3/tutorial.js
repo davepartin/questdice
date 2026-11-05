@@ -182,14 +182,15 @@ const LESSONS = [
     ],
   },
   {
-    title: 'Your six counters',
+    title: 'Your seven counters',
     more: true,
     eyebrow: 'What your roll adds up to',
-    art: () => h('div', { class: 'tu-counters fs' }, counter('atk', 'Attack', 22), counter('pierce', 'Pierce', 2), counter('block', 'Block', 4), counter('magic', 'Magic', 2), counter('heal', 'Heal', 2), counter('gold', 'Gold', 8)),
-    say: 'Everything your dice pay lands in these six counters. You will see them under your board in battle.',
+    art: () => h('div', { class: 'tu-counters fs' }, counter('atk', 'Attack', 22), counter('pierce', 'Pierce', 2), counter('splash', 'Splash', 0), counter('block', 'Block', 4), counter('magic', 'Magic', 2), counter('heal', 'Heal', 2), counter('gold', 'Gold', 8)),
+    say: 'Everything your dice pay lands in these seven counters. You will see them under your board in battle.',
     body: () => [
       row(ic('atk'), 'Attack', 'Damage to the monster you target.'),
       row(ic('pierce'), 'Pierce', 'Damage that goes straight through its block.'),
+      row(ic('splash'), 'Splash', 'Damage to every other monster. Each one’s block can stop it.'),
       row(ic('block'), 'Block', 'Taken off the monster’s hit.'),
       row(ic('magic'), 'Magic', 'Saved round to round for rerolls and powers.'),
       row(ic('heal'), 'Heal', 'Health back when the round plays out.'),

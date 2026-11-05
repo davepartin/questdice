@@ -180,7 +180,8 @@ export function button({ label, sub, icon: ic, onclick, kind = 'ghost', disabled
 export function costGem(n, cls = '') { return h('span', { class: `cost ${cls}` }, icon('magic'), h('b', {}, String(n))); }
 
 // ------------------------------------------------------------------------------------------------ outcome strip (forecast)
-const OUT = [['atk', 'atk', 'Attack'], ['pierce', 'pierce', 'Pierce'], ['block', 'block', 'Block'], ['magic', 'magic', 'Magic'], ['heal', 'heal', 'Heal'], ['gold', 'gold', 'Gold']];
+const OUT = [['atk', 'atk', 'Attack'], ['pierce', 'pierce', 'Pierce'], ['splash', 'splash', 'Splash'], ['block', 'block', 'Block'], // splash: pink, what spills onto the other monsters (Dave, 5 Nov 2026)
+   ['magic', 'magic', 'Magic'], ['heal', 'heal', 'Heal'], ['gold', 'gold', 'Gold']];
 export function forecastStrip() {
   const chips = {};
   const strip = h('div', { class: 'fs', role: 'group', 'aria-label': 'Outcome forecast' }, OUT.map(([k, ic, label]) => {
@@ -195,7 +196,7 @@ export function forecastStrip() {
   return el;
 }
 export function forecastValues(ev, mods) {
-  return { atk: ev.atk + mods.atk, pierce: ev.pierce + mods.pierce, block: ev.block + mods.block, magic: ev.magic, heal: ev.heal + mods.heal, gold: ev.gold };
+  return { atk: ev.atk + mods.atk, pierce: ev.pierce + mods.pierce, block: ev.block + mods.block, magic: ev.magic, heal: ev.heal + mods.heal, gold: ev.gold, splash: (ev.splash || 0) + (mods.splash || 0) + (ev.fire || 0) }; // splash: a weapon's, a power's, a Fire arrow's (each other monster's guard can still stop it)
 }
 export function setForecast(el, vals) {
   for (const [k, c] of Object.entries(el._chips)) {

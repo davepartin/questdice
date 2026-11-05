@@ -37,7 +37,7 @@
 .ic-heal { color: var(--h-heal); } .ic-gold { color: var(--h-gold); } .ic-stagger { color: #ffb13a; } .ic-bind, .ic-drain { color: #a98bff; } .ic-pilfer { color: var(--h-gold); }
 .ic-howl { color: #ff9a4a; } .ic-summon { color: #5fe08b; } .ic-heart { color: #ff6b6b; } .ic-dice, .ic-reroll, .ic-lock, .ic-menu, .ic-crown, .ic-rank { color: var(--gild-hi); } .ic-weaken { color: #5fd0c8; }
 .rg { display: inline-flex; vertical-align: -.16em; margin: 0 .08em; font-size: 1.05em; }
-.t-atk { --c: var(--h-atk); } .t-block { --c: var(--h-block); } .t-pierce { --c: var(--h-pierce); } .t-magic { --c: var(--h-magic); } .t-heal { --c: var(--h-heal); } .t-gold { --c: var(--h-gold); } .t-stagger { --c: #ffb13a; } .t-free { --c: var(--gild); } .t-weaken { --c: #5fd0c8; }
+.t-atk { --c: var(--h-atk); } .t-block { --c: var(--h-block); } .t-pierce { --c: var(--h-pierce); } .t-magic { --c: var(--h-magic); } .t-heal { --c: var(--h-heal); } .t-gold { --c: var(--h-gold); } .t-splash { --c: #ff4fb8; } .t-stagger { --c: #ffb13a; } .t-free { --c: var(--gild); } .t-weaken { --c: #5fd0c8; }
 
 /* ================================================================== top bar */
 .b3-top { position: absolute; left: calc(.6rem + var(--safe-l)); top: calc(.5rem + var(--safe-t)); display: flex; align-items: center; gap: .6rem; pointer-events: none; }
@@ -133,7 +133,7 @@
 /* outcome strip */
 .b3-fc { position: relative; container-type: inline-size; }
 @container (max-width: 330px) { .fc small { display: none; } .fc-n { font-size: 1.25rem; } }
-.fs { display: grid; grid-template-columns: repeat(6, 1fr); gap: .28rem; }
+.fs { display: grid; grid-template-columns: repeat(7, 1fr); gap: .24rem; } /* seven counters: attack, pierce, splash, block, magic, heal, gold */
 .fc { position: relative; display: grid; grid-template-rows: auto auto auto; justify-items: center; gap: 0; padding: .28rem 0 .26rem; border-radius: .55rem; background: linear-gradient(180deg, rgba(24,24,44,.92), rgba(8,8,18,.94)); box-shadow: inset 0 0 0 1px rgba(255,255,255,.09); line-height: 1; transition: opacity .25s, box-shadow .25s, background .25s; overflow: hidden; }
 .fc-ic { font-size: 1.02rem; display: grid; margin-bottom: .12rem; } .fc-ic .ic { color: var(--c); }
 .fc-n { font-family: var(--disp); font-weight: 800; font-size: 1.38rem; color: var(--c); font-variant-numeric: tabular-nums; text-shadow: 0 0 12px color-mix(in srgb, var(--c) 60%, transparent), 0 2px 0 rgba(0,0,0,.6); min-width: 1ch; }

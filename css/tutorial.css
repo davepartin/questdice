@@ -73,7 +73,7 @@
 .tu-op { font-family: var(--disp); font-weight: 800; font-size: 1.5rem; color: var(--gild-hi); }
 .tu-counter { min-width: 3.6rem; padding: .35rem .4rem !important; }
 .tu-counters .tu-counter { min-width: 0; padding: .4rem 0 !important; } .tu-counters .fc-n { font-size: 1.2rem; } .tu-counters small { font-size: .46rem; letter-spacing: .08em; }
-.tu-counters { width: 100%; max-width: 24rem; display: grid; grid-template-columns: repeat(6, 1fr); gap: .28rem; }
+.tu-counters { width: 100%; max-width: 24rem; display: grid; grid-template-columns: repeat(7, 1fr); gap: .28rem; }
 .tu-counters .fc { padding: .4rem 0; }
 
 /* a round, in four steps */

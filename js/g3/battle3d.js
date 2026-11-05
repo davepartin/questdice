@@ -947,7 +947,7 @@ const sheetTop = () => B.hud.cards?.scrollTo?.({ top: 0, behavior: 'smooth' });
 // The counters that a power just filled give a little pulse, so you can see where it went.
 function bumpCounters(gains) {
   const chips = B.hud.forecast?._chips; if (!chips) return;
-  for (const key of Object.keys(gains)) { const c = chips[key === 'splash' ? 'atk' : key]; if (!c) continue; c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump'); setTimeout(() => c.classList.remove('bump'), 1200); }
+  for (const key of Object.keys(gains)) { const c = chips[key]; if (!c) continue; c.classList.remove('bump'); void c.offsetWidth; c.classList.add('bump'); setTimeout(() => c.classList.remove('bump'), 1200); }
 }
 async function doRecharge(id) {
   const b = B.b; if (B.busy) return;
