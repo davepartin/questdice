@@ -30,6 +30,23 @@
     "picker": false,
     "foeImg": "assets/miniatures/training-dummy.webp"
   },
+  "midLeave": {
+    "visible": true,
+    "text": "Back to camp",
+    "inHeader": true,
+    "w": 122,
+    "h": 44,
+    "y": 45.5,
+    "overlay": false
+  },
+  "midRestored": {
+    "gold": 77,
+    "xp": 12,
+    "potions": 2,
+    "practice": false,
+    "dummy": true,
+    "battle": false
+  },
   "scored": {
     "block": 4,
     "atk": 0,
@@ -43,22 +60,31 @@
     "phase": "practice-end",
     "again": true,
     "totals": {
-      "atk": "6",
-      "pierce": "3",
+      "atk": "0",
+      "pierce": "4",
       "splash": "0",
-      "block": "8",
-      "magic": "4",
+      "block": "11",
+      "magic": "2",
       "heal": "3",
-      "gold": "2"
+      "gold": "0"
     },
     "T": {
-      "atk": 6,
-      "pierce": 3,
-      "block": 8,
+      "atk": 0,
+      "pierce": 4,
+      "block": 11,
       "heal": 3,
-      "magic": 4,
-      "gold": 2
+      "magic": 2,
+      "gold": 0
     }
+  },
+  "endLeave": {
+    "visible": true,
+    "text": "Back to camp",
+    "inHeader": true,
+    "w": 122,
+    "h": 44,
+    "y": 45.5,
+    "overlay": true
   },
   "zeroed": {
     "phase": "reset",

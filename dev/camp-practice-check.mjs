@@ -1,5 +1,6 @@
 // Camp practice dummy (Dave, 6 Nov 2026): open camp, tap the dummy, confirm unlimited magic and
-// zeroed counters, Use a power so the coloured totals fill, Again starts at zero, Done restores the run.
+// zeroed counters, leave mid-round with the header Back to camp (restore gold/potions/XP), Use a power
+// so the coloured totals fill, Again starts at zero, Done restores the run.
 //   node dev/camp-practice-check.mjs [out=docs/team/tasks/T36]
 // Headless Chromium, not Safari.
 import { chromium } from 'playwright-core';
@@ -28,6 +29,26 @@ await p.addInitScript(() => { localStorage.setItem('qd.hints', 'off'); localStor
 await p.goto(`http://127.0.0.1:${port}/?debug&manual&q=low`);
 await p.waitForFunction(() => window.QD?.world?.stage, null, { timeout: 240000 });
 const pump = (s) => p.evaluate(async (s) => { for (let i = 0; i < s * 20; i++) { window.QD.world.stage.simulate(0.05, 0.033); await new Promise((r) => setTimeout(r, 0)); } }, s);
+const waitPractice = async () => {
+  for (let i = 0; i < 60; i++) {
+    await pump(0.4);
+    await p.waitForTimeout(80);
+    if (await p.evaluate(() => !!document.querySelector('.b3') && window.QD?.B3?.battleState?.b?.campPractice && !window.QD.B3.battleState.busy && !window.QD.B3.battleState.starting)) return true;
+  }
+  return false;
+};
+const leaveBtn = () => p.evaluate(() => {
+  const btn = document.querySelector('.b3-leave-camp');
+  const r = btn?.getBoundingClientRect();
+  const style = btn ? getComputedStyle(btn) : null;
+  return {
+    visible: !!(btn && !btn.hidden && style?.display !== 'none' && (btn.offsetParent || style?.position === 'absolute' || style?.position === 'fixed')),
+    text: (btn?.textContent || '').trim(),
+    inHeader: !!btn?.closest('.b3-top'),
+    w: r?.width || 0, h: r?.height || 0, y: r?.top || 0,
+    overlay: [...document.querySelectorAll('button')].some((b) => b.offsetParent && b.classList.contains('b3-practice-done')),
+  };
+});
 
 const setup = await p.evaluate(async () => {
   const { S, E, showCamp } = window.QD;
@@ -60,11 +81,7 @@ check('dummy is large enough to tap on a phone', camp.tap, JSON.stringify(camp))
 check('dummy is to the right of the hero', camp.dummyX > camp.heroX, JSON.stringify(camp));
 
 await p.locator('.sc-dummy').click();
-for (let i = 0; i < 60; i++) {
-  await pump(0.4);
-  await p.waitForTimeout(80);
-  if (await p.evaluate(() => !!document.querySelector('.b3') && window.QD?.B3?.battleState?.b?.campPractice && !window.QD.B3.battleState.busy && !window.QD.B3.battleState.starting)) break;
-}
+await waitPractice();
 const entered = await p.evaluate(() => {
   const B = window.QD.B3.battleState; const chips = B.hud?.forecast?._chips || {};
   return {
@@ -80,6 +97,35 @@ check('practice target is the dummy miniature, not a goblin', /training-dummy\.w
 check('practice skips the monster picker', !entered.picker, JSON.stringify(entered));
 check('magic chip shows unlimited', entered.mag === '∞', JSON.stringify(entered));
 check('colour counters start at zero', Object.values(entered.counters).every((v) => v === '0' || v === '0.0'), JSON.stringify(entered.counters));
+
+const rollBtn = await p.evaluateHandle(() => document.querySelector('#b3-roll'));
+if (rollBtn.asElement()) {
+  await rollBtn.asElement().click();
+  for (let i = 0; i < 40; i++) {
+    await pump(0.3);
+    await p.waitForTimeout(80);
+    if (await p.evaluate(() => window.QD.B3.battleState.b?.phase === 'shape' && !window.QD.B3.battleState.busy && window.QD.B3.battleState.b.board)) break;
+  }
+}
+const midLeave = await leaveBtn();
+check('Back to camp is in the practice header before Lock in', midLeave.visible && midLeave.inHeader && midLeave.text === 'Back to camp' && !midLeave.overlay, JSON.stringify(midLeave));
+check('header Back to camp is large enough to tap on a phone', midLeave.w >= 88 && midLeave.h >= 36, JSON.stringify(midLeave));
+await p.screenshot({ path: path.join(OUT, 'practice-mid-round.png') });
+
+await p.evaluate(() => {
+  window.QD.S.hero.gold = 1; window.QD.S.hero.potions = 0; window.QD.S.hero.xp = 99;
+  const b = window.QD.B3.battleState.b; if (b?.hero) b.hero.gold = 1;
+});
+await p.locator('.b3-leave-camp').click();
+await p.waitForSelector('.sc-dummy', { timeout: 20000 });
+const midRestored = await p.evaluate(() => {
+  const h = window.QD.S.hero;
+  return { gold: h.gold, xp: h.xp, potions: h.potions, practice: !!window.QD.S.campPractice, dummy: !!document.querySelector('.sc-dummy'), battle: !!document.querySelector('.b3') };
+});
+check('mid-round Back to camp restores camp and the real run (gold, potions, XP)', midRestored.gold === setup.gold && midRestored.xp === setup.xp && midRestored.potions === setup.potions && !midRestored.practice && midRestored.dummy && !midRestored.battle, JSON.stringify({ setup, midRestored }));
+
+await p.locator('.sc-dummy').click();
+await waitPractice();
 
 await p.evaluate(() => { const B = window.QD.B3.battleState; B.b.magic = 0; });
 await p.waitForFunction(() => !window.QD.B3.battleState.busy, null, { timeout: 10000 }).catch(() => null);
@@ -156,6 +202,8 @@ const endState = await p.evaluate(() => {
   };
 });
 check('practice round can be finished and shows Again', endState.phase === 'practice-end' && endState.again, JSON.stringify(endState));
+const endLeave = await leaveBtn();
+check('header Back to camp stays after Lock in, with Again on the result strip', endLeave.visible && endLeave.inHeader && endLeave.text === 'Back to camp' && endLeave.overlay, JSON.stringify(endLeave));
 check('practice result shows coloured totals', endState.phase === 'practice-end' && (Number(endState.totals.block) > 0 || Number(endState.totals.atk) > 0 || (endState.T.atk || 0) > 0 || (endState.T.block || 0) > 0), JSON.stringify(endState));
 const againBtn = await p.evaluateHandle(() => [...document.querySelectorAll('button')].find((b) => b.offsetParent && /^Again/i.test(b.textContent.trim())));
 if (againBtn.asElement()) {
@@ -181,7 +229,7 @@ const restored = await p.evaluate(() => {
 check('Done restores camp and the real run (gold, potions, XP)', restored.gold === setup.gold && restored.xp === setup.xp && restored.potions === setup.potions && !restored.practice && restored.dummy, JSON.stringify({ setup, restored }));
 check('no page errors', !errs.length, errs.slice(0, 3).join(' | '));
 
-const summary = { setup, camp, entered, scored, endState, zeroed, restored, errors: errs, bad };
+const summary = { setup, camp, entered, midLeave, midRestored, scored, endState, endLeave, zeroed, restored, errors: errs, bad };
 fs.writeFileSync(path.join(OUT, 'results.json'), JSON.stringify(summary, null, 2));
 console.log(bad ? `${bad} failed` : 'all passed');
 await br.close();

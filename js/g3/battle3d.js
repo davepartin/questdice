@@ -130,7 +130,8 @@ function buildHud() {
   hud.menu = h('button', { class: 'b3-menu', type: 'button', onclick: () => C.menu(), 'aria-label': 'Menu' }, HK.icon('menu'));
   hud.place = h('small', {}); hud.round = h('b', {}); hud.score = h('span', { class: 'b3-score', 'aria-label': 'Battle points' }, h('i', {}, 'PTS'), h('b', {}, '0'));
   hud.again = h('button', { type: 'button', class: 'rc-again', hidden: true, 'aria-label': 'Show the last round again', onclick: () => showCard(B.lastCard) }, HK.icon('dice'), h('span', {}, 'Recap'));
-  hud.top = h('div', { class: 'b3-top' }, hud.menu, h('div', { class: 'b3-round' }, hud.place, h('span', { class: 'b3-rline' }, hud.round, hud.score, hud.again)));
+  hud.leave = h('button', { type: 'button', class: 'b3-leave-camp', hidden: true, 'aria-label': 'Back to camp', onclick: donePractice }, 'Back to camp');
+  hud.top = h('div', { class: 'b3-top' }, hud.menu, h('div', { class: 'b3-round' }, hud.place, h('span', { class: 'b3-rline' }, hud.round, hud.score, hud.again), hud.leave));
   hud.coach = h('div', { class: 'b3-coach' });
   hud.ribbon = h('div', { class: 'b3-ribbon' });
   hud.hero = buildHero();
@@ -543,6 +544,10 @@ function setHud({ phase }) {
   hud.ribbon.classList.toggle('hide', phase !== 'reset');
   hud.dock.classList.toggle('is-resolving', phase === 'resolve');
   B.root.dataset.phase = phase;
+  const practice = !!b?.campPractice;
+  B.root.classList.toggle('is-practice', practice);
+  if (hud.leave) hud.leave.hidden = !practice;
+  if (practice) hud.again.hidden = true;
 }
 // Controls stay on screen (no reflow, no tray jump) but go quiet while a round plays out.
 function clearDock() {
@@ -784,7 +789,7 @@ function renderPracticeEnd() {
   B.hud.caption.replaceChildren(caption('Your practice totals. Tap Again to start at zero, or Back to camp.'));
   B.hud.bar.replaceChildren(h('div', { class: 'b3-acts b3-acts3 b3-practice' },
     HK.button({ kind: 'cta', icon: 'dice', label: 'Again', sub: 'start at zero', onclick: againPractice, cls: 'blue', aria: 'Start another practice round at zero' }),
-    HK.button({ kind: 'ghost', label: 'Back to camp', onclick: donePractice, aria: 'Leave practice and return to camp' })));
+    HK.button({ kind: 'ghost', label: 'Back to camp', onclick: donePractice, cls: 'b3-practice-done', aria: 'Leave practice and return to camp' })));
   if (B.sheetOpen) togglePowers(false);
   B.hud.cards.replaceChildren();
   B.hud.again.hidden = true;
@@ -1237,7 +1242,7 @@ function showCard(el = B.card) {
   // a long fight's recap shrinks a little (rather than scrolling) until all of it shows
   const body = el.querySelector('.rc-body'); if (body) { body.style.zoom = ''; let k = 1; while (el.scrollHeight > el.clientHeight + 1 && k > 0.66) { k -= 0.04; body.style.zoom = k.toFixed(2); } }
 }
-function hideCard() { if (B.card) { B.card.remove(); } if (B.lastCard) B.hud.again.hidden = false; B.card = null; }
+function hideCard() { if (B.card) { B.card.remove(); } if (B.lastCard && !B.b?.campPractice) B.hud.again.hidden = false; B.card = null; }
 function makeCard(rep) { B.lastCard = roundCard(rep, B.b, { onClose: closeCard }); return B.lastCard; }
 // The player closed the recap: now the next round begins on screen (its banner held back while the recap was up).
 function closeCard() { hideCard(); const r = B.flourishLater; B.flourishLater = null; if (r && !B.ended && r === B.b?.round) { HK.roundFlourish(B.root, r); showPlan(); } }
