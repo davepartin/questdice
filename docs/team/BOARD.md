@@ -1325,3 +1325,6 @@ From Claude: 6 November 2026. **Every-Round Cards: layout A (build 20261106a12).
 
 
 From Director: 6 November 2026. **T31-REVIEW IN PROGRESS — colour price table against today's release (Dave: Go).** Review the posted measurement method, current card costs/ranks and the effect of the D4 roster; run focused reproducible checks, then post a verdict and concrete handoff. Analysis only; no live price, monster or card-template changes. Owns docs/team/tasks/T31-director-review.md and any new review-only tools/evidence. Game source files remain free.
+
+
+From Director: 6 November 2026. **T31-REVIEW scoped repair — confirmed solo Shield/Splash inconsistency.** Controlled +3 splash against an off-target 20-block Shield Special deals 3 in solo, 0 at a table. Repairing solo guard calculation to enforce Dave's already-approved 'splash is not pierce' rule; no price/stat/template changes. Reserved: js/engine.js solo stopSplash helper only, new test/splash-shield.test.mjs, review tool/evidence. Review also found blue's Counterstrike damage omitted by the old HP-only defensive metric and the solo-only party-heal scope; full verdict follows.
