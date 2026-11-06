@@ -23,7 +23,7 @@ export const artFor = (list) => list[0]; // the best one that exists (the list h
 // Where the figures stand: [x %, feet y %, faces left (1) or right (0), size]. Pairs sit either side of the fire, then back rows.
 const AROUND_FIRE = [[26, 94, 0, 1], [74, 94, 1, 1], [17, 85, 0, 0.88], [83, 85, 1, 0.88], [37, 77, 0, 0.78], [63, 77, 1, 0.78]];
 // Practice dummy stands to the right of the fire (hero typically left). If a second hero had that slot, they step further right.
-const DUMMY_SLOT = [72, 94, 1, 0.92];
+const DUMMY_SLOT = [72, 90, 1, 0.9];
 const DUMMY_NUDGE = [88, 88, 1, 0.88];
 const ON_ROAD = [[26, 94, 0, 1], [48, 92, 0, 0.94], [16, 86, 0, 0.84], [68, 88, 0, 0.88], [36, 80, 0, 0.74], [84, 84, 0, 0.8]];
 // three or four on the road walk side by side (the third used to stand right behind the first and vanish: the bots' playtest)

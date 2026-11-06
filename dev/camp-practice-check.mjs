@@ -77,17 +77,25 @@ await p.screenshot({ path: path.join(OUT, 'camp-dummy.png') });
 const camp = await p.evaluate(() => {
   const d = document.querySelector('.sc-dummy');
   const h = document.querySelector('.sc-fig:not(.sc-dummy)');
+  const img = d?.querySelector('.sc-img, img');
+  const name = d?.querySelector('.sc-name');
   const box = d?.getBoundingClientRect();
+  const ir = img?.getBoundingClientRect();
+  const nr = name?.getBoundingClientRect();
   return {
-    dummy: !!d, label: d?.querySelector('.sc-name')?.textContent,
+    dummy: !!d, label: name?.textContent,
     hero: !!h, tap: box ? box.width >= 40 && box.height >= 40 : false,
     dummyX: box ? box.left + box.width / 2 : 0,
     heroX: h ? h.getBoundingClientRect().left + h.getBoundingClientRect().width / 2 : 0,
+    gap: (nr && ir) ? nr.top - ir.bottom : null,
+    labelUnderDummy: !!(nr && box && Math.abs((nr.left + nr.right) / 2 - (box.left + box.width / 2)) <= box.width * 0.45),
+    labelW: nr?.width || 0, labelH: nr?.height || 0,
   };
 });
 check('dummy stands by the fire on camp', camp.dummy && camp.label === 'Practice', JSON.stringify(camp));
 check('dummy is large enough to tap on a phone', camp.tap, JSON.stringify(camp));
 check('dummy is to the right of the hero', camp.dummyX > camp.heroX, JSON.stringify(camp));
+check('PRACTICE sits below the dummy’s round base', camp.gap >= 4 && camp.labelUnderDummy && camp.labelW >= 40, JSON.stringify(camp));
 
 await p.locator('.sc-dummy').click();
 await waitPractice();
@@ -99,6 +107,8 @@ const entered = await p.evaluate(() => {
     counters: Object.fromEntries(Object.entries(chips).map(([k, c]) => [k, c._n.textContent])),
     picker: !!document.querySelector('.mnc-veil'),
     foeImg: document.querySelector('.fb-slot.foe img')?.getAttribute('src') || '',
+    place: document.querySelector('.fb')?.dataset.place || '',
+    tableBg: document.querySelector('.fb-table') ? getComputedStyle(document.querySelector('.fb-table')).backgroundImage : '',
   };
 });
 check('tapping the dummy enters camp practice', entered.practice && entered.foe === 'training-dummy', JSON.stringify(entered));
@@ -106,6 +116,7 @@ check('practice target is the dummy miniature, not a goblin', /training-dummy\.w
 check('practice skips the monster picker', !entered.picker, JSON.stringify(entered));
 check('magic chip shows unlimited', entered.mag === '∞', JSON.stringify(entered));
 check('colour counters start at zero', Object.values(entered.counters).every((v) => v === '0' || v === '0.0'), JSON.stringify(entered.counters));
+check('practice fight uses the campsite painting, not the brown box', entered.place === 'practice-camp' && /practice-camp\.webp/.test(entered.tableBg) && !/assets\/bg\/camp\.webp/.test(entered.tableBg), JSON.stringify({ place: entered.place, tableBg: entered.tableBg }));
 
 const rollBtn = await p.evaluateHandle(() => document.querySelector('#b3-roll'));
 if (rollBtn.asElement()) {

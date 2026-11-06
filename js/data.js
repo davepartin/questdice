@@ -1181,6 +1181,7 @@ export const PLACE_ALIAS = { 'the-ember-throne-slopes': 'ember-throne-slopes' };
 const canonSlug = (name) => PLACE_ALIAS[placeSlug(name)] || placeSlug(name);
 export function placeLook(name) {
   const slug = canonSlug(name);
+  if (slug === 'practice-camp') return { slug, url: 'assets/bg/practice-camp.webp', weather: '' };
   const act = ACTS.find((a) => a.places.some((p) => canonSlug(p) === slug));
   if (!slug || !act) return { slug: '', url: '', weather: '' };
   const weather = act.id === 1 ? 'ash' : act.id === 2 ? 'crypt' : act.id === 3 ? 'ember' : '';

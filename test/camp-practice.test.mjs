@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { TRAINING_DUMMY, MONSTERS } from '../js/data.js';
+import { TRAINING_DUMMY, MONSTERS, placeLook } from '../js/data.js';
 import { forecastValues } from '../js/g3/hudkit.js';
 import {
   makeRng, newHero, newBattle, spawnEnemy, canPay, castPower, startRoll, resolve,
@@ -13,7 +13,7 @@ applyRelease();
 
 const dummyQuest = () => ({
   id: 'camp-practice', name: 'Practice dummy', kind: 'ordinary',
-  enemies: ['training-dummy'], rewardMult: 0, hpMult: 1, flat: 0, campPractice: true,
+  enemies: ['training-dummy'], rewardMult: 0, hpMult: 1, flat: 0, campPractice: true, place: 'practice-camp',
 });
 const practice = (seed = 4) => {
   const hero = newHero({ name: 'Pat', cls: 'knight', seed, full: true });
@@ -31,6 +31,9 @@ test('practice dummy is not a catalog monster and has its own miniature', () => 
   assert.equal(TRAINING_DUMMY.look, 'front');
   assert.ok(fs.existsSync(TRAINING_DUMMY.img));
   assert.equal(TRAINING_DUMMY.faces.length, 4);
+  assert.equal(placeLook('practice-camp').url, 'assets/bg/practice-camp.webp');
+  assert.ok(fs.existsSync(placeLook('practice-camp').url));
+  assert.equal(placeLook('wolfwood-edge').url, 'assets/bg/wolfwood-edge.webp');
 });
 
 test('spawnEnemy and newBattle can stand the dummy up', () => {

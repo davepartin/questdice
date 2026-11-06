@@ -36,6 +36,11 @@ test('place slugs drop apostrophes and turn spaces into hyphens', () => {
   assert.equal(placeLook('Ember Throne slopes').slug, 'ember-throne-slopes');
   assert.equal(placeLook('The Ember Throne slopes').slug, 'ember-throne-slopes');
   assert.equal(placeLook('gallows-hill').slug, 'gallows-hill');
+  assert.equal(placeLook('practice-camp').slug, 'practice-camp');
+  assert.equal(placeLook('practice-camp').url, 'assets/bg/practice-camp.webp');
+  assert.equal(placeLook('practice-camp').weather, '');
+  assert.ok(existsSync(join(root, 'assets/bg/practice-camp.webp')));
+  assert.equal(placeLook('wolfwood-edge').url, 'assets/bg/wolfwood-edge.webp');
 });
 
 test('Act 3 pins Brazen Bridge, Oathbreak Keep and the Ember Throne', () => {
