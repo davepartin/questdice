@@ -44,7 +44,7 @@ const load = (s) => new Promise((r, j) => { const i = new Image(); i.onload = ()
 const FIELD = { x: 86, y: 84, w: 548, h: 884 }; // frame pixels (720 x 1052)
 const INSETS = [[63, 60], [655.5, 60], [61.5, 981], [657, 981]]; // the corner circles' fitted centres (mockup rev 10)
 const EMB = [['atk', '#ff3b3b'], ['def', '#3aa4ff'], ['magic', '#a64dff'], ['heal', '#38e87a']];
-const COL = { atk: '#ff3b3b', block: '#3aa4ff', def: '#3aa4ff', magic: '#a64dff', gold: '#ffd21a', heal: '#38e87a', pierce: '#ff8a1a' };
+const COL = { splash: '#ff4fb8', atk: '#ff3b3b', block: '#3aa4ff', def: '#3aa4ff', magic: '#a64dff', gold: '#ffd21a', heal: '#38e87a', pierce: '#ff8a1a' };
 const KIND = (s) => (s === 'block' ? 'def' : s);
 const cv = (px, f) => { const c = document.createElement('canvas'); c.width = c.height = px; f(c.getContext('2d'), px); return c.toDataURL(); };
 

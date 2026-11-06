@@ -7,7 +7,7 @@ import { drawSym, drawNumeral, diceStyle } from '../gfx/dice/faces.js';
 
 // Bounded tiny 2D snapshots: no WebGL contexts, atlases or animation loops.
 const shots = new Map();
-const COLORS = { heal: '#38e87a', pierce: '#ff8a1a', magic: '#a64dff', gold: '#ffd21a', def: '#3aa4ff', atk: '#ff3b3b' };
+const COLORS = { splash: '#ff4fb8', heal: '#38e87a', pierce: '#ff8a1a', magic: '#a64dff', gold: '#ffd21a', def: '#3aa4ff', atk: '#ff3b3b' };
 const HEART = ['heal', 'pierce', 'magic', 'gold', 'def', 'atk'];
 export function campSpec(hero, slot, size) {
   // Engine lookups may initialize legacy fields; inspect a copy, never the saved hero.
