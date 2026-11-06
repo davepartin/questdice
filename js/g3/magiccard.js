@@ -139,6 +139,8 @@ function t28Sym(fx, { on = true, now = false, val = null, big = false } = {}) {
 }
 const T28_WORD = { atk: 'Attack', block: 'Block', heal: 'Heal', pierce: 'Pierce', gold: 'Gold', magic: 'Magic', weaken: 'Weaken' };
 const say = (...bits) => h('div', { class: 't28-say' }, ...bits);
+// Every-Round Card (Dave, 6 Nov 2026, layout A): the symbol, and its number beside it in its colour
+const bonus = (...pairs) => h('div', { class: `t28-one t28-bonus${pairs.length > 1 ? ' two' : ''}` }, pairs.map(([fx, val]) => h('span', { class: `t28-bpair fx-${fx}` }, t28Sym(fx, { big: true }), h('b', { class: 't28-bnum' }, String(val)))));
 const plain = (text) => (text ? h('div', { class: 't28-plain' }, text) : null); // the few plain words, on their own line
 const fine = (...bits) => h('div', { class: 't28-fine' }, ...bits);
 const word = (fx) => h('b', { class: `t28-w fx-${fx}` }, HK.icon(fx), T28_WORD[fx]);
@@ -174,15 +176,15 @@ function t28Body(k, l, p) {
     if (k.splash === 'half') out.push(splashTag('½', 'to every other monster'));
     out.push(fine(camp ? `Up to ${k.max} charges · use when you like` : `${have} of ${k.max} charged`));
   } else if (k.grudge) { // ---- Every-Round Card template (Grudge, Counterstrike, Hunter's Mark and the plain bonuses below)
-    const bonus = k.grudge[Math.min(l, k.grudge.length - 1)] || 0; const hurt = camp ? null : (p.hurt ?? 0);
-    out.push(h('div', { class: 't28-one' }, t28Sym('atk', { val: hurt == null ? '?' : hurt + bonus, big: true })));
+    const more = k.grudge[Math.min(l, k.grudge.length - 1)] || 0; const hurt = camp ? null : (p.hurt ?? 0);
+    out.push(bonus(['atk', hurt == null ? '+?' : `+${hurt + more}`]));
     out.push(say(word('atk')), plain('Equal to the damage past your block last round'));
-    out.push(fine(hurt == null ? (bonus ? `+${bonus} more at this rank` : 'Take a hit, hit back') : `${hurt} got past your block${bonus ? ` · +${bonus}` : ''}`));
+    out.push(fine(hurt == null ? (more ? `+${more} more at this rank` : 'Take a hit, hit back') : `${hurt} got past your block${more ? ` · +${more}` : ''}`));
   } else if (k.riposte) {
-    out.push(h('div', { class: 't28-one' }, t28Sym('block', { val: `+${E.scaleNum(k.fx.block, l)}`, big: true })));
+    out.push(bonus(['block', `+${E.scaleNum(k.fx.block, l)}`]));
     out.push(say(word('block')), plain('Unused block hits back as attack'));
   } else if (k.markGold) {
-    out.push(h('div', { class: 't28-one two' }, t28Sym('pierce', { val: `+${E.scaleNum(k.fx.pierce, l)}`, big: true }), t28Sym('gold', { val: `+${E.scaleNum(k.markGold, l)}`, big: true })));
+    out.push(bonus(['pierce', `+${E.scaleNum(k.fx.pierce, l)}`], ['gold', `+${E.scaleNum(k.markGold, l)}`]));
     out.push(say(word('pierce'), word('gold')), plain('The gold comes if your target falls'));
   } else if (k.kind === 'luck') { // ---- Side-Game Card template (Lucky Verse's d6 table)
     const rows = [['1–2', 2, [['magic', `+${1 + l}`]]], ['3–4', 4, [['atk', `+${E.scaleNum(E.LUCK.mid, l)}`]]], ['5–6', 6, [['atk', `+${E.scaleNum(E.LUCK.top, l)}`], ['magic', '+1']]]];
@@ -201,9 +203,9 @@ function t28Body(k, l, p) {
     out.push(fine(camp ? `Round ${k.minRound}+ · shown at round ${r}` : `Round ${r} · from round ${k.minRound}`));
   } else if (k.kind === 'flat' && k.fx) { // every-round powers: one or two big symbols
     const fx = Object.entries(k.fx);
-    if (k.fx.free != null) { out.push(h('div', { class: 't28-one' }, HK.icon('reroll', 't28-reroll'), h('b', { class: 't28-big' }, `×${k.fx.free + l}`)));
+    if (k.fx.free != null) { out.push(h('div', { class: 't28-one t28-bonus' }, h('span', { class: 't28-bpair fx-magic' }, HK.icon('reroll', 't28-reroll'), h('b', { class: 't28-bnum' }, `×${k.fx.free + l}`))));
       out.push(say(h('b', { class: 't28-w fx-magic' }, 'Free reroll')), plain(`Reroll ${k.fx.free + l} dice, once each round`)); }
-    else { out.push(h('div', { class: `t28-one${fx.length > 1 ? ' two' : ''}` }, fx.map(([x, v]) => t28Sym(x, { val: `${x === 'weaken' ? '−' : '+'}${E.scaleNum(v, l)}`, big: true }))));
+    else { out.push(bonus(...fx.map(([x, v]) => [x, `${x === 'weaken' ? '−' : '+'}${E.scaleNum(v, l)}`])));
       out.push(k.fx.weaken != null ? say(h('b', { class: 't28-w fx-weaken' }, HK.icon('weaken'), 'Weaken')) : say(...fx.map(([x]) => word(x))));
       out.push(plain(k.fx.weaken != null ? `Monsters hit ${E.scaleNum(k.fx.weaken, l)} softer this round` : 'Once each round')); }
   } else return null;

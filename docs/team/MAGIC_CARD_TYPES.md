@@ -37,9 +37,9 @@ starts) · Second Wind · Vanish · Healing Light · Forge Fury · Hymn of Gold
 
 ## 3. Every-Round Card
 
-Pay a little magic and get a fixed bonus, once a round. One big symbol and its number, the colour word, and one short rule line (unused
-block hits back; +6 gold if it falls; equal to the damage you took). **Open question for Dave:** the number beside the symbol in its colour
-(layout A in `node dev/flat-card-styles.mjs`), or inside it as now.
+Pay a little magic and get a fixed bonus, once a round. One big solid symbol with its number **beside it, big, in its colour** (+2 in
+orange beside the pierce arrow; Dave chose layout A, 6 November), then the colour word, then one short rule line (unused block hits back;
+the gold comes if your target falls; equal to the damage you took). Two bonuses sit side by side, smaller. (`bonus()` in js/g3/magiccard.js.)
 
 Counterstrike (Knight, starts) · Hunter's Mark (Ranger, starts) · Magic Missile (Wizard, starts) · Grudge (Dwarf, starts) · Shield Up ·
 Press the Attack · Quick Draw · Snare · Barrier · Shield Bash · Brace · Discord
