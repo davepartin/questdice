@@ -356,6 +356,7 @@ export const TALENT_SYMS = {
   magic: { name: 'Magic', text: 'Magic equal to the number on its face. Keep it for later.' },
   heal: { name: 'Heal', text: 'Heal equal to the number on its face. Patch the hole.' },
   gold: { name: 'Gold', text: 'Gold equal to the number on its face. Peddlers will smile.' },
+  splash: { name: 'Splash', text: 'Damage equal to the number on its face to every other monster. Their block still protects them.' },
 };
 // A new hero starts with six dice: head, hands, feet, heart and one weapon. Camp unlocks the rest, one die at a time.
 export const START_DICE = ['N', 'W', 'C', 'E', 'S', 'NW', 'SW']; // head, hands, feet, heart, one weapon, and one talent die
@@ -424,7 +425,7 @@ export const ENCOUNTER = {
   bigFrom: 4, bigMax: 4, // elite-tier monsters join ordinary fights from this step, if their threat is at most bigMax
 };
 // Display helpers for the old flat UI and captions.
-export const TALENT_GLYPH = { atk: '⚔', block: '🛡', pierce: '◆', magic: '✦', heal: '✚', gold: '🪙' };
+export const TALENT_GLYPH = { atk: '⚔', block: '🛡', pierce: '◆', magic: '✦', heal: '✚', gold: '🪙', splash: '↟' };
 export const talentLabel = (sym) => (sym === 'X2' ? '2×' : Array.isArray(sym) ? sym.map((x) => TALENT_GLYPH[x]).join('') : '');
 export const talentName = (sym) => (sym === 'X2' ? '2× Strength' : Array.isArray(sym) ? sym.map((x) => TALENT_SYMS[x].name).join(' + ') : 'Blank');
 export const talentText = (sym) => (sym === 'X2' ? 'Doubles the strength this hand adds to its weapon.' : Array.isArray(sym) ? sym.map((x) => TALENT_SYMS[x].text).join(' ') : 'Nothing happens.');

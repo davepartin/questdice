@@ -1,0 +1,37 @@
+{
+  "results": [
+    {
+      "cls": "knight",
+      "bought": true,
+      "saved": true
+    },
+    {
+      "cls": "bard",
+      "bought": true,
+      "saved": true
+    },
+    {
+      "cls": "wizard",
+      "bought": true,
+      "saved": true
+    },
+    {
+      "cls": "ranger",
+      "bought": true,
+      "saved": true
+    },
+    {
+      "cls": "dwarf",
+      "bought": true,
+      "saved": true
+    },
+    {
+      "twoSplashLimit": true
+    },
+    {
+      "face10": true,
+      "shortPhoneAndLargeText": true
+    }
+  ],
+  "errors": []
+}

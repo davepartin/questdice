@@ -1,6 +1,7 @@
 // Inline SVG icon set for the non-battle screens (no emoji). 24x24, drawn with strokes in currentColor.
 // ico('sword') -> <span class="ico"><svg…></span>;  icoHtml('sword') -> string.
 const P = {
+  splash: '<path d="M 10.97 21.61 L 5.53 14.68 L 3.99 15.89 L 3.60 10.04 L 9.18 11.82 L 7.62 13.06 L 13.03 19.99 Z M 10.68 20.80 L 10.68 12.00 L 8.70 12.00 L 12.00 7.16 L 15.30 12.00 L 13.32 12.00 L 13.32 20.80 Z M 10.97 19.99 L 16.38 13.06 L 14.82 11.82 L 20.40 10.04 L 20.01 15.89 L 18.47 14.68 L 13.03 21.61 Z M13.98 20.8 a1.98 1.98 0 1 0 0.01 0 Z" fill="currentColor" stroke="#fff" stroke-width=".55"/>',
   sword: '<path d="M19.5 4.5l-9.2 9.2-1.8-1.8L17.7 2.7z" fill="currentColor" fill-opacity=".18"/><path d="M19.5 4.5l-9.2 9.2M7.2 11.2l5.6 5.6M8.6 15.4L4.6 19.4"/><circle cx="4" cy="20" r="1.1" fill="currentColor"/>',
   shield: '<path d="M12 3l7.5 3v5.2c0 4.8-3.1 8-7.5 9.8-4.4-1.8-7.5-5-7.5-9.8V6z" fill="currentColor" fill-opacity=".14"/><path d="M12 7v10M8 11h8"/>',
   bow: '<path d="M6 3.5c10 2.2 10 14.8 0 17"/><path d="M6 3.5v17M6 12h14.5M17.5 9l3 3-3 3"/>',

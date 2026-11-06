@@ -898,3 +898,6 @@ button.mc-cov { appearance: none; -webkit-appearance: none; margin: 0; backgroun
 .td-face.c-gold,.td-option.c-gold,.td-preview.c-gold { color:#ffd65c; }
 .td-overlay button:focus-visible,.td-card button:focus-visible { outline:3px solid #fff1b0; outline-offset:2px; }
 @media(max-height:650px) { .td-dialog-head { padding:.4rem .7rem; }.td-preview { min-height:78px; gap:.25rem; }.td-option { min-height:72px; gap:.18rem; }.td-option>.ico svg { width:1.45rem;height:1.45rem; }.td-options { gap:.35rem; }.td-dialog-actions { padding:.5rem .7rem; } }
+
+/* Splash is pink throughout the Talent picker and its compact face rows. */
+.td-face.c-splash,.td-option.c-splash,.td-preview.c-splash,.tal-face.c-splash,.tal-opt.c-splash { color:#ff4fb8; }

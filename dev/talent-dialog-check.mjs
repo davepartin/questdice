@@ -19,7 +19,7 @@ try{
  for(const [width,height]of[[390,844],[430,932],[375,667],[375,548]]){
   await p.setViewportSize({width,height});await setup();assert.equal(await p.locator('.tw-detail,.tw-symbols,.tw-grow').count(),0);assert.equal(await p.locator('.td-die-context .cw-die').count(),2);assert.equal(await p.locator('.td-column[data-slot="SW"] .td-fixed-face').count(),3);
   await p.evaluate(()=>window.originalTalentCard=document.querySelector('.td-card'));await face().tap();const before=await scrolls();
-  assert.equal(await p.locator('.td-overlay .td-option').count(),5);assert(await p.locator('.td-confirm').isDisabled());await p.locator('.td-option[data-symbol="magic"]').tap();await fit();
+  assert.equal(await p.locator('.td-overlay .td-option').count(),6);assert(await p.locator('.td-confirm').isDisabled());await p.locator('.td-option[data-symbol="magic"]').tap();await fit();
   assert(await p.evaluate(()=>window.originalTalentCard===document.querySelector('.td-card')),'preview must not rebuild camp');assert.deepEqual(await scrolls(),before,'selection must not scroll the card or page');
   assert.equal(await p.evaluate(()=>document.querySelector('body>.cw-pop').inert),true);assert.equal(await p.evaluate(()=>window.QD.S.hero.gold),420);
   if(width===390)await p.screenshot({path:`${out}/symbol-picker.png`});

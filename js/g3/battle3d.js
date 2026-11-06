@@ -927,7 +927,7 @@ async function doCard(id, opts = {}) {
   if (E.usesTarget(k, opts)) { B.tlock = b.enemies[B.target]?.uid || null; B.fb.setLock?.(B.tlock); } // used on this monster: it is the round's target now, with a lock on its piece
   const tone = PW.toneOf(k);
   myPc().glow(tone === 'heal' ? 'heal' : tone === 'block' ? 'block' : tone === 'pierce' ? 'pierce' : tone === 'atk' ? 'hit' : tone === 'gold' ? 'gold' : 'magic');
-  myPc().sparkle(sparkleOf(B.hero?.cls)); // (the magic sheet stays open: you may want two or three powers; Close shuts it)
+  myPc().sparkle(sparkleOf(B.hero?.cls)); // Continue on a roll/use closes Magical Powers so the totals can fly to the counters
   // what the power actually added this round (the counters before and after)
   const gains = {};
   for (const [key, v] of Object.entries(b.mods)) { const d = (v || 0) - (modsBefore[key] || 0); if (d > 0) gains[key] = d; }
@@ -944,17 +944,19 @@ async function doCard(id, opts = {}) {
   const useSel = k?.type === 'Every-Round Card' ? '.t28-bonus' : k?.type === 'Finisher Card' ? '.t28-one' : k?.kind === 'charge' && r.released ? '.t28-charge .t28-sym.on' : '';
   const stampCard = !onCard && useSel && cardEl()?.querySelector(useSel) ? cardEl() : null;
   const counter = (key) => B.hud.forecast?._chips?.[key] || null;
+  const closeForFloat = () => { if (B.sheetOpen) togglePowers(false); }; // Continue: drop the full-screen sheet so the float is visible on the board
   B.busy = true; if (!onCard && !stampCard) refresh();
   try {
-    if (onCard) await PW.cardRoll(onCard, { k, r, gains, target: counter });
-    else if (stampCard) await PW.cardCast(stampCard, { k, r, gains, level: E.powerLevel(B.hero, id), target: counter });
+    if (onCard) await PW.cardRoll(onCard, { k, r, gains, target: counter, onContinue: closeForFloat });
+    else if (stampCard) await PW.cardCast(stampCard, { k, r, gains, level: E.powerLevel(B.hero, id), target: counter, onContinue: closeForFloat });
     else await PW.castReveal(B.root || document.body, { k, r, gains, round: b.round, level: E.powerLevel(B.hero, id), inline: k?.frogLoad && r.released ? null : inline });
   } finally { B.busy = false; }
   if (gains.heal) { myPc().heal(); myPc().num(`+${gains.heal}`, 'heal'); }
   B.pwSel = k?.kind === 'charge' || ['knight', 'wizard', 'ranger', 'dwarf', 'bard'].some(cls => D.CLASSES[cls].cards.some(c => c.id === id)) ? id : null; // Keep the charge track visible after Charge or Use.
   refresh();
   if (k?.frogLoad && r.released) { togglePowers(false); bumpCounters(gains); return; }
-  renderSheet(); bumpCounters(gains); sheetTop();
+  if (B.sheetOpen) { renderSheet(); sheetTop(); }
+  bumpCounters(gains);
   if (k?.kind === 'charge' && r.charged && !r.released) PW.chargeLit(cardEl()); // a charge stored: the new symbol pops
 }
 const sheetTop = () => B.hud.cards?.scrollTo?.({ top: 0, behavior: 'smooth' });

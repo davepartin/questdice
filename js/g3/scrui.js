@@ -1079,7 +1079,7 @@ function campStatus(hero) {
 }
 // (Potion belt and the 4th reroll die are sold in the cardboard Camp Store: storeTab.)
 // ---- dice you do not have yet, and the talent dice (bottom corners): grow them and choose which symbols sit on which faces
-const SYM_ICO = { atk: ['burst', 'c-atk'], block: ['shield', 'c-block'], pierce: ['pierce', 'c-pierce'], magic: ['spark', 'c-magic'], heal: ['plus', 'c-heal'], gold: ['coin', 'c-gold'] };
+const SYM_ICO = { atk: ['burst', 'c-atk'], block: ['shield', 'c-block'], pierce: ['pierce', 'c-pierce'], magic: ['spark', 'c-magic'], heal: ['plus', 'c-heal'], gold: ['coin', 'c-gold'], splash: ['splash', 'c-splash'] };
 const symChip = (k, cls = '') => h('span', { class: `fx ${SYM_ICO[k][1]} ${cls}` }, ico(SYM_ICO[k][0]));
 const DIE_NAME = { SW: 'Left talent die', SE: 'Right talent die', NE: 'Right weapon die' };
 const TAL = { slot: null, face: null, sym: null };
@@ -1492,6 +1492,7 @@ function talentFaceDialog(hero, slot, face) {
     }));
     const message = error || (!current && now.gold < cost ? `Need ${cost - now.gold} more gold.` : '');
     const body = h('div', { class: 'td-content' }, preview, options,
+      pick === 'splash' ? h('p', { class: 'td-note' }, 'Hits every other monster. Block still applies.') : null,
       h('p', { class: 'td-limit' }, `Max ${t.same} of each symbol per die.`),
       current ? h('p', { class: 'td-note' }, `No refund · a new symbol costs ${cost} gold.`) : h('div', { class: 'td-price' }, priceChip(cost, { poor: now.gold < cost }), h('span', {}, `${now.gold} gold available`)),
       h('p', { class: 'td-error', role: 'status' }, message));
