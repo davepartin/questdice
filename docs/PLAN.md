@@ -1686,3 +1686,7 @@ Completed the Director's T31 review against a12 and the D4 monsters. Keep prices
 Build `20261106cr1` repairs a confirmed rules inconsistency: solo splash omitted an off-target Shield Special, while party splash already respected it. One added guard term preserves overflow, a single shared pool across power/Fire-arrow splash, and the approved finisher exception. Six regressions and all 578 current tests pass. Reproducible before/after evidence, current card arithmetic and concrete measurement handoff: docs/team/tasks/T31-director-review.md.
 
 6 November 2026 — T34: Talent upgrades now use focused symbol/growth dialogs rather than an inline editor and scroll jumps. Bright digital colours follow Dave's revised direction. Both Talent dice and the d4/d6/d8/d10 progression remain visible. Done with price commits, Cancel preserves everything, and the updated face is visible on return. Prices, rules, save format and shared operation path unchanged. Details and browser evidence: [T34](team/tasks/T34-talent-dialog.md).
+
+## 6 November 2026 — Continue closes Magical Powers for the float
+
+Tapping Continue after a magic-card roll or Use now closes the Magical Powers overlay at the same moment the coloured totals start floating toward the battle counters, so the drift is visible on the board. Charge Use and Finisher Cards share that Continue path; storing a charge still has no Continue. No card rules, prices, dice, templates or destination colours changed. Details: docs/team/tasks/magic-continue-close.md.

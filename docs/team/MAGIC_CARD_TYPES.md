@@ -72,8 +72,9 @@ sends them to the counters. A new Dice Card or Side-Game Card gets this for free
 
 ## Using a card: every type has its moment on the card
 
-Tapping Use plays on the card itself, then the answer shows at the bottom in colour, **Continue**, and each number floats toward its own
-counter (the counters wait for Continue). A new card of any type gets its moment for free.
+Tapping Use plays on the card itself, then the answer shows at the bottom in colour, **Continue**. Continue closes the Magical Powers
+page at the same moment each number starts floating toward its own counter (the counters wait for Continue), so the drift is visible
+on the battle board. A new card of any type gets its moment for free.
 
 - **Dice Card, Side-Game Card:** the card's own dice rattle, tumble and land (`cardRoll` in js/g3/powers.js).
 - **Every-Round Card:** the big symbol lifts, glows in its colour and stamps down with a ring; its number counts up (`cardCast`).

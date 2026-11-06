@@ -388,12 +388,12 @@ export function frogReveal(host, k, r) {
 // The roll on the card (Dave, 6 Nov 2026: "the dice that are on the screen bounced up and began to roll on the card and landed … the numbers
 // were the colors of whatever the dice are … a button that said continue … those numbers kind of angled towards the counters"). The light
 // way: each die on the card hops and flicks through its own 3D faces (pictures, made once), lands on what it rolled; the totals show at the
-// bottom of the card in their colours; Continue sends each number down into its counter (target(key) is that counter). Dice and Side-Game
-// Cards only. Resolves when the numbers have gone.
+// bottom of the card in their colours; Continue closes Magical Powers and sends each number to its counter (target(key) is that
+// counter). Dice and Side-Game Cards only. Resolves when the numbers have gone.
 export const warmCardDice = (k) => MC.warmFaces(k);
 const COUNTERS = ['atk', 'pierce', 'splash', 'block', 'magic', 'heal', 'gold']; // the counter row, left to right (hudkit.js forecastStrip)
 const ROLL_ORDER = ['atk', 'pierce', 'splash', 'block', 'heal', 'gold', 'magic'];
-export function cardRoll(card, { k, r, gains, target = () => null }) {
+export function cardRoll(card, { k, r, gains, target = () => null, onContinue }) {
   return new Promise((resolve) => {
     const reduced = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const row = card.querySelector('.t28-dice'); const slots = row ? [...row.querySelectorAll('.mc-die')] : [];
@@ -449,21 +449,27 @@ export function cardRoll(card, { k, r, gains, target = () => null }) {
     card.addEventListener('click', function hurry(e) { if (e.target === go || res.isConnected) return; card.removeEventListener('click', hurry); finish(); }); // a tap hurries it along
     go.addEventListener('click', (e) => {
       e.stopPropagation(); go.disabled = true;
-      floatAway(res, target, reduced); // each number drifts toward its own counter, then the counters bump (the caller)
+      floatAway(res, target, reduced, onContinue); // close Magical Powers, then each number drifts to its counter
       res.classList.add('out'); card.classList.remove('mc-rolling-card'); setTimeout(() => card.classList.remove('mc-answering'), reduced ? 0 : 560);
       setTimeout(() => { res.remove(); resolve(); }, reduced ? 0 : 900);
     });
   });
 }
-// After Continue: each number floats slowly toward its own colour's counter (Dave, 6 Nov 2026: "based on which color they are … slowly
-// float towards that part of the screen"). The counters sit in a row across the bottom, Attack at the left to Gold at the right; when the
-// sheet covers them, aim where they would be. Softer hits and free rerolls are not counters: they rise and fade.
-function floatAway(res, target, reduced) {
-  for (const n of res.querySelectorAll('.mc-res-n')) {
-    const from = n.getBoundingClientRect(); const to = target(n.dataset.k)?.getBoundingClientRect?.(); const ghost = n.cloneNode(true); ghost.classList.add('mc-res-fly');
+// After Continue: clone the numbers where they sit, close Magical Powers so the board is visible (Dave, 6 Nov 2026: tapping Continue
+// left the overlay up, so the drift could not be seen), then each number floats slowly toward its own colour's counter. Attack red,
+// Pierce orange, Splash pink, Block blue, Heal green, Gold gold, Magic purple, left to right under the board. Softer hits, free
+// rerolls and a finisher's hit on every monster are not counters: they rise and fade.
+function floatAway(res, target, reduced, onContinue) {
+  const items = [...res.querySelectorAll('.mc-res-n')].map((n) => {
+    const from = n.getBoundingClientRect(); const ghost = n.cloneNode(true); ghost.classList.add('mc-res-fly');
     Object.assign(ghost.style, { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px` }); document.body.append(ghost);
+    return { n, from, ghost };
+  });
+  onContinue?.(); // the overlay goes away now, while the ghosts are already on the page
+  for (const { n, from, ghost } of items) {
+    const to = target(n.dataset.k)?.getBoundingClientRect?.();
     const slot = COUNTERS.indexOf(n.dataset.k); const W = window.innerWidth; const H = window.innerHeight;
-    const seen = slot >= 0 && to && to.width > 4 && to.top > from.bottom && to.top < H;
+    const seen = slot >= 0 && to && to.width > 4 && to.bottom > 0 && to.top < H;
     const tx = slot < 0 ? from.left + from.width / 2 : seen ? to.left + to.width / 2 : W * (slot + 0.5) / COUNTERS.length;
     const ty = slot < 0 ? from.top - Math.min(160, H * 0.2) : seen ? to.top + to.height / 2 : H - Math.min(150, H * 0.17);
     const dx = tx - (from.left + from.width / 2); const dy = ty - (from.top + from.height / 2);
@@ -477,7 +483,7 @@ function floatAway(res, target, reduced) {
 //   Finisher Card: each bonus stamps, then a pink wave sweeps the card and its "every monster" tag flashes.
 // Then the same answer as a dice roll at the bottom of the card, Continue, and each number floats toward its own counter.
 // Resolves when the numbers have gone.
-export function cardCast(card, { k, r, gains, level = 0, target = () => null }) {
+export function cardCast(card, { k, r, gains, level = 0, target = () => null, onContinue }) {
   return new Promise((resolve) => {
     const reduced = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const timers = []; const later = (ms, fn) => timers.push(setTimeout(fn, reduced ? 0 : ms));
@@ -517,7 +523,7 @@ export function cardCast(card, { k, r, gains, level = 0, target = () => null }) 
     if (mode === 'finisher') { later(end + 60, sweep); later(end + 900, finish); } else later(end + 480, finish);
     card.addEventListener('click', function hurry(e) { if (e.target === go || res.isConnected) return; card.removeEventListener('click', hurry); finish(); }); // a tap hurries it along
     go.addEventListener('click', (e) => {
-      e.stopPropagation(); go.disabled = true; floatAway(res, target, reduced);
+      e.stopPropagation(); go.disabled = true; floatAway(res, target, reduced, onContinue);
       res.classList.add('out'); card.classList.remove('mc-rolling-card'); for (const el of lit) el.classList.remove('mc-lit', 'mc-lit-num'); card.querySelector('.t28-splash')?.classList.remove('mc-lit'); card.querySelector('.t28')?.classList.remove('mc-sweep');
       setTimeout(() => { res.remove(); resolve(); }, reduced ? 0 : 900);
     });

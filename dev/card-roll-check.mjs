@@ -43,10 +43,15 @@ for (const [cls, ids] of RUNS) {
     await p.screenshot({ path: `${OUT}/${cls}-${id}-2-result.png` });
     check(`${name}: the dice land and the totals show at the bottom of the card in colour, with Continue`, res && res.landed > 0 && res.go === 'Continue' && (res.nums.length > 0 || id === 'crowd'), JSON.stringify(res));
     check(`${name}: the counters wait for Continue`, res && JSON.stringify(res.counters) === JSON.stringify(await p.evaluate(() => window.__before)), JSON.stringify(res?.counters));
-    await p.click('.mc-res-go'); await p.waitForTimeout(250); await p.screenshot({ path: `${OUT}/${cls}-${id}-3-drift.png` }); await p.waitForTimeout(1400);
-    const after = await p.evaluate(() => ({ result: !!document.querySelector('.mc-result'), flying: document.querySelectorAll('.mc-res-fly').length, counters: Object.fromEntries(Object.entries(window.QD.B3.battleState.hud.forecast._chips).map(([k, c]) => [k, c._n.textContent])), busy: window.QD.B3.battleState.busy }));
+    await p.click('.mc-res-go'); await p.waitForTimeout(250);
+    const drift = await p.evaluate(() => ({ sheet: !!document.querySelector('.b3-sheet.open'), flying: document.querySelectorAll('.mc-res-fly').length, result: !!document.querySelector('.mc-result') }));
+    await p.screenshot({ path: `${OUT}/${cls}-${id}-3-drift.png` });
+    check(`${name}: Continue closes Magical Powers so the numbers can fly to the counters`, !drift.sheet, JSON.stringify(drift));
+    if ((res?.nums || []).length) check(`${name}: the coloured totals are flying toward the battle counters`, drift.flying > 0, JSON.stringify(drift));
+    await p.waitForTimeout(1400);
+    const after = await p.evaluate(() => ({ result: !!document.querySelector('.mc-result'), flying: document.querySelectorAll('.mc-res-fly').length, counters: Object.fromEntries(Object.entries(window.QD.B3.battleState.hud.forecast._chips).map(([k, c]) => [k, c._n.textContent])), busy: window.QD.B3.battleState.busy, sheet: !!document.querySelector('.b3-sheet.open') }));
     const filled = (res?.nums || []).every(([k]) => k === 'gold' || after.counters[k] !== (res.counters[k]));
-    check(`${name}: Continue sends the numbers to their counters, which fill`, !after.result && !after.flying && !after.busy && filled, JSON.stringify(after));
+    check(`${name}: Continue sends the numbers to their counters, which fill`, !after.result && !after.flying && !after.busy && !after.sheet && filled, JSON.stringify(after));
   }
   await p.close();
 }
