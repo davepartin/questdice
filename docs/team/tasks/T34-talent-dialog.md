@@ -16,3 +16,5 @@ Only camp presentation changed. Engine prices, face values, the two-of-each-symb
 - Evidence: [symbol picker](../../../talent-dialog-evidence/symbol-picker.webp), [updated card](../../../talent-dialog-evidence/updated-card.webp), [growth confirmation](../../../talent-dialog-evidence/grow-popup.webp), [short phone with larger text](../../../talent-dialog-evidence/large-text.webp), [browser results](../../../talent-dialog-evidence/results.json).
 
 Browser evidence is Chromium with touch/mobile sizing; native iOS Safari and a two-device table session were not repeated. Existing engine/table tests remain covered by the full suite. Build: `20261106td1`.
+
+6 November follow-up — Dave corrected the Talent identity to **teal**. Build `20261106td2` changes the card, picker, growth panel, empty slots and Done controls from purple to teal. Individual symbol colours stay semantic (including purple Magic). Refreshed all four screenshots; targeted touch-browser purchase/return, growth portraits and short-phone layout checks pass. This follow-up changes styling and cache stamps only, with no interaction or engine change.

@@ -1346,3 +1346,5 @@ From Director: 6 November 2026. **T34 COMPLETE — focused Talent upgrade dialog
 
 
 From Director: 6 November 2026. **T34 DEPLOYED — `20261106td1`, source `3c6bd5ee4fb12efeabd958d20c1cbc6df1e4a2e4`.** Verified live HTTPS version, HTML/cache stamp, focused Talent picker/growth source, CSS, browser results and screenshot. Old `toTalentSymbols` scrolling helper is absent from live source. 578/578 tests and all focused browser checks pass. Reservations released; Talent UI work complete.
+
+From Director: 6 November 2026. **T34 colour correction — `20261106td2`.** Dave clarified Talent dice are teal. Rethemed the Talent card, symbol/growth dialogs, empty faces and Done buttons teal; preserved individual symbol colours (purple remains Magic). Refreshed the four evidence images. Styling only; existing interactions and game rules unchanged. Targeted browser checks and cache/release checks accompany publication.
