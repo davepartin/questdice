@@ -1131,7 +1131,7 @@ function startCampPractice() {
   const hero = S.hero || membersOf()[S.seat || 0];
   if (!hero) return;
   S.campPractice = { snap: snapshotRun() };
-  const quest = { id: 'camp-practice', name: 'Practice dummy', kind: 'ordinary', enemies: ['training-dummy'], rewardMult: 0, hpMult: 1, flat: 0, campPractice: true };
+  const quest = { id: 'camp-practice', name: 'Practice dummy', kind: 'ordinary', enemies: ['training-dummy'], rewardMult: 0, hpMult: 1, flat: 0, campPractice: true, place: 'practice-camp' };
   S.quest = quest;
   S.battle = E.newBattle(hero, quest, fresh(), 1);
   S.battle.campPractice = true; S.battle.freeMagic = true;

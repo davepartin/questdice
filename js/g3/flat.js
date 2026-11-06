@@ -213,7 +213,8 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
   const fb = { tween, wait, pieces: new Map(), foes: new Map(), heroes: [], active: 0 };
   const camp = heroes[0]?.campaign;
   const act = quest?.act || 1; const boss = enemies.some((e) => e.tier === 'boss');
-  const look = D.placeLook(quest?.place);
+  const place = quest?.campPractice ? 'practice-camp' : quest?.place;
+  const look = D.placeLook(place);
   const motes = Array.from({ length: 9 }, (_, i) => h('i', { class: 'fb-mote', style: { '--x': `${(i * 37 + 11) % 96}%`, '--y': `${20 + ((i * 53) % 60)}%`, '--d': `${(i * 1.7) % 9}s`, '--t': `${9 + (i * 3) % 7}s`, '--s': String(0.5 + ((i * 17) % 6) / 8) } }));
   const table = h('div', { class: 'fb-table' }, h('i', { class: 'fb-lamp' }), ...motes, h('i', { class: 'fb-rim top' }), h('i', { class: 'fb-rim bot' }));
   const atmo = h('div', { class: 'fb-atmo', 'aria-hidden': 'true' }, ...atmoLayers(look.weather));
@@ -227,7 +228,7 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
   links.setAttribute('class', 'fb-links');
   links.setAttribute('aria-hidden', 'true');
   fb.el = h('div', { class: `fb act-${act}${boss ? ' boss' : ''}${party ? ' party' : ''}`, 'data-heroes': String(heroes.length) }, table, atmo, field, fx, flashEl);
-  applyPlace(fb.el, quest?.place);
+  applyPlace(fb.el, place);
   if (party) fb.el.append(links);
   host.prepend(fb.el);
 

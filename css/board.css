@@ -20,6 +20,7 @@
 .fb[data-place="mourners-row"] { --place-img: url("../assets/bg/mourners-row.webp"); }
 .fb[data-place="the-drowned-crypt"] { --place-img: url("../assets/bg/the-drowned-crypt.webp"); }
 .fb[data-place="ash-cloister"] { --place-img: url("../assets/bg/ash-cloister.webp"); }
+.fb[data-place="practice-camp"] { --place-img: url("../assets/bg/practice-camp.webp"); --place-x: 50%; --place-y: 70%; }
 .b3 .fb { position: absolute; left: 0; right: 0; top: 0; bottom: calc(100% - var(--line-y, 42%)); overflow: hidden; pointer-events: none; --ph: 120px; z-index: 0; }
 .fb.act-2 { --felt-a: #34454c; --felt-b: #1e2b31; --felt-c: #0b1115; --lamp: rgba(190, 226, 255, .12); }
 .fb.act-3 { --felt-a: #4c2c30; --felt-b: #2c181b; --felt-c: #120708; --lamp: rgba(255, 190, 160, .12); }
@@ -34,6 +35,7 @@
   .fb[data-place="the-drowned-crypt"] { --place-y: 72%; }
   .fb[data-place="candle-vault"], .fb[data-place="the-weeping-stair"], .fb[data-place="the-pale-nave"], .fb[data-place="ash-cloister"] { --place-y: 68%; }
   .fb[data-place="ossuary-gate"], .fb[data-place="grave-silk-hall"], .fb[data-place="mourners-row"] { --place-y: 66%; }
+  .fb[data-place="practice-camp"] { --place-y: 64%; }
 }
 .fb-table { position: absolute; inset: 0; overflow: hidden;
   background:
