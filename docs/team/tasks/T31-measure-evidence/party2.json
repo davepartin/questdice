@@ -1,0 +1,9493 @@
+{
+ "party2|all": {
+  "rounds": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 304,
+   "campaigns": 3
+  },
+  "base.dir": {
+   "m": 64.09539473684211,
+   "lo": 60.026785714285715,
+   "hi": 67.48251748251748,
+   "n": 304,
+   "campaigns": 3
+  },
+  "base.hero": {
+   "m": 71.48355263157895,
+   "lo": 68.14285714285714,
+   "hi": 75.70212765957447,
+   "n": 304,
+   "campaigns": 3
+  },
+  "atk.dir": {
+   "m": 0.8892543859649124,
+   "lo": 0.6742424242424243,
+   "hi": 1.322695035460993,
+   "n": 304,
+   "campaigns": 3
+  },
+  "atk.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 304,
+   "campaigns": 3
+  },
+  "atk.sum": {
+   "m": -0.050438596491228074,
+   "lo": -0.10722610722610723,
+   "hi": 0,
+   "n": 304,
+   "campaigns": 3
+  },
+  "atk.hero": {
+   "m": 0.029605263157894735,
+   "lo": 0.006896551724137931,
+   "hi": 0.0625,
+   "n": 304,
+   "campaigns": 3
+  },
+  "pierce.dir": {
+   "m": 0.7532894736842105,
+   "lo": 0.6598639455782312,
+   "hi": 0.900709219858156,
+   "n": 304,
+   "campaigns": 3
+  },
+  "pierce.reg": {
+   "m": 0.003289473684210526,
+   "lo": 0,
+   "hi": 0.006896551724137931,
+   "n": 304,
+   "campaigns": 3
+  },
+  "pierce.sum": {
+   "m": -0.050438596491228074,
+   "lo": -0.16312056737588654,
+   "hi": 0,
+   "n": 304,
+   "campaigns": 3
+  },
+  "pierce.hero": {
+   "m": 0.03179824561403508,
+   "lo": 0.009195402298850575,
+   "hi": 0.052410901467505246,
+   "n": 304,
+   "campaigns": 3
+  },
+  "splash.dir": {
+   "m": 0.3640350877192982,
+   "lo": 0.33630952380952384,
+   "hi": 0.42176870748299317,
+   "n": 304,
+   "campaigns": 3
+  },
+  "splash.reg": {
+   "m": 0.019736842105263157,
+   "lo": 0,
+   "hi": 0.05102040816326531,
+   "n": 304,
+   "campaigns": 3
+  },
+  "splash.sum": {
+   "m": -0.5964912280701754,
+   "lo": -0.6931034482758621,
+   "hi": -0.5083857442348009,
+   "n": 304,
+   "campaigns": 3
+  },
+  "splash.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 304,
+   "campaigns": 3
+  },
+  "block.dir": {
+   "m": 0.03837719298245614,
+   "lo": 0.019813519813519816,
+   "hi": 0.05782312925170068,
+   "n": 304,
+   "campaigns": 3
+  },
+  "block.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 304,
+   "campaigns": 3
+  },
+  "block.sum": {
+   "m": -0.02192982456140351,
+   "lo": -0.06802721088435375,
+   "hi": 0,
+   "n": 304,
+   "campaigns": 3
+  },
+  "block.hero": {
+   "m": 0.3015350877192982,
+   "lo": 0.2755102040816326,
+   "hi": 0.33630952380952384,
+   "n": 304,
+   "campaigns": 3
+  },
+  "heal.dir": {
+   "m": 0.018640350877192985,
+   "lo": 0,
+   "hi": 0.05782312925170068,
+   "n": 304,
+   "campaigns": 3
+  },
+  "heal.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 304,
+   "campaigns": 3
+  },
+  "heal.sum": {
+   "m": -0.02192982456140351,
+   "lo": -0.04597701149425287,
+   "hi": 0,
+   "n": 304,
+   "campaigns": 3
+  },
+  "heal.hero": {
+   "m": 0.5460526315789473,
+   "lo": 0.5106382978723404,
+   "hi": 0.5703933747412009,
+   "n": 304,
+   "campaigns": 3
+  },
+  "card:cleave:r1:min:dir": {
+   "m": 6.65,
+   "lo": 6.65,
+   "hi": 6.65,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r1:min:hero": {
+   "m": 0.3,
+   "lo": 0.3,
+   "hi": 0.3,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r1:min:perMagic": {
+   "m": 2.316666666666666,
+   "lo": 2.316666666666666,
+   "hi": 2.316666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r1:min:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r1:full:dir": {
+   "m": 13.533333333333333,
+   "lo": 13.533333333333333,
+   "hi": 13.533333333333333,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r1:full:hero": {
+   "m": 0.35,
+   "lo": 0.35,
+   "hi": 0.35,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r1:full:perMagic": {
+   "m": 2.7766666666666664,
+   "lo": 2.7766666666666664,
+   "hi": 2.7766666666666664,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r1:full:cost": {
+   "m": 5,
+   "lo": 5,
+   "hi": 5,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r4:min:dir": {
+   "m": 16.433333333333334,
+   "lo": 16.433333333333334,
+   "hi": 16.433333333333334,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r4:min:hero": {
+   "m": 0.35,
+   "lo": 0.35,
+   "hi": 0.35,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r4:min:perMagic": {
+   "m": 5.594444444444444,
+   "lo": 5.594444444444444,
+   "hi": 5.594444444444444,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r4:min:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r4:full:dir": {
+   "m": 23.016666666666666,
+   "lo": 23.016666666666666,
+   "hi": 23.016666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r4:full:hero": {
+   "m": 0.9166666666666666,
+   "lo": 0.9166666666666666,
+   "hi": 0.9166666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r4:full:perMagic": {
+   "m": 4.786666666666667,
+   "lo": 4.786666666666667,
+   "hi": 4.786666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r4:full:cost": {
+   "m": 5,
+   "lo": 5,
+   "hi": 5,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:shieldwall:r1:cast:dir": {
+   "m": 0.23333333333333334,
+   "lo": 0.23333333333333334,
+   "hi": 0.23333333333333334,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:shieldwall:r1:cast:hero": {
+   "m": 1.6833333333333333,
+   "lo": 1.6833333333333333,
+   "hi": 1.6833333333333333,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:shieldwall:r1:cast:perMagic": {
+   "m": 1.9166666666666667,
+   "lo": 1.9166666666666667,
+   "hi": 1.9166666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:shieldwall:r1:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:shieldwall:r4:cast:dir": {
+   "m": 0.6333333333333333,
+   "lo": 0.6333333333333333,
+   "hi": 0.6333333333333333,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:shieldwall:r4:cast:hero": {
+   "m": 2.7666666666666666,
+   "lo": 2.7666666666666666,
+   "hi": 2.7666666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:shieldwall:r4:cast:perMagic": {
+   "m": 3.4,
+   "lo": 3.4,
+   "hi": 3.4,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:shieldwall:r4:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:riposte:r1:cast:dir": {
+   "m": 7.066666666666666,
+   "lo": 7.066666666666666,
+   "hi": 7.066666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:riposte:r1:cast:hero": {
+   "m": 1.1833333333333333,
+   "lo": 1.1833333333333333,
+   "hi": 1.1833333333333333,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:riposte:r1:cast:perMagic": {
+   "m": 4.125,
+   "lo": 4.125,
+   "hi": 4.125,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:riposte:r1:cast:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:riposte:r4:cast:dir": {
+   "m": 9.316666666666666,
+   "lo": 9.316666666666666,
+   "hi": 9.316666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:riposte:r4:cast:hero": {
+   "m": 2.1666666666666665,
+   "lo": 2.1666666666666665,
+   "hi": 2.1666666666666665,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:riposte:r4:cast:perMagic": {
+   "m": 5.741666666666666,
+   "lo": 5.741666666666666,
+   "hi": 5.741666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:riposte:r4:cast:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:press:r1:cast:dir": {
+   "m": 2.4833333333333334,
+   "lo": 2.4833333333333334,
+   "hi": 2.4833333333333334,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:press:r1:cast:hero": {
+   "m": 0.3,
+   "lo": 0.3,
+   "hi": 0.3,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:press:r1:cast:perMagic": {
+   "m": 2.783333333333333,
+   "lo": 2.783333333333333,
+   "hi": 2.783333333333333,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:press:r1:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:press:r4:cast:dir": {
+   "m": 5.266666666666667,
+   "lo": 5.266666666666667,
+   "hi": 5.266666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:press:r4:cast:hero": {
+   "m": 0.3,
+   "lo": 0.3,
+   "hi": 0.3,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:press:r4:cast:perMagic": {
+   "m": 5.566666666666666,
+   "lo": 5.566666666666666,
+   "hi": 5.566666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:press:r4:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use1:dir": {
+   "m": 1.85,
+   "lo": 1.85,
+   "hi": 1.85,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use1:hero": {
+   "m": 0.6,
+   "lo": 0.6,
+   "hi": 0.6,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use1:perMagic": {
+   "m": 2.45,
+   "lo": 2.45,
+   "hi": 2.45,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use2:dir": {
+   "m": 4.966666666666667,
+   "lo": 4.966666666666667,
+   "hi": 4.966666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use2:hero": {
+   "m": 1.4166666666666667,
+   "lo": 1.4166666666666667,
+   "hi": 1.4166666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use2:perMagic": {
+   "m": 3.191666666666667,
+   "lo": 3.191666666666667,
+   "hi": 3.191666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use3:dir": {
+   "m": 9.666666666666666,
+   "lo": 9.666666666666666,
+   "hi": 9.666666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use3:hero": {
+   "m": 2.566666666666667,
+   "lo": 2.566666666666667,
+   "hi": 2.566666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use3:perMagic": {
+   "m": 4.0777777777777775,
+   "lo": 4.0777777777777775,
+   "hi": 4.0777777777777775,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use4:dir": {
+   "m": 17.633333333333333,
+   "lo": 17.633333333333333,
+   "hi": 17.633333333333333,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use4:hero": {
+   "m": 4.416666666666667,
+   "lo": 4.416666666666667,
+   "hi": 4.416666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use4:perMagic": {
+   "m": 5.5125,
+   "lo": 5.5125,
+   "hi": 5.5125,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use1:dir": {
+   "m": 6.666666666666667,
+   "lo": 6.666666666666667,
+   "hi": 6.666666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use1:hero": {
+   "m": 2.1333333333333333,
+   "lo": 2.1333333333333333,
+   "hi": 2.1333333333333333,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use1:perMagic": {
+   "m": 8.8,
+   "lo": 8.8,
+   "hi": 8.8,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use2:dir": {
+   "m": 16.4,
+   "lo": 16.4,
+   "hi": 16.4,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use2:hero": {
+   "m": 4.133333333333334,
+   "lo": 4.133333333333334,
+   "hi": 4.133333333333334,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use2:perMagic": {
+   "m": 10.266666666666667,
+   "lo": 10.266666666666667,
+   "hi": 10.266666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use3:dir": {
+   "m": 24.35,
+   "lo": 24.35,
+   "hi": 24.35,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use3:hero": {
+   "m": 5.316666666666666,
+   "lo": 5.316666666666666,
+   "hi": 5.316666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use3:perMagic": {
+   "m": 9.88888888888889,
+   "lo": 9.88888888888889,
+   "hi": 9.88888888888889,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use4:dir": {
+   "m": 35.333333333333336,
+   "lo": 35.333333333333336,
+   "hi": 35.333333333333336,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use4:hero": {
+   "m": 6.25,
+   "lo": 6.25,
+   "hi": 6.25,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use4:perMagic": {
+   "m": 10.395833333333334,
+   "lo": 10.395833333333334,
+   "hi": 10.395833333333334,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use1:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use1:hero": {
+   "m": 1.8166666666666667,
+   "lo": 1.8166666666666667,
+   "hi": 1.8166666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use1:perMagic": {
+   "m": 1.8166666666666667,
+   "lo": 1.8166666666666667,
+   "hi": 1.8166666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use2:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use2:hero": {
+   "m": 4.05,
+   "lo": 4.05,
+   "hi": 4.05,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use2:perMagic": {
+   "m": 2.025,
+   "lo": 2.025,
+   "hi": 2.025,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use3:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use3:hero": {
+   "m": 5.633333333333334,
+   "lo": 5.633333333333334,
+   "hi": 5.633333333333334,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use3:perMagic": {
+   "m": 1.8777777777777778,
+   "lo": 1.8777777777777778,
+   "hi": 1.8777777777777778,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use4:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use4:hero": {
+   "m": 6.366666666666666,
+   "lo": 6.366666666666666,
+   "hi": 6.366666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use4:perMagic": {
+   "m": 1.5916666666666666,
+   "lo": 1.5916666666666666,
+   "hi": 1.5916666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use1:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use1:hero": {
+   "m": 4.05,
+   "lo": 4.05,
+   "hi": 4.05,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use1:perMagic": {
+   "m": 4.05,
+   "lo": 4.05,
+   "hi": 4.05,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use2:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use2:hero": {
+   "m": 6.033333333333333,
+   "lo": 6.033333333333333,
+   "hi": 6.033333333333333,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use2:perMagic": {
+   "m": 3.0166666666666666,
+   "lo": 3.0166666666666666,
+   "hi": 3.0166666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use3:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use3:hero": {
+   "m": 6.466666666666667,
+   "lo": 6.466666666666667,
+   "hi": 6.466666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use3:perMagic": {
+   "m": 2.1555555555555554,
+   "lo": 2.1555555555555554,
+   "hi": 2.1555555555555554,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use4:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use4:hero": {
+   "m": 6.466666666666667,
+   "lo": 6.466666666666667,
+   "hi": 6.466666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use4:perMagic": {
+   "m": 1.6166666666666667,
+   "lo": 1.6166666666666667,
+   "hi": 1.6166666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:showboat:r1:cast:dir": {
+   "m": 3.05,
+   "lo": 3.05,
+   "hi": 3.05,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:showboat:r1:cast:hero": {
+   "m": 0.3,
+   "lo": 0.3,
+   "hi": 0.3,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:showboat:r1:cast:perMagic": {
+   "m": 1.675,
+   "lo": 1.675,
+   "hi": 1.675,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:showboat:r1:cast:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:showboat:r4:cast:dir": {
+   "m": 11.016666666666667,
+   "lo": 11.016666666666667,
+   "hi": 11.016666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:showboat:r4:cast:hero": {
+   "m": 0.35,
+   "lo": 0.35,
+   "hi": 0.35,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:showboat:r4:cast:perMagic": {
+   "m": 5.683333333333334,
+   "lo": 5.683333333333334,
+   "hi": 5.683333333333334,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:showboat:r4:cast:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:dressing:r1:cast:dir": {
+   "m": 0.2833333333333333,
+   "lo": 0.2833333333333333,
+   "hi": 0.2833333333333333,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:dressing:r1:cast:hero": {
+   "m": 2.75,
+   "lo": 2.75,
+   "hi": 2.75,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:dressing:r1:cast:perMagic": {
+   "m": 1.5166666666666666,
+   "lo": 1.5166666666666666,
+   "hi": 1.5166666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:dressing:r1:cast:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:dressing:r4:cast:dir": {
+   "m": 0.36666666666666664,
+   "lo": 0.36666666666666664,
+   "hi": 0.36666666666666664,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:dressing:r4:cast:hero": {
+   "m": 5.866666666666666,
+   "lo": 5.866666666666666,
+   "hi": 5.866666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:dressing:r4:cast:perMagic": {
+   "m": 3.1166666666666667,
+   "lo": 3.1166666666666667,
+   "hi": 3.1166666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:dressing:r4:cast:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:aimed:r1:min:dir": {
+   "m": 2.018867924528302,
+   "lo": 1.9807692307692308,
+   "hi": 2.0555555555555554,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r1:min:hero": {
+   "m": 0.02830188679245283,
+   "lo": 0,
+   "hi": 0.057692307692307696,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r1:min:perMagic": {
+   "m": 2.047169811320755,
+   "lo": 2.0384615384615383,
+   "hi": 2.0555555555555554,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r1:min:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r1:full:dir": {
+   "m": 10.056603773584905,
+   "lo": 9,
+   "hi": 11.074074074074074,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r1:full:hero": {
+   "m": 0.5283018867924528,
+   "lo": -0.07692307692307693,
+   "hi": 1.1111111111111112,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r1:full:perMagic": {
+   "m": 2.6462264150943398,
+   "lo": 2.230769230769231,
+   "hi": 3.0462962962962963,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r1:full:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r4:min:dir": {
+   "m": 10.056603773584905,
+   "lo": 9,
+   "hi": 11.074074074074074,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r4:min:hero": {
+   "m": 0.5283018867924528,
+   "lo": -0.07692307692307693,
+   "hi": 1.1111111111111112,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r4:min:perMagic": {
+   "m": 10.584905660377359,
+   "lo": 8.923076923076923,
+   "hi": 12.185185185185185,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r4:min:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r4:full:dir": {
+   "m": 17.32075471698113,
+   "lo": 14.692307692307692,
+   "hi": 19.85185185185185,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r4:full:hero": {
+   "m": 1.490566037735849,
+   "lo": 0.6346153846153846,
+   "hi": 2.314814814814815,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r4:full:perMagic": {
+   "m": 4.702830188679245,
+   "lo": 3.831730769230769,
+   "hi": 5.541666666666667,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r4:full:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:quickdraw:r1:cast:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:quickdraw:r1:cast:hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:quickdraw:r1:cast:perMagic": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:quickdraw:r1:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:quickdraw:r4:cast:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:quickdraw:r4:cast:hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:quickdraw:r4:cast:perMagic": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:quickdraw:r4:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:mark:r1:cast:dir": {
+   "m": 2.6792452830188678,
+   "lo": 2.6153846153846154,
+   "hi": 2.740740740740741,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:mark:r1:cast:hero": {
+   "m": 0.02830188679245283,
+   "lo": 0,
+   "hi": 0.057692307692307696,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:mark:r1:cast:perMagic": {
+   "m": 1.3537735849056605,
+   "lo": 1.3365384615384615,
+   "hi": 1.3703703703703705,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:mark:r1:cast:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:mark:r4:cast:dir": {
+   "m": 5.518867924528302,
+   "lo": 5.481481481481482,
+   "hi": 5.5576923076923075,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:mark:r4:cast:hero": {
+   "m": -0.03773584905660377,
+   "lo": -0.07692307692307693,
+   "hi": 0,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:mark:r4:cast:perMagic": {
+   "m": 2.740566037735849,
+   "lo": 2.7403846153846154,
+   "hi": 2.740740740740741,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:mark:r4:cast:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:snare:r1:cast:dir": {
+   "m": 0.16037735849056603,
+   "lo": 0,
+   "hi": 0.3148148148148148,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:snare:r1:cast:hero": {
+   "m": 1.3584905660377358,
+   "lo": 1.3076923076923077,
+   "hi": 1.4074074074074074,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:snare:r1:cast:perMagic": {
+   "m": 1.5188679245283019,
+   "lo": 1.3076923076923077,
+   "hi": 1.7222222222222223,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:snare:r1:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:snare:r4:cast:dir": {
+   "m": 0.1792452830188679,
+   "lo": 0.038461538461538464,
+   "hi": 0.3148148148148148,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:snare:r4:cast:hero": {
+   "m": 4.037735849056604,
+   "lo": 3.673076923076923,
+   "hi": 4.388888888888889,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:snare:r4:cast:perMagic": {
+   "m": 4.216981132075472,
+   "lo": 3.7115384615384617,
+   "hi": 4.703703703703703,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:snare:r4:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use1:dir": {
+   "m": 2.6792452830188678,
+   "lo": 2.6153846153846154,
+   "hi": 2.740740740740741,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use1:hero": {
+   "m": 0.02830188679245283,
+   "lo": 0,
+   "hi": 0.057692307692307696,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use1:perMagic": {
+   "m": 2.707547169811321,
+   "lo": 2.673076923076923,
+   "hi": 2.740740740740741,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use2:dir": {
+   "m": 7.235849056603773,
+   "lo": 6.730769230769231,
+   "hi": 7.722222222222222,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use2:hero": {
+   "m": 0.29245283018867924,
+   "lo": -0.07692307692307693,
+   "hi": 0.6481481481481481,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use2:perMagic": {
+   "m": 3.7641509433962264,
+   "lo": 3.326923076923077,
+   "hi": 4.185185185185185,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use3:dir": {
+   "m": 13.160377358490566,
+   "lo": 11.096153846153847,
+   "hi": 15.148148148148149,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use3:hero": {
+   "m": 1.2358490566037736,
+   "lo": 0.6346153846153846,
+   "hi": 1.8148148148148149,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use3:perMagic": {
+   "m": 4.798742138364781,
+   "lo": 3.9102564102564106,
+   "hi": 5.654320987654322,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use4:dir": {
+   "m": 19.037735849056602,
+   "lo": 16.75,
+   "hi": 21.24074074074074,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use4:hero": {
+   "m": 1.5660377358490567,
+   "lo": 0.7884615384615384,
+   "hi": 2.314814814814815,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use4:perMagic": {
+   "m": 5.150943396226415,
+   "lo": 4.384615384615385,
+   "hi": 5.888888888888889,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use1:dir": {
+   "m": 7.235849056603773,
+   "lo": 6.730769230769231,
+   "hi": 7.722222222222222,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use1:hero": {
+   "m": 0.29245283018867924,
+   "lo": -0.07692307692307693,
+   "hi": 0.6481481481481481,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use1:perMagic": {
+   "m": 7.528301886792453,
+   "lo": 6.653846153846154,
+   "hi": 8.37037037037037,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use2:dir": {
+   "m": 15.424528301886792,
+   "lo": 13.423076923076923,
+   "hi": 17.35185185185185,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use2:hero": {
+   "m": 1.5660377358490567,
+   "lo": 0.7884615384615384,
+   "hi": 2.314814814814815,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use2:perMagic": {
+   "m": 8.495283018867925,
+   "lo": 7.105769230769231,
+   "hi": 9.833333333333334,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use3:dir": {
+   "m": 24.77358490566038,
+   "lo": 20.51923076923077,
+   "hi": 28.87037037037037,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use3:hero": {
+   "m": 2.1132075471698113,
+   "lo": 0.7884615384615384,
+   "hi": 3.388888888888889,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use3:perMagic": {
+   "m": 8.962264150943398,
+   "lo": 7.102564102564103,
+   "hi": 10.753086419753087,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use4:dir": {
+   "m": 33.028301886792455,
+   "lo": 28.884615384615383,
+   "hi": 37.01851851851852,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use4:hero": {
+   "m": 2.2641509433962264,
+   "lo": 0.7884615384615384,
+   "hi": 3.685185185185185,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use4:perMagic": {
+   "m": 8.82311320754717,
+   "lo": 7.418269230769231,
+   "hi": 10.175925925925926,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use1:dir": {
+   "m": 0.16037735849056603,
+   "lo": 0,
+   "hi": 0.3148148148148148,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use1:hero": {
+   "m": 1.320754716981132,
+   "lo": 1.1481481481481481,
+   "hi": 1.5,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use1:perMagic": {
+   "m": 1.4811320754716981,
+   "lo": 1.462962962962963,
+   "hi": 1.5,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use2:dir": {
+   "m": 0.16037735849056603,
+   "lo": 0,
+   "hi": 0.3148148148148148,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use2:hero": {
+   "m": 2.9150943396226414,
+   "lo": 2.574074074074074,
+   "hi": 3.269230769230769,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use2:perMagic": {
+   "m": 1.5377358490566038,
+   "lo": 1.4444444444444444,
+   "hi": 1.6346153846153846,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use3:dir": {
+   "m": 0.16037735849056603,
+   "lo": 0,
+   "hi": 0.3148148148148148,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use3:hero": {
+   "m": 4.0754716981132075,
+   "lo": 3.814814814814815,
+   "hi": 4.346153846153846,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use3:perMagic": {
+   "m": 1.4119496855345914,
+   "lo": 1.3765432098765433,
+   "hi": 1.448717948717949,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use4:dir": {
+   "m": 0.16037735849056603,
+   "lo": 0,
+   "hi": 0.3148148148148148,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use4:hero": {
+   "m": 4.830188679245283,
+   "lo": 4.826923076923077,
+   "hi": 4.833333333333333,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use4:perMagic": {
+   "m": 1.2476415094339623,
+   "lo": 1.2067307692307692,
+   "hi": 1.287037037037037,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use1:dir": {
+   "m": 0.16037735849056603,
+   "lo": 0,
+   "hi": 0.3148148148148148,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use1:hero": {
+   "m": 2.9150943396226414,
+   "lo": 2.574074074074074,
+   "hi": 3.269230769230769,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use1:perMagic": {
+   "m": 3.0754716981132075,
+   "lo": 2.888888888888889,
+   "hi": 3.269230769230769,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use2:dir": {
+   "m": 0.16037735849056603,
+   "lo": 0,
+   "hi": 0.3148148148148148,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use2:hero": {
+   "m": 4.452830188679245,
+   "lo": 4.277777777777778,
+   "hi": 4.634615384615385,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use2:perMagic": {
+   "m": 2.306603773584906,
+   "lo": 2.2962962962962963,
+   "hi": 2.3173076923076925,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use3:dir": {
+   "m": 0.16037735849056603,
+   "lo": 0,
+   "hi": 0.3148148148148148,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use3:hero": {
+   "m": 5.179245283018868,
+   "lo": 4.865384615384615,
+   "hi": 5.481481481481482,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use3:perMagic": {
+   "m": 1.7798742138364778,
+   "lo": 1.6217948717948718,
+   "hi": 1.9320987654320987,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use4:dir": {
+   "m": 0.16037735849056603,
+   "lo": 0,
+   "hi": 0.3148148148148148,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use4:hero": {
+   "m": 5.462264150943396,
+   "lo": 4.865384615384615,
+   "hi": 6.037037037037037,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use4:perMagic": {
+   "m": 1.4056603773584906,
+   "lo": 1.2163461538461537,
+   "hi": 1.587962962962963,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:gambit:r1:cast:dir": {
+   "m": 1.490566037735849,
+   "lo": 1.462962962962963,
+   "hi": 1.5192307692307692,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:gambit:r1:cast:hero": {
+   "m": 0.02830188679245283,
+   "lo": 0,
+   "hi": 0.057692307692307696,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:gambit:r1:cast:perMagic": {
+   "m": 0.7594339622641509,
+   "lo": 0.7314814814814815,
+   "hi": 0.7884615384615384,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:gambit:r1:cast:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:gambit:r4:cast:dir": {
+   "m": 7.056603773584905,
+   "lo": 6.634615384615385,
+   "hi": 7.462962962962963,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:gambit:r4:cast:hero": {
+   "m": 0.5283018867924528,
+   "lo": -0.07692307692307693,
+   "hi": 1.1111111111111112,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:gambit:r4:cast:perMagic": {
+   "m": 3.792452830188679,
+   "lo": 3.2788461538461537,
+   "hi": 4.287037037037037,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:gambit:r4:cast:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:rain:r1:cast:dir": {
+   "m": 13.44,
+   "lo": 11.777777777777779,
+   "hi": 15.391304347826088,
+   "n": 50,
+   "campaigns": 2
+  },
+  "card:rain:r1:cast:hero": {
+   "m": 0.5,
+   "lo": 0,
+   "hi": 1.0869565217391304,
+   "n": 50,
+   "campaigns": 2
+  },
+  "card:rain:r1:cast:perMagic": {
+   "m": 2.7880000000000003,
+   "lo": 2.3555555555555556,
+   "hi": 3.2956521739130435,
+   "n": 50,
+   "campaigns": 2
+  },
+  "card:rain:r1:cast:cost": {
+   "m": 5,
+   "lo": 5,
+   "hi": 5,
+   "n": 50,
+   "campaigns": 2
+  },
+  "card:rain:r4:cast:dir": {
+   "m": 26.58,
+   "lo": 22.88888888888889,
+   "hi": 30.91304347826087,
+   "n": 50,
+   "campaigns": 2
+  },
+  "card:rain:r4:cast:hero": {
+   "m": 1.4,
+   "lo": 0,
+   "hi": 3.0434782608695654,
+   "n": 50,
+   "campaigns": 2
+  },
+  "card:rain:r4:cast:perMagic": {
+   "m": 5.596,
+   "lo": 4.577777777777778,
+   "hi": 6.791304347826086,
+   "n": 50,
+   "campaigns": 2
+  },
+  "card:rain:r4:cast:cost": {
+   "m": 5,
+   "lo": 5,
+   "hi": 5,
+   "n": 50,
+   "campaigns": 2
+  },
+  "card:judgment:r1:cast:dir": {
+   "m": 21.166666666666668,
+   "lo": 21.166666666666668,
+   "hi": 21.166666666666668,
+   "n": 30,
+   "campaigns": 1
+  },
+  "card:judgment:r1:cast:hero": {
+   "m": 0.6,
+   "lo": 0.6,
+   "hi": 0.6,
+   "n": 30,
+   "campaigns": 1
+  },
+  "card:judgment:r1:cast:perMagic": {
+   "m": 3.6277777777777773,
+   "lo": 3.6277777777777773,
+   "hi": 3.6277777777777773,
+   "n": 30,
+   "campaigns": 1
+  },
+  "card:judgment:r1:cast:cost": {
+   "m": 6,
+   "lo": 6,
+   "hi": 6,
+   "n": 30,
+   "campaigns": 1
+  },
+  "card:judgment:r4:cast:dir": {
+   "m": 43.63333333333333,
+   "lo": 43.63333333333333,
+   "hi": 43.63333333333333,
+   "n": 30,
+   "campaigns": 1
+  },
+  "card:judgment:r4:cast:hero": {
+   "m": 1.4333333333333333,
+   "lo": 1.4333333333333333,
+   "hi": 1.4333333333333333,
+   "n": 30,
+   "campaigns": 1
+  },
+  "card:judgment:r4:cast:perMagic": {
+   "m": 7.511111111111109,
+   "lo": 7.511111111111109,
+   "hi": 7.511111111111109,
+   "n": 30,
+   "campaigns": 1
+  },
+  "card:judgment:r4:cast:cost": {
+   "m": 6,
+   "lo": 6,
+   "hi": 6,
+   "n": 30,
+   "campaigns": 1
+  },
+  "card:arcbolt:r1:min:dir": {
+   "m": 5.659574468085107,
+   "lo": 3.159090909090909,
+   "hi": 7.86,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r1:min:hero": {
+   "m": 0.06382978723404255,
+   "lo": 0,
+   "hi": 0.12,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r1:min:perMagic": {
+   "m": 2.8617021276595747,
+   "lo": 1.5795454545454546,
+   "hi": 3.99,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r1:min:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r1:full:dir": {
+   "m": 22.53191489361702,
+   "lo": 20.34090909090909,
+   "hi": 24.46,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r1:full:hero": {
+   "m": 1.0212765957446808,
+   "lo": 1,
+   "hi": 1.0454545454545454,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r1:full:perMagic": {
+   "m": 1.9627659574468086,
+   "lo": 1.7821969696969695,
+   "hi": 2.121666666666667,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r1:full:cost": {
+   "m": 12,
+   "lo": 12,
+   "hi": 12,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r4:min:dir": {
+   "m": 16.351063829787233,
+   "lo": 13.681818181818182,
+   "hi": 18.7,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r4:min:hero": {
+   "m": 1.0319148936170213,
+   "lo": 1.02,
+   "hi": 1.0454545454545454,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r4:min:perMagic": {
+   "m": 8.691489361702128,
+   "lo": 7.363636363636363,
+   "hi": 9.86,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r4:min:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r4:full:dir": {
+   "m": 22.53191489361702,
+   "lo": 20.34090909090909,
+   "hi": 24.46,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r4:full:hero": {
+   "m": 1.0212765957446808,
+   "lo": 1,
+   "hi": 1.0454545454545454,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r4:full:perMagic": {
+   "m": 3.925531914893617,
+   "lo": 3.564393939393939,
+   "hi": 4.243333333333334,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r4:full:cost": {
+   "m": 6,
+   "lo": 6,
+   "hi": 6,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:bolt:r1:cast:dir": {
+   "m": 1.8617021276595744,
+   "lo": 1.2727272727272727,
+   "hi": 2.38,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:bolt:r1:cast:hero": {
+   "m": 0.1702127659574468,
+   "lo": 0,
+   "hi": 0.32,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:bolt:r1:cast:perMagic": {
+   "m": 2.0319148936170213,
+   "lo": 1.2727272727272727,
+   "hi": 2.7,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:bolt:r1:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:bolt:r4:cast:dir": {
+   "m": 4.723404255319149,
+   "lo": 3.727272727272727,
+   "hi": 5.6,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:bolt:r4:cast:hero": {
+   "m": 0.0851063829787234,
+   "lo": 0,
+   "hi": 0.16,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:bolt:r4:cast:perMagic": {
+   "m": 4.808510638297872,
+   "lo": 3.727272727272727,
+   "hi": 5.76,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:bolt:r4:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:barrier:r1:cast:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:barrier:r1:cast:hero": {
+   "m": 0.925531914893617,
+   "lo": 0.9,
+   "hi": 0.9545454545454546,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:barrier:r1:cast:perMagic": {
+   "m": 0.925531914893617,
+   "lo": 0.9,
+   "hi": 0.9545454545454546,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:barrier:r1:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:barrier:r4:cast:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:barrier:r4:cast:hero": {
+   "m": 1.702127659574468,
+   "lo": 1.66,
+   "hi": 1.75,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:barrier:r4:cast:perMagic": {
+   "m": 1.702127659574468,
+   "lo": 1.66,
+   "hi": 1.75,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:barrier:r4:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use1:dir": {
+   "m": 3.5425531914893615,
+   "lo": 1.5454545454545454,
+   "hi": 5.3,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use1:hero": {
+   "m": 0.14893617021276595,
+   "lo": 0,
+   "hi": 0.28,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use1:perMagic": {
+   "m": 3.6914893617021276,
+   "lo": 1.5454545454545454,
+   "hi": 5.58,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use2:dir": {
+   "m": 7.117021276595745,
+   "lo": 4.636363636363637,
+   "hi": 9.3,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use2:hero": {
+   "m": 0.06382978723404255,
+   "lo": 0,
+   "hi": 0.12,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use2:perMagic": {
+   "m": 3.5904255319148937,
+   "lo": 2.3181818181818183,
+   "hi": 4.71,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use3:dir": {
+   "m": 12.138297872340425,
+   "lo": 9.636363636363637,
+   "hi": 14.34,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use3:hero": {
+   "m": 0.4574468085106383,
+   "lo": 0.3181818181818182,
+   "hi": 0.58,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use3:perMagic": {
+   "m": 4.198581560283688,
+   "lo": 3.3181818181818183,
+   "hi": 4.973333333333334,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use4:dir": {
+   "m": 18.23404255319149,
+   "lo": 15.681818181818182,
+   "hi": 20.48,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use4:hero": {
+   "m": 1.0212765957446808,
+   "lo": 1,
+   "hi": 1.0454545454545454,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use4:perMagic": {
+   "m": 4.8138297872340425,
+   "lo": 4.181818181818182,
+   "hi": 5.37,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use1:dir": {
+   "m": 8.74468085106383,
+   "lo": 6.181818181818182,
+   "hi": 11,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use1:hero": {
+   "m": 0.2127659574468085,
+   "lo": 0.12,
+   "hi": 0.3181818181818182,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use1:perMagic": {
+   "m": 8.957446808510639,
+   "lo": 6.5,
+   "hi": 11.12,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use2:dir": {
+   "m": 16.76595744680851,
+   "lo": 14.227272727272727,
+   "hi": 19,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use2:hero": {
+   "m": 0.7021276595744681,
+   "lo": 0.3181818181818182,
+   "hi": 1.04,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use2:perMagic": {
+   "m": 8.73404255319149,
+   "lo": 7.2727272727272725,
+   "hi": 10.02,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use3:dir": {
+   "m": 25.48936170212766,
+   "lo": 22.59090909090909,
+   "hi": 28.04,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use3:hero": {
+   "m": 1.2659574468085106,
+   "lo": 1,
+   "hi": 1.5681818181818181,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use3:perMagic": {
+   "m": 8.918439716312058,
+   "lo": 8.053030303030305,
+   "hi": 9.680000000000001,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use4:dir": {
+   "m": 36.53191489361702,
+   "lo": 32.61363636363637,
+   "hi": 39.98,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use4:hero": {
+   "m": 1.7127659574468086,
+   "lo": 1.5681818181818181,
+   "hi": 1.84,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use4:perMagic": {
+   "m": 9.561170212765957,
+   "lo": 8.545454545454545,
+   "hi": 10.455,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use1:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use1:hero": {
+   "m": 2.3617021276595747,
+   "lo": 1.88,
+   "hi": 2.909090909090909,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use1:perMagic": {
+   "m": 2.3617021276595747,
+   "lo": 1.88,
+   "hi": 2.909090909090909,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use2:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use2:hero": {
+   "m": 4.223404255319149,
+   "lo": 3.42,
+   "hi": 5.136363636363637,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use2:perMagic": {
+   "m": 2.1117021276595747,
+   "lo": 1.71,
+   "hi": 2.5681818181818183,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use3:dir": {
+   "m": 0.6063829787234043,
+   "lo": 0,
+   "hi": 1.2954545454545454,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use3:hero": {
+   "m": 4.98936170212766,
+   "lo": 3.88,
+   "hi": 6.25,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use3:perMagic": {
+   "m": 1.8652482269503543,
+   "lo": 1.2933333333333332,
+   "hi": 2.515151515151515,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use4:dir": {
+   "m": 0.6063829787234043,
+   "lo": 0,
+   "hi": 1.2954545454545454,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use4:hero": {
+   "m": 5.0212765957446805,
+   "lo": 3.94,
+   "hi": 6.25,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use4:perMagic": {
+   "m": 1.4069148936170213,
+   "lo": 0.985,
+   "hi": 1.8863636363636365,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use1:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use1:hero": {
+   "m": 4.053191489361702,
+   "lo": 3.3,
+   "hi": 4.909090909090909,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use1:perMagic": {
+   "m": 4.053191489361702,
+   "lo": 3.3,
+   "hi": 4.909090909090909,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use2:dir": {
+   "m": 0.6063829787234043,
+   "lo": 0,
+   "hi": 1.2954545454545454,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use2:hero": {
+   "m": 5.0212765957446805,
+   "lo": 3.94,
+   "hi": 6.25,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use2:perMagic": {
+   "m": 2.8138297872340425,
+   "lo": 1.97,
+   "hi": 3.772727272727273,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use3:dir": {
+   "m": 0.6063829787234043,
+   "lo": 0,
+   "hi": 1.2954545454545454,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use3:hero": {
+   "m": 5.0212765957446805,
+   "lo": 3.94,
+   "hi": 6.25,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use3:perMagic": {
+   "m": 1.8758865248226948,
+   "lo": 1.3133333333333332,
+   "hi": 2.515151515151515,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use4:dir": {
+   "m": 0.6063829787234043,
+   "lo": 0,
+   "hi": 1.2954545454545454,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use4:hero": {
+   "m": 5.0212765957446805,
+   "lo": 3.94,
+   "hi": 6.25,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use4:perMagic": {
+   "m": 1.4069148936170213,
+   "lo": 0.985,
+   "hi": 1.8863636363636365,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:meteor:r1:cast:dir": {
+   "m": 17.755555555555556,
+   "lo": 15.428571428571429,
+   "hi": 19.791666666666668,
+   "n": 45,
+   "campaigns": 2
+  },
+  "card:meteor:r1:cast:hero": {
+   "m": 1.1111111111111112,
+   "lo": 0.75,
+   "hi": 1.5238095238095237,
+   "n": 45,
+   "campaigns": 2
+  },
+  "card:meteor:r1:cast:perMagic": {
+   "m": 3.7733333333333334,
+   "lo": 3.3904761904761913,
+   "hi": 4.108333333333333,
+   "n": 45,
+   "campaigns": 2
+  },
+  "card:meteor:r1:cast:cost": {
+   "m": 5,
+   "lo": 5,
+   "hi": 5,
+   "n": 45,
+   "campaigns": 2
+  },
+  "card:meteor:r4:cast:dir": {
+   "m": 28.77777777777778,
+   "lo": 28.75,
+   "hi": 28.80952380952381,
+   "n": 45,
+   "campaigns": 2
+  },
+  "card:meteor:r4:cast:hero": {
+   "m": 1.8888888888888888,
+   "lo": 0.75,
+   "hi": 3.1904761904761907,
+   "n": 45,
+   "campaigns": 2
+  },
+  "card:meteor:r4:cast:perMagic": {
+   "m": 6.133333333333334,
+   "lo": 5.900000000000001,
+   "hi": 6.4,
+   "n": 45,
+   "campaigns": 2
+  },
+  "card:meteor:r4:cast:cost": {
+   "m": 5,
+   "lo": 5,
+   "hi": 5,
+   "n": 45,
+   "campaigns": 2
+  },
+  "card:anvil:r1:min:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r1:min:hero": {
+   "m": 1.4772727272727273,
+   "lo": 1.4772727272727273,
+   "hi": 1.4772727272727273,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r1:min:perMagic": {
+   "m": 1.4772727272727273,
+   "lo": 1.4772727272727273,
+   "hi": 1.4772727272727273,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r1:min:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r1:full:dir": {
+   "m": 0.6136363636363636,
+   "lo": 0.6136363636363636,
+   "hi": 0.6136363636363636,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r1:full:hero": {
+   "m": 4.590909090909091,
+   "lo": 4.590909090909091,
+   "hi": 4.590909090909091,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r1:full:perMagic": {
+   "m": 0.8674242424242423,
+   "lo": 0.8674242424242423,
+   "hi": 0.8674242424242423,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r1:full:cost": {
+   "m": 6,
+   "lo": 6,
+   "hi": 6,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r4:min:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r4:min:hero": {
+   "m": 4.2727272727272725,
+   "lo": 4.2727272727272725,
+   "hi": 4.2727272727272725,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r4:min:perMagic": {
+   "m": 4.2727272727272725,
+   "lo": 4.2727272727272725,
+   "hi": 4.2727272727272725,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r4:min:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r4:full:dir": {
+   "m": 0.6136363636363636,
+   "lo": 0.6136363636363636,
+   "hi": 0.6136363636363636,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r4:full:hero": {
+   "m": 4.590909090909091,
+   "lo": 4.590909090909091,
+   "hi": 4.590909090909091,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r4:full:perMagic": {
+   "m": 1.7348484848484846,
+   "lo": 1.7348484848484846,
+   "hi": 1.7348484848484846,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r4:full:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:grudge:r1:cast:dir": {
+   "m": 4.795454545454546,
+   "lo": 4.795454545454546,
+   "hi": 4.795454545454546,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:grudge:r1:cast:hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:grudge:r1:cast:perMagic": {
+   "m": 2.397727272727273,
+   "lo": 2.397727272727273,
+   "hi": 2.397727272727273,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:grudge:r1:cast:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:grudge:r4:cast:dir": {
+   "m": 8.090909090909092,
+   "lo": 8.090909090909092,
+   "hi": 8.090909090909092,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:grudge:r4:cast:hero": {
+   "m": 0.18181818181818182,
+   "lo": 0.18181818181818182,
+   "hi": 0.18181818181818182,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:grudge:r4:cast:perMagic": {
+   "m": 4.136363636363637,
+   "lo": 4.136363636363637,
+   "hi": 4.136363636363637,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:grudge:r4:cast:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:bulwark:r1:cast:dir": {
+   "m": 2.1136363636363638,
+   "lo": 2.1136363636363638,
+   "hi": 2.1136363636363638,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:bulwark:r1:cast:hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:bulwark:r1:cast:perMagic": {
+   "m": 2.1136363636363638,
+   "lo": 2.1136363636363638,
+   "hi": 2.1136363636363638,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:bulwark:r1:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:bulwark:r4:cast:dir": {
+   "m": 4.340909090909091,
+   "lo": 4.340909090909091,
+   "hi": 4.340909090909091,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:bulwark:r4:cast:hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:bulwark:r4:cast:perMagic": {
+   "m": 4.340909090909091,
+   "lo": 4.340909090909091,
+   "hi": 4.340909090909091,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:bulwark:r4:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:brace:r1:cast:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:brace:r1:cast:hero": {
+   "m": 1.3863636363636365,
+   "lo": 1.3863636363636365,
+   "hi": 1.3863636363636365,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:brace:r1:cast:perMagic": {
+   "m": 1.3863636363636365,
+   "lo": 1.3863636363636365,
+   "hi": 1.3863636363636365,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:brace:r1:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:brace:r4:cast:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:brace:r4:cast:hero": {
+   "m": 2.727272727272727,
+   "lo": 2.727272727272727,
+   "hi": 2.727272727272727,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:brace:r4:cast:perMagic": {
+   "m": 2.727272727272727,
+   "lo": 2.727272727272727,
+   "hi": 2.727272727272727,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:brace:r4:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use1:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use1:hero": {
+   "m": 2.409090909090909,
+   "lo": 2.409090909090909,
+   "hi": 2.409090909090909,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use1:perMagic": {
+   "m": 2.409090909090909,
+   "lo": 2.409090909090909,
+   "hi": 2.409090909090909,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use2:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use2:hero": {
+   "m": 4.136363636363637,
+   "lo": 4.136363636363637,
+   "hi": 4.136363636363637,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use2:perMagic": {
+   "m": 2.0681818181818183,
+   "lo": 2.0681818181818183,
+   "hi": 2.0681818181818183,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use3:dir": {
+   "m": 0.6136363636363636,
+   "lo": 0.6136363636363636,
+   "hi": 0.6136363636363636,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use3:hero": {
+   "m": 4.590909090909091,
+   "lo": 4.590909090909091,
+   "hi": 4.590909090909091,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use3:perMagic": {
+   "m": 1.7348484848484846,
+   "lo": 1.7348484848484846,
+   "hi": 1.7348484848484846,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use4:dir": {
+   "m": 0.6136363636363636,
+   "lo": 0.6136363636363636,
+   "hi": 0.6136363636363636,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use4:hero": {
+   "m": 4.613636363636363,
+   "lo": 4.613636363636363,
+   "hi": 4.613636363636363,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use4:perMagic": {
+   "m": 1.3068181818181819,
+   "lo": 1.3068181818181819,
+   "hi": 1.3068181818181819,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use1:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use1:hero": {
+   "m": 3.7954545454545454,
+   "lo": 3.7954545454545454,
+   "hi": 3.7954545454545454,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use1:perMagic": {
+   "m": 3.7954545454545454,
+   "lo": 3.7954545454545454,
+   "hi": 3.7954545454545454,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use2:dir": {
+   "m": 0.6136363636363636,
+   "lo": 0.6136363636363636,
+   "hi": 0.6136363636363636,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use2:hero": {
+   "m": 4.613636363636363,
+   "lo": 4.613636363636363,
+   "hi": 4.613636363636363,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use2:perMagic": {
+   "m": 2.6136363636363638,
+   "lo": 2.6136363636363638,
+   "hi": 2.6136363636363638,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use3:dir": {
+   "m": 0.6136363636363636,
+   "lo": 0.6136363636363636,
+   "hi": 0.6136363636363636,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use3:hero": {
+   "m": 4.613636363636363,
+   "lo": 4.613636363636363,
+   "hi": 4.613636363636363,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use3:perMagic": {
+   "m": 1.7424242424242422,
+   "lo": 1.7424242424242422,
+   "hi": 1.7424242424242422,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use4:dir": {
+   "m": 0.6136363636363636,
+   "lo": 0.6136363636363636,
+   "hi": 0.6136363636363636,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use4:hero": {
+   "m": 4.7727272727272725,
+   "lo": 4.7727272727272725,
+   "hi": 4.7727272727272725,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use4:perMagic": {
+   "m": 1.3465909090909092,
+   "lo": 1.3465909090909092,
+   "hi": 1.3465909090909092,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use1:dir": {
+   "m": 1.5681818181818181,
+   "lo": 1.5681818181818181,
+   "hi": 1.5681818181818181,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use1:hero": {
+   "m": 0.36363636363636365,
+   "lo": 0.36363636363636365,
+   "hi": 0.36363636363636365,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use1:perMagic": {
+   "m": 1.9318181818181819,
+   "lo": 1.9318181818181819,
+   "hi": 1.9318181818181819,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use2:dir": {
+   "m": 4.340909090909091,
+   "lo": 4.340909090909091,
+   "hi": 4.340909090909091,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use2:hero": {
+   "m": 1.3863636363636365,
+   "lo": 1.3863636363636365,
+   "hi": 1.3863636363636365,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use2:perMagic": {
+   "m": 2.8636363636363638,
+   "lo": 2.8636363636363638,
+   "hi": 2.8636363636363638,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use3:dir": {
+   "m": 9.454545454545455,
+   "lo": 9.454545454545455,
+   "hi": 9.454545454545455,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use3:hero": {
+   "m": 3.409090909090909,
+   "lo": 3.409090909090909,
+   "hi": 3.409090909090909,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use3:perMagic": {
+   "m": 4.287878787878788,
+   "lo": 4.287878787878788,
+   "hi": 4.287878787878788,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use4:dir": {
+   "m": 14.113636363636363,
+   "lo": 14.113636363636363,
+   "hi": 14.113636363636363,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use4:hero": {
+   "m": 4.5227272727272725,
+   "lo": 4.5227272727272725,
+   "hi": 4.5227272727272725,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use4:perMagic": {
+   "m": 4.659090909090909,
+   "lo": 4.659090909090909,
+   "hi": 4.659090909090909,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use1:dir": {
+   "m": 4.909090909090909,
+   "lo": 4.909090909090909,
+   "hi": 4.909090909090909,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use1:hero": {
+   "m": 2.409090909090909,
+   "lo": 2.409090909090909,
+   "hi": 2.409090909090909,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use1:perMagic": {
+   "m": 7.318181818181818,
+   "lo": 7.318181818181818,
+   "hi": 7.318181818181818,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use2:dir": {
+   "m": 12.136363636363637,
+   "lo": 12.136363636363637,
+   "hi": 12.136363636363637,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use2:hero": {
+   "m": 4.568181818181818,
+   "lo": 4.568181818181818,
+   "hi": 4.568181818181818,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use2:perMagic": {
+   "m": 8.352272727272727,
+   "lo": 8.352272727272727,
+   "hi": 8.352272727272727,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use3:dir": {
+   "m": 18.977272727272727,
+   "lo": 18.977272727272727,
+   "hi": 18.977272727272727,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use3:hero": {
+   "m": 4.9772727272727275,
+   "lo": 4.9772727272727275,
+   "hi": 4.9772727272727275,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use3:perMagic": {
+   "m": 7.984848484848484,
+   "lo": 7.984848484848484,
+   "hi": 7.984848484848484,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use4:dir": {
+   "m": 27.613636363636363,
+   "lo": 27.613636363636363,
+   "hi": 27.613636363636363,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use4:hero": {
+   "m": 4.909090909090909,
+   "lo": 4.909090909090909,
+   "hi": 4.909090909090909,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use4:perMagic": {
+   "m": 8.130681818181818,
+   "lo": 8.130681818181818,
+   "hi": 8.130681818181818,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r1:min:dir": {
+   "m": 1.75,
+   "lo": 1.75,
+   "hi": 1.75,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r1:min:hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r1:min:perMagic": {
+   "m": 0.875,
+   "lo": 0.875,
+   "hi": 0.875,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r1:min:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r1:full:dir": {
+   "m": 13.159090909090908,
+   "lo": 13.159090909090908,
+   "hi": 13.159090909090908,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r1:full:hero": {
+   "m": 0.6590909090909091,
+   "lo": 0.6590909090909091,
+   "hi": 0.6590909090909091,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r1:full:perMagic": {
+   "m": 1.1515151515151516,
+   "lo": 1.1515151515151516,
+   "hi": 1.1515151515151516,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r1:full:cost": {
+   "m": 12,
+   "lo": 12,
+   "hi": 12,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r4:min:dir": {
+   "m": 8.863636363636363,
+   "lo": 8.863636363636363,
+   "hi": 8.863636363636363,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r4:min:hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r4:min:perMagic": {
+   "m": 4.431818181818182,
+   "lo": 4.431818181818182,
+   "hi": 4.431818181818182,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r4:min:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r4:full:dir": {
+   "m": 13.159090909090908,
+   "lo": 13.159090909090908,
+   "hi": 13.159090909090908,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r4:full:hero": {
+   "m": 0.6590909090909091,
+   "lo": 0.6590909090909091,
+   "hi": 0.6590909090909091,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r4:full:perMagic": {
+   "m": 2.303030303030303,
+   "lo": 2.303030303030303,
+   "hi": 2.303030303030303,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r4:full:cost": {
+   "m": 6,
+   "lo": 6,
+   "hi": 6,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:avalanche:r1:cast:dir": {
+   "m": 12.85,
+   "lo": 12.85,
+   "hi": 12.85,
+   "n": 20,
+   "campaigns": 1
+  },
+  "card:avalanche:r1:cast:hero": {
+   "m": 3.15,
+   "lo": 3.15,
+   "hi": 3.15,
+   "n": 20,
+   "campaigns": 1
+  },
+  "card:avalanche:r1:cast:perMagic": {
+   "m": 2.666666666666667,
+   "lo": 2.666666666666667,
+   "hi": 2.666666666666667,
+   "n": 20,
+   "campaigns": 1
+  },
+  "card:avalanche:r1:cast:cost": {
+   "m": 6,
+   "lo": 6,
+   "hi": 6,
+   "n": 20,
+   "campaigns": 1
+  },
+  "card:avalanche:r4:cast:dir": {
+   "m": 24.6,
+   "lo": 24.6,
+   "hi": 24.6,
+   "n": 20,
+   "campaigns": 1
+  },
+  "card:avalanche:r4:cast:hero": {
+   "m": 3.75,
+   "lo": 3.75,
+   "hi": 3.75,
+   "n": 20,
+   "campaigns": 1
+  },
+  "card:avalanche:r4:cast:perMagic": {
+   "m": 4.725,
+   "lo": 4.725,
+   "hi": 4.725,
+   "n": 20,
+   "campaigns": 1
+  },
+  "card:avalanche:r4:cast:cost": {
+   "m": 6,
+   "lo": 6,
+   "hi": 6,
+   "n": 20,
+   "campaigns": 1
+  }
+ },
+ "party2|foes:1": {
+  "rounds": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 160,
+   "campaigns": 3
+  },
+  "base.dir": {
+   "m": 63.30625,
+   "lo": 56.9375,
+   "hi": 73.57777777777778,
+   "n": 160,
+   "campaigns": 3
+  },
+  "base.hero": {
+   "m": 78.5625,
+   "lo": 75.13725490196079,
+   "hi": 85.75555555555556,
+   "n": 160,
+   "campaigns": 3
+  },
+  "atk.dir": {
+   "m": 0.95625,
+   "lo": 0.6405228758169935,
+   "hi": 1.5481481481481478,
+   "n": 160,
+   "campaigns": 3
+  },
+  "atk.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 160,
+   "campaigns": 3
+  },
+  "atk.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 160,
+   "campaigns": 3
+  },
+  "atk.hero": {
+   "m": 0.03333333333333333,
+   "lo": -0.014814814814814815,
+   "hi": 0.09375,
+   "n": 160,
+   "campaigns": 3
+  },
+  "pierce.dir": {
+   "m": 0.6791666666666667,
+   "lo": 0.6222222222222222,
+   "hi": 0.702048417132216,
+   "n": 160,
+   "campaigns": 3
+  },
+  "pierce.reg": {
+   "m": 0.00625,
+   "lo": 0,
+   "hi": 0.0196078431372549,
+   "n": 160,
+   "campaigns": 3
+  },
+  "pierce.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 160,
+   "campaigns": 3
+  },
+  "pierce.hero": {
+   "m": 0.0375,
+   "lo": 0,
+   "hi": 0.06936416184971098,
+   "n": 160,
+   "campaigns": 3
+  },
+  "splash.dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 160,
+   "campaigns": 3
+  },
+  "splash.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 160,
+   "campaigns": 3
+  },
+  "splash.sum": {
+   "m": -0.025,
+   "lo": -0.03125,
+   "hi": -0.0196078431372549,
+   "n": 160,
+   "campaigns": 3
+  },
+  "splash.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 160,
+   "campaigns": 3
+  },
+  "block.dir": {
+   "m": 0.01875,
+   "lo": 0,
+   "hi": 0.046875,
+   "n": 160,
+   "campaigns": 3
+  },
+  "block.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 160,
+   "campaigns": 3
+  },
+  "block.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 160,
+   "campaigns": 3
+  },
+  "block.hero": {
+   "m": 0.19791666666666666,
+   "lo": 0.17037037037037037,
+   "hi": 0.234375,
+   "n": 160,
+   "campaigns": 3
+  },
+  "heal.dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 160,
+   "campaigns": 3
+  },
+  "heal.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 160,
+   "campaigns": 3
+  },
+  "heal.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 160,
+   "campaigns": 3
+  },
+  "heal.hero": {
+   "m": 0.60625,
+   "lo": 0.5333333333333333,
+   "hi": 0.6387337057728119,
+   "n": 160,
+   "campaigns": 3
+  }
+ },
+ "party2|def:none": {
+  "rounds": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 218,
+   "campaigns": 3
+  },
+  "base.dir": {
+   "m": 66.05963302752293,
+   "lo": 64.09333333333333,
+   "hi": 69.76811594202898,
+   "n": 218,
+   "campaigns": 3
+  },
+  "base.hero": {
+   "m": 68.6788990825688,
+   "lo": 60.95890410958904,
+   "hi": 74.6086956521739,
+   "n": 218,
+   "campaigns": 3
+  },
+  "atk.dir": {
+   "m": 0.7354740061162078,
+   "lo": 0.6027397260273972,
+   "hi": 0.9516908212560387,
+   "n": 218,
+   "campaigns": 3
+  },
+  "atk.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 218,
+   "campaigns": 3
+  },
+  "atk.sum": {
+   "m": -0.07033639143730887,
+   "lo": -0.2222222222222222,
+   "hi": 0,
+   "n": 218,
+   "campaigns": 3
+  },
+  "atk.hero": {
+   "m": 0.04434250764525994,
+   "lo": 0,
+   "hi": 0.09210526315789473,
+   "n": 218,
+   "campaigns": 3
+  },
+  "pierce.dir": {
+   "m": 0.7584097859327217,
+   "lo": 0.6301369863013698,
+   "hi": 0.9806763285024155,
+   "n": 218,
+   "campaigns": 3
+  },
+  "pierce.reg": {
+   "m": 0.0045871559633027525,
+   "lo": 0,
+   "hi": 0.0136986301369863,
+   "n": 218,
+   "campaigns": 3
+  },
+  "pierce.sum": {
+   "m": -0.07033639143730887,
+   "lo": -0.2222222222222222,
+   "hi": 0,
+   "n": 218,
+   "campaigns": 3
+  },
+  "pierce.hero": {
+   "m": 0.04434250764525994,
+   "lo": 0.012403100775193798,
+   "hi": 0.09210526315789473,
+   "n": 218,
+   "campaigns": 3
+  },
+  "splash.dir": {
+   "m": 0.46177370030581033,
+   "lo": 0.41545893719806765,
+   "hi": 0.49771689497716887,
+   "n": 218,
+   "campaigns": 3
+  },
+  "splash.reg": {
+   "m": 0.027522935779816515,
+   "lo": 0.004672897196261682,
+   "hi": 0.04954954954954955,
+   "n": 218,
+   "campaigns": 3
+  },
+  "splash.sum": {
+   "m": -0.5474006116207951,
+   "lo": -0.893719806763285,
+   "hi": -0.1050228310502283,
+   "n": 218,
+   "campaigns": 3
+  },
+  "splash.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 218,
+   "campaigns": 3
+  },
+  "block.dir": {
+   "m": 0.0489296636085627,
+   "lo": 0.02336448598130841,
+   "hi": 0.0776255707762557,
+   "n": 218,
+   "campaigns": 3
+  },
+  "block.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 218,
+   "campaigns": 3
+  },
+  "block.sum": {
+   "m": -0.030581039755351685,
+   "lo": -0.091324200913242,
+   "hi": 0,
+   "n": 218,
+   "campaigns": 3
+  },
+  "block.hero": {
+   "m": 0.32262996941896027,
+   "lo": 0.27853881278538817,
+   "hi": 0.35595776772247356,
+   "n": 218,
+   "campaigns": 3
+  },
+  "heal.dir": {
+   "m": 0.025993883792048932,
+   "lo": 0,
+   "hi": 0.0776255707762557,
+   "n": 218,
+   "campaigns": 3
+  },
+  "heal.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 218,
+   "campaigns": 3
+  },
+  "heal.sum": {
+   "m": -0.030581039755351685,
+   "lo": -0.091324200913242,
+   "hi": 0,
+   "n": 218,
+   "campaigns": 3
+  },
+  "heal.hero": {
+   "m": 0.5611620795107033,
+   "lo": 0.4782608695652174,
+   "hi": 0.6044444444444445,
+   "n": 218,
+   "campaigns": 3
+  }
+ },
+ "party2|act:I": {
+  "rounds": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 122,
+   "campaigns": 3
+  },
+  "base.dir": {
+   "m": 54.368852459016395,
+   "lo": 52.08108108108108,
+   "hi": 56.104,
+   "n": 122,
+   "campaigns": 3
+  },
+  "base.hero": {
+   "m": 55.368852459016395,
+   "lo": 48.972972972972975,
+   "hi": 59.53333333333333,
+   "n": 122,
+   "campaigns": 3
+  },
+  "atk.dir": {
+   "m": 0.8005464480874317,
+   "lo": 0.4774774774774775,
+   "hi": 1.1666666666666667,
+   "n": 122,
+   "campaigns": 3
+  },
+  "atk.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 122,
+   "campaigns": 3
+  },
+  "atk.sum": {
+   "m": -0.12568306010928962,
+   "lo": -0.38333333333333336,
+   "hi": 0,
+   "n": 122,
+   "campaigns": 3
+  },
+  "atk.hero": {
+   "m": 0.07923497267759562,
+   "lo": 0,
+   "hi": 0.15555555555555556,
+   "n": 122,
+   "campaigns": 3
+  },
+  "pierce.dir": {
+   "m": 0.7622950819672131,
+   "lo": 0.5045045045045045,
+   "hi": 1.1666666666666667,
+   "n": 122,
+   "campaigns": 3
+  },
+  "pierce.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 122,
+   "campaigns": 3
+  },
+  "pierce.sum": {
+   "m": -0.12568306010928962,
+   "lo": -0.2621082621082621,
+   "hi": 0,
+   "n": 122,
+   "campaigns": 3
+  },
+  "pierce.hero": {
+   "m": 0.07923497267759562,
+   "lo": 0,
+   "hi": 0.15555555555555556,
+   "n": 122,
+   "campaigns": 3
+  },
+  "splash.dir": {
+   "m": 0.4180327868852459,
+   "lo": 0.3641456582633053,
+   "hi": 0.5083333333333333,
+   "n": 122,
+   "campaigns": 3
+  },
+  "splash.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 122,
+   "campaigns": 3
+  },
+  "splash.sum": {
+   "m": -0.4480874316939891,
+   "lo": -1.125,
+   "hi": -0.09186351706036747,
+   "n": 122,
+   "campaigns": 3
+  },
+  "splash.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 122,
+   "campaigns": 3
+  },
+  "block.dir": {
+   "m": 0.06284153005464481,
+   "lo": 0,
+   "hi": 0.11204481792717087,
+   "n": 122,
+   "campaigns": 3
+  },
+  "block.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 122,
+   "campaigns": 3
+  },
+  "block.sum": {
+   "m": -0.054644808743169404,
+   "lo": -0.11695906432748539,
+   "hi": 0,
+   "n": 122,
+   "campaigns": 3
+  },
+  "block.hero": {
+   "m": 0.2622950819672131,
+   "lo": 0.22807017543859648,
+   "hi": 0.2962962962962963,
+   "n": 122,
+   "campaigns": 3
+  },
+  "heal.dir": {
+   "m": 0.04644808743169399,
+   "lo": 0,
+   "hi": 0.09941520467836258,
+   "n": 122,
+   "campaigns": 3
+  },
+  "heal.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 122,
+   "campaigns": 3
+  },
+  "heal.sum": {
+   "m": -0.054644808743169404,
+   "lo": -0.11695906432748539,
+   "hi": 0,
+   "n": 122,
+   "campaigns": 3
+  },
+  "heal.hero": {
+   "m": 0.45901639344262296,
+   "lo": 0.42342342342342343,
+   "hi": 0.4820512820512821,
+   "n": 122,
+   "campaigns": 3
+  }
+ },
+ "party2|kind:battle": {
+  "rounds": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 212,
+   "campaigns": 3
+  },
+  "base.dir": {
+   "m": 60.2311320754717,
+   "lo": 58.25714285714286,
+   "hi": 62.198019801980195,
+   "n": 212,
+   "campaigns": 3
+  },
+  "base.hero": {
+   "m": 66.9622641509434,
+   "lo": 61.14563106796116,
+   "hi": 73.35526315789474,
+   "n": 212,
+   "campaigns": 3
+  },
+  "atk.dir": {
+   "m": 0.8443396226415094,
+   "lo": 0.5428571428571428,
+   "hi": 1.3131313131313131,
+   "n": 212,
+   "campaigns": 3
+  },
+  "atk.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 212,
+   "campaigns": 3
+  },
+  "atk.sum": {
+   "m": -0.07232704402515723,
+   "lo": -0.23232323232323232,
+   "hi": 0,
+   "n": 212,
+   "campaigns": 3
+  },
+  "atk.hero": {
+   "m": 0.014150943396226415,
+   "lo": 0,
+   "hi": 0.030303030303030304,
+   "n": 212,
+   "campaigns": 3
+  },
+  "pierce.dir": {
+   "m": 0.6493710691823898,
+   "lo": 0.5857142857142857,
+   "hi": 0.7121212121212122,
+   "n": 212,
+   "campaigns": 3
+  },
+  "pierce.reg": {
+   "m": 0.0047169811320754715,
+   "lo": 0,
+   "hi": 0.014285714285714285,
+   "n": 212,
+   "campaigns": 3
+  },
+  "pierce.sum": {
+   "m": -0.07232704402515723,
+   "lo": -0.23232323232323232,
+   "hi": 0,
+   "n": 212,
+   "campaigns": 3
+  },
+  "pierce.hero": {
+   "m": 0.01729559748427673,
+   "lo": 0,
+   "hi": 0.04040404040404041,
+   "n": 212,
+   "campaigns": 3
+  },
+  "splash.dir": {
+   "m": 0.4795597484276729,
+   "lo": 0.3888888888888889,
+   "hi": 0.5432098765432098,
+   "n": 212,
+   "campaigns": 3
+  },
+  "splash.reg": {
+   "m": 0.02830188679245283,
+   "lo": 0,
+   "hi": 0.07142857142857142,
+   "n": 212,
+   "campaigns": 3
+  },
+  "splash.sum": {
+   "m": -0.8223270440251571,
+   "lo": -0.9809523809523808,
+   "hi": -0.631578947368421,
+   "n": 212,
+   "campaigns": 3
+  },
+  "splash.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 212,
+   "campaigns": 3
+  },
+  "block.dir": {
+   "m": 0.045597484276729564,
+   "lo": 0.019230769230769232,
+   "hi": 0.08095238095238096,
+   "n": 212,
+   "campaigns": 3
+  },
+  "block.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 212,
+   "campaigns": 3
+  },
+  "block.sum": {
+   "m": -0.031446540880503145,
+   "lo": -0.09523809523809523,
+   "hi": 0,
+   "n": 212,
+   "campaigns": 3
+  },
+  "block.hero": {
+   "m": 0.3616352201257862,
+   "lo": 0.33656957928802594,
+   "hi": 0.39035087719298245,
+   "n": 212,
+   "campaigns": 3
+  },
+  "heal.dir": {
+   "m": 0.026729559748427674,
+   "lo": 0,
+   "hi": 0.08095238095238096,
+   "n": 212,
+   "campaigns": 3
+  },
+  "heal.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 212,
+   "campaigns": 3
+  },
+  "heal.sum": {
+   "m": -0.031446540880503145,
+   "lo": -0.06472491909385114,
+   "hi": 0,
+   "n": 212,
+   "campaigns": 3
+  },
+  "heal.hero": {
+   "m": 0.5613207547169812,
+   "lo": 0.5428571428571428,
+   "hi": 0.5757575757575758,
+   "n": 212,
+   "campaigns": 3
+  }
+ },
+ "party2|class:knight": {
+  "rounds": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 60,
+   "campaigns": 1
+  },
+  "base.dir": {
+   "m": 63.983333333333334,
+   "lo": 63.983333333333334,
+   "hi": 63.983333333333334,
+   "n": 60,
+   "campaigns": 1
+  },
+  "base.hero": {
+   "m": 75.5,
+   "lo": 75.5,
+   "hi": 75.5,
+   "n": 60,
+   "campaigns": 1
+  },
+  "atk.dir": {
+   "m": 0.8277777777777778,
+   "lo": 0.8277777777777778,
+   "hi": 0.8277777777777778,
+   "n": 60,
+   "campaigns": 1
+  },
+  "atk.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "atk.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "atk.hero": {
+   "m": 0.1,
+   "lo": 0.1,
+   "hi": 0.1,
+   "n": 60,
+   "campaigns": 1
+  },
+  "pierce.dir": {
+   "m": 0.75,
+   "lo": 0.75,
+   "hi": 0.75,
+   "n": 60,
+   "campaigns": 1
+  },
+  "pierce.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "pierce.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "pierce.hero": {
+   "m": 0.1,
+   "lo": 0.1,
+   "hi": 0.1,
+   "n": 60,
+   "campaigns": 1
+  },
+  "splash.dir": {
+   "m": 0.3333333333333333,
+   "lo": 0.3333333333333333,
+   "hi": 0.3333333333333333,
+   "n": 60,
+   "campaigns": 1
+  },
+  "splash.reg": {
+   "m": 0.016666666666666666,
+   "lo": 0.016666666666666666,
+   "hi": 0.016666666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "splash.sum": {
+   "m": -0.43333333333333335,
+   "lo": -0.43333333333333335,
+   "hi": -0.43333333333333335,
+   "n": 60,
+   "campaigns": 1
+  },
+  "splash.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "block.dir": {
+   "m": 0.1,
+   "lo": 0.1,
+   "hi": 0.1,
+   "n": 60,
+   "campaigns": 1
+  },
+  "block.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "block.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "block.hero": {
+   "m": 0.3055555555555556,
+   "lo": 0.3055555555555556,
+   "hi": 0.3055555555555556,
+   "n": 60,
+   "campaigns": 1
+  },
+  "heal.dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "heal.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "heal.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "heal.hero": {
+   "m": 0.46111111111111114,
+   "lo": 0.46111111111111114,
+   "hi": 0.46111111111111114,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r1:min:dir": {
+   "m": 6.65,
+   "lo": 6.65,
+   "hi": 6.65,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r1:min:hero": {
+   "m": 0.3,
+   "lo": 0.3,
+   "hi": 0.3,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r1:min:perMagic": {
+   "m": 2.316666666666666,
+   "lo": 2.316666666666666,
+   "hi": 2.316666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r1:min:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r1:full:dir": {
+   "m": 13.533333333333333,
+   "lo": 13.533333333333333,
+   "hi": 13.533333333333333,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r1:full:hero": {
+   "m": 0.35,
+   "lo": 0.35,
+   "hi": 0.35,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r1:full:perMagic": {
+   "m": 2.7766666666666664,
+   "lo": 2.7766666666666664,
+   "hi": 2.7766666666666664,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r1:full:cost": {
+   "m": 5,
+   "lo": 5,
+   "hi": 5,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r4:min:dir": {
+   "m": 16.433333333333334,
+   "lo": 16.433333333333334,
+   "hi": 16.433333333333334,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r4:min:hero": {
+   "m": 0.35,
+   "lo": 0.35,
+   "hi": 0.35,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r4:min:perMagic": {
+   "m": 5.594444444444444,
+   "lo": 5.594444444444444,
+   "hi": 5.594444444444444,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r4:min:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r4:full:dir": {
+   "m": 23.016666666666666,
+   "lo": 23.016666666666666,
+   "hi": 23.016666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r4:full:hero": {
+   "m": 0.9166666666666666,
+   "lo": 0.9166666666666666,
+   "hi": 0.9166666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r4:full:perMagic": {
+   "m": 4.786666666666667,
+   "lo": 4.786666666666667,
+   "hi": 4.786666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:cleave:r4:full:cost": {
+   "m": 5,
+   "lo": 5,
+   "hi": 5,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:shieldwall:r1:cast:dir": {
+   "m": 0.23333333333333334,
+   "lo": 0.23333333333333334,
+   "hi": 0.23333333333333334,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:shieldwall:r1:cast:hero": {
+   "m": 1.6833333333333333,
+   "lo": 1.6833333333333333,
+   "hi": 1.6833333333333333,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:shieldwall:r1:cast:perMagic": {
+   "m": 1.9166666666666667,
+   "lo": 1.9166666666666667,
+   "hi": 1.9166666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:shieldwall:r1:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:shieldwall:r4:cast:dir": {
+   "m": 0.6333333333333333,
+   "lo": 0.6333333333333333,
+   "hi": 0.6333333333333333,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:shieldwall:r4:cast:hero": {
+   "m": 2.7666666666666666,
+   "lo": 2.7666666666666666,
+   "hi": 2.7666666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:shieldwall:r4:cast:perMagic": {
+   "m": 3.4,
+   "lo": 3.4,
+   "hi": 3.4,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:shieldwall:r4:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:riposte:r1:cast:dir": {
+   "m": 7.066666666666666,
+   "lo": 7.066666666666666,
+   "hi": 7.066666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:riposte:r1:cast:hero": {
+   "m": 1.1833333333333333,
+   "lo": 1.1833333333333333,
+   "hi": 1.1833333333333333,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:riposte:r1:cast:perMagic": {
+   "m": 4.125,
+   "lo": 4.125,
+   "hi": 4.125,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:riposte:r1:cast:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:riposte:r4:cast:dir": {
+   "m": 9.316666666666666,
+   "lo": 9.316666666666666,
+   "hi": 9.316666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:riposte:r4:cast:hero": {
+   "m": 2.1666666666666665,
+   "lo": 2.1666666666666665,
+   "hi": 2.1666666666666665,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:riposte:r4:cast:perMagic": {
+   "m": 5.741666666666666,
+   "lo": 5.741666666666666,
+   "hi": 5.741666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:riposte:r4:cast:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:press:r1:cast:dir": {
+   "m": 2.4833333333333334,
+   "lo": 2.4833333333333334,
+   "hi": 2.4833333333333334,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:press:r1:cast:hero": {
+   "m": 0.3,
+   "lo": 0.3,
+   "hi": 0.3,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:press:r1:cast:perMagic": {
+   "m": 2.783333333333333,
+   "lo": 2.783333333333333,
+   "hi": 2.783333333333333,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:press:r1:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:press:r4:cast:dir": {
+   "m": 5.266666666666667,
+   "lo": 5.266666666666667,
+   "hi": 5.266666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:press:r4:cast:hero": {
+   "m": 0.3,
+   "lo": 0.3,
+   "hi": 0.3,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:press:r4:cast:perMagic": {
+   "m": 5.566666666666666,
+   "lo": 5.566666666666666,
+   "hi": 5.566666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:press:r4:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use1:dir": {
+   "m": 1.85,
+   "lo": 1.85,
+   "hi": 1.85,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use1:hero": {
+   "m": 0.6,
+   "lo": 0.6,
+   "hi": 0.6,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use1:perMagic": {
+   "m": 2.45,
+   "lo": 2.45,
+   "hi": 2.45,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use2:dir": {
+   "m": 4.966666666666667,
+   "lo": 4.966666666666667,
+   "hi": 4.966666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use2:hero": {
+   "m": 1.4166666666666667,
+   "lo": 1.4166666666666667,
+   "hi": 1.4166666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use2:perMagic": {
+   "m": 3.191666666666667,
+   "lo": 3.191666666666667,
+   "hi": 3.191666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use3:dir": {
+   "m": 9.666666666666666,
+   "lo": 9.666666666666666,
+   "hi": 9.666666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use3:hero": {
+   "m": 2.566666666666667,
+   "lo": 2.566666666666667,
+   "hi": 2.566666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use3:perMagic": {
+   "m": 4.0777777777777775,
+   "lo": 4.0777777777777775,
+   "hi": 4.0777777777777775,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use4:dir": {
+   "m": 17.633333333333333,
+   "lo": 17.633333333333333,
+   "hi": 17.633333333333333,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use4:hero": {
+   "m": 4.416666666666667,
+   "lo": 4.416666666666667,
+   "hi": 4.416666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use4:perMagic": {
+   "m": 5.5125,
+   "lo": 5.5125,
+   "hi": 5.5125,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r1:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use1:dir": {
+   "m": 6.666666666666667,
+   "lo": 6.666666666666667,
+   "hi": 6.666666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use1:hero": {
+   "m": 2.1333333333333333,
+   "lo": 2.1333333333333333,
+   "hi": 2.1333333333333333,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use1:perMagic": {
+   "m": 8.8,
+   "lo": 8.8,
+   "hi": 8.8,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use2:dir": {
+   "m": 16.4,
+   "lo": 16.4,
+   "hi": 16.4,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use2:hero": {
+   "m": 4.133333333333334,
+   "lo": 4.133333333333334,
+   "hi": 4.133333333333334,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use2:perMagic": {
+   "m": 10.266666666666667,
+   "lo": 10.266666666666667,
+   "hi": 10.266666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use3:dir": {
+   "m": 24.35,
+   "lo": 24.35,
+   "hi": 24.35,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use3:hero": {
+   "m": 5.316666666666666,
+   "lo": 5.316666666666666,
+   "hi": 5.316666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use3:perMagic": {
+   "m": 9.88888888888889,
+   "lo": 9.88888888888889,
+   "hi": 9.88888888888889,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use4:dir": {
+   "m": 35.333333333333336,
+   "lo": 35.333333333333336,
+   "hi": 35.333333333333336,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use4:hero": {
+   "m": 6.25,
+   "lo": 6.25,
+   "hi": 6.25,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use4:perMagic": {
+   "m": 10.395833333333334,
+   "lo": 10.395833333333334,
+   "hi": 10.395833333333334,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:rally:r4:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use1:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use1:hero": {
+   "m": 1.8166666666666667,
+   "lo": 1.8166666666666667,
+   "hi": 1.8166666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use1:perMagic": {
+   "m": 1.8166666666666667,
+   "lo": 1.8166666666666667,
+   "hi": 1.8166666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use2:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use2:hero": {
+   "m": 4.05,
+   "lo": 4.05,
+   "hi": 4.05,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use2:perMagic": {
+   "m": 2.025,
+   "lo": 2.025,
+   "hi": 2.025,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use3:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use3:hero": {
+   "m": 5.633333333333334,
+   "lo": 5.633333333333334,
+   "hi": 5.633333333333334,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use3:perMagic": {
+   "m": 1.8777777777777778,
+   "lo": 1.8777777777777778,
+   "hi": 1.8777777777777778,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use4:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use4:hero": {
+   "m": 6.366666666666666,
+   "lo": 6.366666666666666,
+   "hi": 6.366666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use4:perMagic": {
+   "m": 1.5916666666666666,
+   "lo": 1.5916666666666666,
+   "hi": 1.5916666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r1:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use1:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use1:hero": {
+   "m": 4.05,
+   "lo": 4.05,
+   "hi": 4.05,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use1:perMagic": {
+   "m": 4.05,
+   "lo": 4.05,
+   "hi": 4.05,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use2:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use2:hero": {
+   "m": 6.033333333333333,
+   "lo": 6.033333333333333,
+   "hi": 6.033333333333333,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use2:perMagic": {
+   "m": 3.0166666666666666,
+   "lo": 3.0166666666666666,
+   "hi": 3.0166666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use3:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use3:hero": {
+   "m": 6.466666666666667,
+   "lo": 6.466666666666667,
+   "hi": 6.466666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use3:perMagic": {
+   "m": 2.1555555555555554,
+   "lo": 2.1555555555555554,
+   "hi": 2.1555555555555554,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use4:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use4:hero": {
+   "m": 6.466666666666667,
+   "lo": 6.466666666666667,
+   "hi": 6.466666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use4:perMagic": {
+   "m": 1.6166666666666667,
+   "lo": 1.6166666666666667,
+   "hi": 1.6166666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:secondwind:r4:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:showboat:r1:cast:dir": {
+   "m": 3.05,
+   "lo": 3.05,
+   "hi": 3.05,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:showboat:r1:cast:hero": {
+   "m": 0.3,
+   "lo": 0.3,
+   "hi": 0.3,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:showboat:r1:cast:perMagic": {
+   "m": 1.675,
+   "lo": 1.675,
+   "hi": 1.675,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:showboat:r1:cast:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:showboat:r4:cast:dir": {
+   "m": 11.016666666666667,
+   "lo": 11.016666666666667,
+   "hi": 11.016666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:showboat:r4:cast:hero": {
+   "m": 0.35,
+   "lo": 0.35,
+   "hi": 0.35,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:showboat:r4:cast:perMagic": {
+   "m": 5.683333333333334,
+   "lo": 5.683333333333334,
+   "hi": 5.683333333333334,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:showboat:r4:cast:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:dressing:r1:cast:dir": {
+   "m": 0.2833333333333333,
+   "lo": 0.2833333333333333,
+   "hi": 0.2833333333333333,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:dressing:r1:cast:hero": {
+   "m": 2.75,
+   "lo": 2.75,
+   "hi": 2.75,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:dressing:r1:cast:perMagic": {
+   "m": 1.5166666666666666,
+   "lo": 1.5166666666666666,
+   "hi": 1.5166666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:dressing:r1:cast:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:dressing:r4:cast:dir": {
+   "m": 0.36666666666666664,
+   "lo": 0.36666666666666664,
+   "hi": 0.36666666666666664,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:dressing:r4:cast:hero": {
+   "m": 5.866666666666666,
+   "lo": 5.866666666666666,
+   "hi": 5.866666666666666,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:dressing:r4:cast:perMagic": {
+   "m": 3.1166666666666667,
+   "lo": 3.1166666666666667,
+   "hi": 3.1166666666666667,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:dressing:r4:cast:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 60,
+   "campaigns": 1
+  },
+  "card:judgment:r1:cast:dir": {
+   "m": 21.166666666666668,
+   "lo": 21.166666666666668,
+   "hi": 21.166666666666668,
+   "n": 30,
+   "campaigns": 1
+  },
+  "card:judgment:r1:cast:hero": {
+   "m": 0.6,
+   "lo": 0.6,
+   "hi": 0.6,
+   "n": 30,
+   "campaigns": 1
+  },
+  "card:judgment:r1:cast:perMagic": {
+   "m": 3.6277777777777773,
+   "lo": 3.6277777777777773,
+   "hi": 3.6277777777777773,
+   "n": 30,
+   "campaigns": 1
+  },
+  "card:judgment:r1:cast:cost": {
+   "m": 6,
+   "lo": 6,
+   "hi": 6,
+   "n": 30,
+   "campaigns": 1
+  },
+  "card:judgment:r4:cast:dir": {
+   "m": 43.63333333333333,
+   "lo": 43.63333333333333,
+   "hi": 43.63333333333333,
+   "n": 30,
+   "campaigns": 1
+  },
+  "card:judgment:r4:cast:hero": {
+   "m": 1.4333333333333333,
+   "lo": 1.4333333333333333,
+   "hi": 1.4333333333333333,
+   "n": 30,
+   "campaigns": 1
+  },
+  "card:judgment:r4:cast:perMagic": {
+   "m": 7.511111111111109,
+   "lo": 7.511111111111109,
+   "hi": 7.511111111111109,
+   "n": 30,
+   "campaigns": 1
+  },
+  "card:judgment:r4:cast:cost": {
+   "m": 6,
+   "lo": 6,
+   "hi": 6,
+   "n": 30,
+   "campaigns": 1
+  }
+ },
+ "party2|class:ranger": {
+  "rounds": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 106,
+   "campaigns": 2
+  },
+  "base.dir": {
+   "m": 59.64150943396226,
+   "lo": 55.46153846153846,
+   "hi": 63.666666666666664,
+   "n": 106,
+   "campaigns": 2
+  },
+  "base.hero": {
+   "m": 68.02830188679245,
+   "lo": 64.79629629629629,
+   "hi": 71.38461538461539,
+   "n": 106,
+   "campaigns": 2
+  },
+  "atk.dir": {
+   "m": 0.6572327044025157,
+   "lo": 0.6481481481481481,
+   "hi": 0.6666666666666666,
+   "n": 106,
+   "campaigns": 2
+  },
+  "atk.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 106,
+   "campaigns": 2
+  },
+  "atk.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 106,
+   "campaigns": 2
+  },
+  "atk.hero": {
+   "m": 0.009433962264150943,
+   "lo": 0,
+   "hi": 0.019230769230769232,
+   "n": 106,
+   "campaigns": 2
+  },
+  "pierce.dir": {
+   "m": 0.6761006289308176,
+   "lo": 0.6666666666666666,
+   "hi": 0.6851851851851852,
+   "n": 106,
+   "campaigns": 2
+  },
+  "pierce.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 106,
+   "campaigns": 2
+  },
+  "pierce.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 106,
+   "campaigns": 2
+  },
+  "pierce.hero": {
+   "m": 0.009433962264150943,
+   "lo": 0,
+   "hi": 0.019230769230769232,
+   "n": 106,
+   "campaigns": 2
+  },
+  "splash.dir": {
+   "m": 0.4119496855345912,
+   "lo": 0.33974358974358976,
+   "hi": 0.48148148148148145,
+   "n": 106,
+   "campaigns": 2
+  },
+  "splash.reg": {
+   "m": 0.03773584905660377,
+   "lo": 0,
+   "hi": 0.07407407407407407,
+   "n": 106,
+   "campaigns": 2
+  },
+  "splash.sum": {
+   "m": -0.5817610062893082,
+   "lo": -0.6975308641975309,
+   "hi": -0.46153846153846156,
+   "n": 106,
+   "campaigns": 2
+  },
+  "splash.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 106,
+   "campaigns": 2
+  },
+  "block.dir": {
+   "m": 0.05345911949685535,
+   "lo": 0,
+   "hi": 0.10493827160493828,
+   "n": 106,
+   "campaigns": 2
+  },
+  "block.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 106,
+   "campaigns": 2
+  },
+  "block.sum": {
+   "m": -0.06289308176100629,
+   "lo": -0.1234567901234568,
+   "hi": 0,
+   "n": 106,
+   "campaigns": 2
+  },
+  "block.hero": {
+   "m": 0.33333333333333337,
+   "lo": 0.2962962962962963,
+   "hi": 0.37179487179487186,
+   "n": 106,
+   "campaigns": 2
+  },
+  "heal.dir": {
+   "m": 0.05345911949685535,
+   "lo": 0,
+   "hi": 0.10493827160493828,
+   "n": 106,
+   "campaigns": 2
+  },
+  "heal.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 106,
+   "campaigns": 2
+  },
+  "heal.sum": {
+   "m": -0.06289308176100629,
+   "lo": -0.1234567901234568,
+   "hi": 0,
+   "n": 106,
+   "campaigns": 2
+  },
+  "heal.hero": {
+   "m": 0.5943396226415094,
+   "lo": 0.46296296296296297,
+   "hi": 0.7307692307692307,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r1:min:dir": {
+   "m": 2.018867924528302,
+   "lo": 1.9807692307692308,
+   "hi": 2.0555555555555554,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r1:min:hero": {
+   "m": 0.02830188679245283,
+   "lo": 0,
+   "hi": 0.057692307692307696,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r1:min:perMagic": {
+   "m": 2.047169811320755,
+   "lo": 2.0384615384615383,
+   "hi": 2.0555555555555554,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r1:min:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r1:full:dir": {
+   "m": 10.056603773584905,
+   "lo": 9,
+   "hi": 11.074074074074074,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r1:full:hero": {
+   "m": 0.5283018867924528,
+   "lo": -0.07692307692307693,
+   "hi": 1.1111111111111112,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r1:full:perMagic": {
+   "m": 2.6462264150943398,
+   "lo": 2.230769230769231,
+   "hi": 3.0462962962962963,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r1:full:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r4:min:dir": {
+   "m": 10.056603773584905,
+   "lo": 9,
+   "hi": 11.074074074074074,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r4:min:hero": {
+   "m": 0.5283018867924528,
+   "lo": -0.07692307692307693,
+   "hi": 1.1111111111111112,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r4:min:perMagic": {
+   "m": 10.584905660377359,
+   "lo": 8.923076923076923,
+   "hi": 12.185185185185185,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r4:min:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r4:full:dir": {
+   "m": 17.32075471698113,
+   "lo": 14.692307692307692,
+   "hi": 19.85185185185185,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r4:full:hero": {
+   "m": 1.490566037735849,
+   "lo": 0.6346153846153846,
+   "hi": 2.314814814814815,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r4:full:perMagic": {
+   "m": 4.702830188679245,
+   "lo": 3.831730769230769,
+   "hi": 5.541666666666667,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:aimed:r4:full:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:quickdraw:r1:cast:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:quickdraw:r1:cast:hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:quickdraw:r1:cast:perMagic": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:quickdraw:r1:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:quickdraw:r4:cast:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:quickdraw:r4:cast:hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:quickdraw:r4:cast:perMagic": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:quickdraw:r4:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:mark:r1:cast:dir": {
+   "m": 2.6792452830188678,
+   "lo": 2.6153846153846154,
+   "hi": 2.740740740740741,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:mark:r1:cast:hero": {
+   "m": 0.02830188679245283,
+   "lo": 0,
+   "hi": 0.057692307692307696,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:mark:r1:cast:perMagic": {
+   "m": 1.3537735849056605,
+   "lo": 1.3365384615384615,
+   "hi": 1.3703703703703705,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:mark:r1:cast:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:mark:r4:cast:dir": {
+   "m": 5.518867924528302,
+   "lo": 5.481481481481482,
+   "hi": 5.5576923076923075,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:mark:r4:cast:hero": {
+   "m": -0.03773584905660377,
+   "lo": -0.07692307692307693,
+   "hi": 0,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:mark:r4:cast:perMagic": {
+   "m": 2.740566037735849,
+   "lo": 2.7403846153846154,
+   "hi": 2.740740740740741,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:mark:r4:cast:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:snare:r1:cast:dir": {
+   "m": 0.16037735849056603,
+   "lo": 0,
+   "hi": 0.3148148148148148,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:snare:r1:cast:hero": {
+   "m": 1.3584905660377358,
+   "lo": 1.3076923076923077,
+   "hi": 1.4074074074074074,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:snare:r1:cast:perMagic": {
+   "m": 1.5188679245283019,
+   "lo": 1.3076923076923077,
+   "hi": 1.7222222222222223,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:snare:r1:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:snare:r4:cast:dir": {
+   "m": 0.1792452830188679,
+   "lo": 0.038461538461538464,
+   "hi": 0.3148148148148148,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:snare:r4:cast:hero": {
+   "m": 4.037735849056604,
+   "lo": 3.673076923076923,
+   "hi": 4.388888888888889,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:snare:r4:cast:perMagic": {
+   "m": 4.216981132075472,
+   "lo": 3.7115384615384617,
+   "hi": 4.703703703703703,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:snare:r4:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use1:dir": {
+   "m": 2.6792452830188678,
+   "lo": 2.6153846153846154,
+   "hi": 2.740740740740741,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use1:hero": {
+   "m": 0.02830188679245283,
+   "lo": 0,
+   "hi": 0.057692307692307696,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use1:perMagic": {
+   "m": 2.707547169811321,
+   "lo": 2.673076923076923,
+   "hi": 2.740740740740741,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use2:dir": {
+   "m": 7.235849056603773,
+   "lo": 6.730769230769231,
+   "hi": 7.722222222222222,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use2:hero": {
+   "m": 0.29245283018867924,
+   "lo": -0.07692307692307693,
+   "hi": 0.6481481481481481,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use2:perMagic": {
+   "m": 3.7641509433962264,
+   "lo": 3.326923076923077,
+   "hi": 4.185185185185185,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use3:dir": {
+   "m": 13.160377358490566,
+   "lo": 11.096153846153847,
+   "hi": 15.148148148148149,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use3:hero": {
+   "m": 1.2358490566037736,
+   "lo": 0.6346153846153846,
+   "hi": 1.8148148148148149,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use3:perMagic": {
+   "m": 4.798742138364781,
+   "lo": 3.9102564102564106,
+   "hi": 5.654320987654322,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use4:dir": {
+   "m": 19.037735849056602,
+   "lo": 16.75,
+   "hi": 21.24074074074074,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use4:hero": {
+   "m": 1.5660377358490567,
+   "lo": 0.7884615384615384,
+   "hi": 2.314814814814815,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use4:perMagic": {
+   "m": 5.150943396226415,
+   "lo": 4.384615384615385,
+   "hi": 5.888888888888889,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r1:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use1:dir": {
+   "m": 7.235849056603773,
+   "lo": 6.730769230769231,
+   "hi": 7.722222222222222,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use1:hero": {
+   "m": 0.29245283018867924,
+   "lo": -0.07692307692307693,
+   "hi": 0.6481481481481481,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use1:perMagic": {
+   "m": 7.528301886792453,
+   "lo": 6.653846153846154,
+   "hi": 8.37037037037037,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use2:dir": {
+   "m": 15.424528301886792,
+   "lo": 13.423076923076923,
+   "hi": 17.35185185185185,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use2:hero": {
+   "m": 1.5660377358490567,
+   "lo": 0.7884615384615384,
+   "hi": 2.314814814814815,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use2:perMagic": {
+   "m": 8.495283018867925,
+   "lo": 7.105769230769231,
+   "hi": 9.833333333333334,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use3:dir": {
+   "m": 24.77358490566038,
+   "lo": 20.51923076923077,
+   "hi": 28.87037037037037,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use3:hero": {
+   "m": 2.1132075471698113,
+   "lo": 0.7884615384615384,
+   "hi": 3.388888888888889,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use3:perMagic": {
+   "m": 8.962264150943398,
+   "lo": 7.102564102564103,
+   "hi": 10.753086419753087,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use4:dir": {
+   "m": 33.028301886792455,
+   "lo": 28.884615384615383,
+   "hi": 37.01851851851852,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use4:hero": {
+   "m": 2.2641509433962264,
+   "lo": 0.7884615384615384,
+   "hi": 3.685185185185185,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use4:perMagic": {
+   "m": 8.82311320754717,
+   "lo": 7.418269230769231,
+   "hi": 10.175925925925926,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:volley:r4:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use1:dir": {
+   "m": 0.16037735849056603,
+   "lo": 0,
+   "hi": 0.3148148148148148,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use1:hero": {
+   "m": 1.320754716981132,
+   "lo": 1.1481481481481481,
+   "hi": 1.5,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use1:perMagic": {
+   "m": 1.4811320754716981,
+   "lo": 1.462962962962963,
+   "hi": 1.5,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use2:dir": {
+   "m": 0.16037735849056603,
+   "lo": 0,
+   "hi": 0.3148148148148148,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use2:hero": {
+   "m": 2.9150943396226414,
+   "lo": 2.574074074074074,
+   "hi": 3.269230769230769,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use2:perMagic": {
+   "m": 1.5377358490566038,
+   "lo": 1.4444444444444444,
+   "hi": 1.6346153846153846,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use3:dir": {
+   "m": 0.16037735849056603,
+   "lo": 0,
+   "hi": 0.3148148148148148,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use3:hero": {
+   "m": 4.0754716981132075,
+   "lo": 3.814814814814815,
+   "hi": 4.346153846153846,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use3:perMagic": {
+   "m": 1.4119496855345914,
+   "lo": 1.3765432098765433,
+   "hi": 1.448717948717949,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use4:dir": {
+   "m": 0.16037735849056603,
+   "lo": 0,
+   "hi": 0.3148148148148148,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use4:hero": {
+   "m": 4.830188679245283,
+   "lo": 4.826923076923077,
+   "hi": 4.833333333333333,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use4:perMagic": {
+   "m": 1.2476415094339623,
+   "lo": 1.2067307692307692,
+   "hi": 1.287037037037037,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r1:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use1:dir": {
+   "m": 0.16037735849056603,
+   "lo": 0,
+   "hi": 0.3148148148148148,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use1:hero": {
+   "m": 2.9150943396226414,
+   "lo": 2.574074074074074,
+   "hi": 3.269230769230769,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use1:perMagic": {
+   "m": 3.0754716981132075,
+   "lo": 2.888888888888889,
+   "hi": 3.269230769230769,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use2:dir": {
+   "m": 0.16037735849056603,
+   "lo": 0,
+   "hi": 0.3148148148148148,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use2:hero": {
+   "m": 4.452830188679245,
+   "lo": 4.277777777777778,
+   "hi": 4.634615384615385,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use2:perMagic": {
+   "m": 2.306603773584906,
+   "lo": 2.2962962962962963,
+   "hi": 2.3173076923076925,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use3:dir": {
+   "m": 0.16037735849056603,
+   "lo": 0,
+   "hi": 0.3148148148148148,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use3:hero": {
+   "m": 5.179245283018868,
+   "lo": 4.865384615384615,
+   "hi": 5.481481481481482,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use3:perMagic": {
+   "m": 1.7798742138364778,
+   "lo": 1.6217948717948718,
+   "hi": 1.9320987654320987,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use4:dir": {
+   "m": 0.16037735849056603,
+   "lo": 0,
+   "hi": 0.3148148148148148,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use4:hero": {
+   "m": 5.462264150943396,
+   "lo": 4.865384615384615,
+   "hi": 6.037037037037037,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use4:perMagic": {
+   "m": 1.4056603773584906,
+   "lo": 1.2163461538461537,
+   "hi": 1.587962962962963,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:vanish:r4:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:gambit:r1:cast:dir": {
+   "m": 1.490566037735849,
+   "lo": 1.462962962962963,
+   "hi": 1.5192307692307692,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:gambit:r1:cast:hero": {
+   "m": 0.02830188679245283,
+   "lo": 0,
+   "hi": 0.057692307692307696,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:gambit:r1:cast:perMagic": {
+   "m": 0.7594339622641509,
+   "lo": 0.7314814814814815,
+   "hi": 0.7884615384615384,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:gambit:r1:cast:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:gambit:r4:cast:dir": {
+   "m": 7.056603773584905,
+   "lo": 6.634615384615385,
+   "hi": 7.462962962962963,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:gambit:r4:cast:hero": {
+   "m": 0.5283018867924528,
+   "lo": -0.07692307692307693,
+   "hi": 1.1111111111111112,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:gambit:r4:cast:perMagic": {
+   "m": 3.792452830188679,
+   "lo": 3.2788461538461537,
+   "hi": 4.287037037037037,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:gambit:r4:cast:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 106,
+   "campaigns": 2
+  },
+  "card:rain:r1:cast:dir": {
+   "m": 13.44,
+   "lo": 11.777777777777779,
+   "hi": 15.391304347826088,
+   "n": 50,
+   "campaigns": 2
+  },
+  "card:rain:r1:cast:hero": {
+   "m": 0.5,
+   "lo": 0,
+   "hi": 1.0869565217391304,
+   "n": 50,
+   "campaigns": 2
+  },
+  "card:rain:r1:cast:perMagic": {
+   "m": 2.7880000000000003,
+   "lo": 2.3555555555555556,
+   "hi": 3.2956521739130435,
+   "n": 50,
+   "campaigns": 2
+  },
+  "card:rain:r1:cast:cost": {
+   "m": 5,
+   "lo": 5,
+   "hi": 5,
+   "n": 50,
+   "campaigns": 2
+  },
+  "card:rain:r4:cast:dir": {
+   "m": 26.58,
+   "lo": 22.88888888888889,
+   "hi": 30.91304347826087,
+   "n": 50,
+   "campaigns": 2
+  },
+  "card:rain:r4:cast:hero": {
+   "m": 1.4,
+   "lo": 0,
+   "hi": 3.0434782608695654,
+   "n": 50,
+   "campaigns": 2
+  },
+  "card:rain:r4:cast:perMagic": {
+   "m": 5.596,
+   "lo": 4.577777777777778,
+   "hi": 6.791304347826086,
+   "n": 50,
+   "campaigns": 2
+  },
+  "card:rain:r4:cast:cost": {
+   "m": 5,
+   "lo": 5,
+   "hi": 5,
+   "n": 50,
+   "campaigns": 2
+  }
+ },
+ "party2|foes:2": {
+  "rounds": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 105,
+   "campaigns": 3
+  },
+  "base.dir": {
+   "m": 69.63809523809523,
+   "lo": 65.02702702702703,
+   "hi": 73.52941176470588,
+   "n": 105,
+   "campaigns": 3
+  },
+  "base.hero": {
+   "m": 71.17142857142858,
+   "lo": 67.62857142857143,
+   "hi": 76.67647058823529,
+   "n": 105,
+   "campaigns": 3
+  },
+  "atk.dir": {
+   "m": 0.834920634920635,
+   "lo": 0.6756756756756757,
+   "hi": 1.1372549019607845,
+   "n": 105,
+   "campaigns": 3
+  },
+  "atk.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 105,
+   "campaigns": 3
+  },
+  "atk.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 105,
+   "campaigns": 3
+  },
+  "atk.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 105,
+   "campaigns": 3
+  },
+  "pierce.dir": {
+   "m": 0.8444444444444444,
+   "lo": 0.6756756756756757,
+   "hi": 1.1666666666666667,
+   "n": 105,
+   "campaigns": 3
+  },
+  "pierce.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 105,
+   "campaigns": 3
+  },
+  "pierce.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 105,
+   "campaigns": 3
+  },
+  "pierce.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 105,
+   "campaigns": 3
+  },
+  "splash.dir": {
+   "m": 0.6,
+   "lo": 0.47058823529411764,
+   "hi": 0.6888888888888889,
+   "n": 105,
+   "campaigns": 3
+  },
+  "splash.reg": {
+   "m": 0.047619047619047616,
+   "lo": 0,
+   "hi": 0.11764705882352941,
+   "n": 105,
+   "campaigns": 3
+  },
+  "splash.sum": {
+   "m": -0.9555555555555556,
+   "lo": -1.3333333333333333,
+   "hi": -0.7314814814814815,
+   "n": 105,
+   "campaigns": 3
+  },
+  "splash.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 105,
+   "campaigns": 3
+  },
+  "block.dir": {
+   "m": 0.01904761904761905,
+   "lo": 0,
+   "hi": 0.037037037037037035,
+   "n": 105,
+   "campaigns": 3
+  },
+  "block.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 105,
+   "campaigns": 3
+  },
+  "block.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 105,
+   "campaigns": 3
+  },
+  "block.hero": {
+   "m": 0.41904761904761906,
+   "lo": 0.35294117647058826,
+   "hi": 0.5405405405405406,
+   "n": 105,
+   "campaigns": 3
+  },
+  "heal.dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 105,
+   "campaigns": 3
+  },
+  "heal.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 105,
+   "campaigns": 3
+  },
+  "heal.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 105,
+   "campaigns": 3
+  },
+  "heal.hero": {
+   "m": 0.5396825396825398,
+   "lo": 0.5228758169934641,
+   "hi": 0.5555555555555556,
+   "n": 105,
+   "campaigns": 3
+  }
+ },
+ "party2|foes:3+": {
+  "rounds": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 39,
+   "campaigns": 3
+  },
+  "base.dir": {
+   "m": 52.41025641025641,
+   "lo": 46.853658536585364,
+   "hi": 58.567567567567565,
+   "n": 39,
+   "campaigns": 3
+  },
+  "base.hero": {
+   "m": 43.282051282051285,
+   "lo": 23.53846153846154,
+   "hi": 66.54545454545455,
+   "n": 39,
+   "campaigns": 3
+  },
+  "atk.dir": {
+   "m": 0.7606837606837606,
+   "lo": 0.38461538461538464,
+   "hi": 1.0666666666666667,
+   "n": 39,
+   "campaigns": 3
+  },
+  "atk.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 39,
+   "campaigns": 3
+  },
+  "atk.sum": {
+   "m": -0.39316239316239315,
+   "lo": -1.0222222222222221,
+   "hi": 0,
+   "n": 39,
+   "campaigns": 3
+  },
+  "atk.hero": {
+   "m": 0.09401709401709402,
+   "lo": 0,
+   "hi": 0.17777777777777778,
+   "n": 39,
+   "campaigns": 3
+  },
+  "pierce.dir": {
+   "m": 0.8119658119658119,
+   "lo": 0.38461538461538464,
+   "hi": 1.1333333333333333,
+   "n": 39,
+   "campaigns": 3
+  },
+  "pierce.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 39,
+   "campaigns": 3
+  },
+  "pierce.sum": {
+   "m": -0.39316239316239315,
+   "lo": -0.7479674796747968,
+   "hi": 0,
+   "n": 39,
+   "campaigns": 3
+  },
+  "pierce.hero": {
+   "m": 0.09401709401709402,
+   "lo": 0,
+   "hi": 0.17777777777777778,
+   "n": 39,
+   "campaigns": 3
+  },
+  "splash.dir": {
+   "m": 1.222222222222222,
+   "lo": 1.1007751937984496,
+   "hi": 1.3714285714285714,
+   "n": 39,
+   "campaigns": 3
+  },
+  "splash.reg": {
+   "m": 0.02564102564102564,
+   "lo": 0,
+   "hi": 0.05405405405405406,
+   "n": 39,
+   "campaigns": 3
+  },
+  "splash.sum": {
+   "m": -1.9743589743589745,
+   "lo": -2.8974358974358974,
+   "hi": -1.3333333333333335,
+   "n": 39,
+   "campaigns": 3
+  },
+  "splash.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 39,
+   "campaigns": 3
+  },
+  "block.dir": {
+   "m": 0.17094017094017094,
+   "lo": 0,
+   "hi": 0.33333333333333337,
+   "n": 39,
+   "campaigns": 3
+  },
+  "block.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 39,
+   "campaigns": 3
+  },
+  "block.sum": {
+   "m": -0.17094017094017094,
+   "lo": -0.5128205128205128,
+   "hi": 0,
+   "n": 39,
+   "campaigns": 3
+  },
+  "block.hero": {
+   "m": 0.41025641025641024,
+   "lo": 0.32380952380952377,
+   "hi": 0.48062015503875966,
+   "n": 39,
+   "campaigns": 3
+  },
+  "heal.dir": {
+   "m": 0.1452991452991453,
+   "lo": 0,
+   "hi": 0.4358974358974359,
+   "n": 39,
+   "campaigns": 3
+  },
+  "heal.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 39,
+   "campaigns": 3
+  },
+  "heal.sum": {
+   "m": -0.17094017094017094,
+   "lo": -0.5128205128205128,
+   "hi": 0,
+   "n": 39,
+   "campaigns": 3
+  },
+  "heal.hero": {
+   "m": 0.3162393162393163,
+   "lo": 0.2522522522522523,
+   "hi": 0.4,
+   "n": 39,
+   "campaigns": 3
+  }
+ },
+ "party2|def:armour": {
+  "rounds": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 49,
+   "campaigns": 3
+  },
+  "base.dir": {
+   "m": 62.755102040816325,
+   "lo": 57.90909090909091,
+   "hi": 67.47222222222223,
+   "n": 49,
+   "campaigns": 3
+  },
+  "base.hero": {
+   "m": 83.18367346938776,
+   "lo": 81.97777777777777,
+   "hi": 84.5909090909091,
+   "n": 49,
+   "campaigns": 3
+  },
+  "atk.dir": {
+   "m": 0.8299319727891156,
+   "lo": 0.6666666666666666,
+   "hi": 0.8678160919540229,
+   "n": 49,
+   "campaigns": 3
+  },
+  "atk.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 49,
+   "campaigns": 3
+  },
+  "atk.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 49,
+   "campaigns": 3
+  },
+  "atk.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 49,
+   "campaigns": 3
+  },
+  "pierce.dir": {
+   "m": 0.8299319727891156,
+   "lo": 0.7685185185185185,
+   "hi": 0.8703703703703703,
+   "n": 49,
+   "campaigns": 3
+  },
+  "pierce.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 49,
+   "campaigns": 3
+  },
+  "pierce.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 49,
+   "campaigns": 3
+  },
+  "pierce.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 49,
+   "campaigns": 3
+  },
+  "splash.dir": {
+   "m": 0.1836734693877551,
+   "lo": 0.09090909090909091,
+   "hi": 0.3333333333333333,
+   "n": 49,
+   "campaigns": 3
+  },
+  "splash.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 49,
+   "campaigns": 3
+  },
+  "splash.sum": {
+   "m": -1.2653061224489797,
+   "lo": -3.4444444444444446,
+   "hi": 0,
+   "n": 49,
+   "campaigns": 3
+  },
+  "splash.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 49,
+   "campaigns": 3
+  },
+  "block.dir": {
+   "m": 0.02040816326530612,
+   "lo": 0,
+   "hi": 0.045454545454545456,
+   "n": 49,
+   "campaigns": 3
+  },
+  "block.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 49,
+   "campaigns": 3
+  },
+  "block.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 49,
+   "campaigns": 3
+  },
+  "block.hero": {
+   "m": 0.24489795918367346,
+   "lo": 0.19166666666666665,
+   "hi": 0.3148148148148148,
+   "n": 49,
+   "campaigns": 3
+  },
+  "heal.dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 49,
+   "campaigns": 3
+  },
+  "heal.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 49,
+   "campaigns": 3
+  },
+  "heal.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 49,
+   "campaigns": 3
+  },
+  "heal.hero": {
+   "m": 0.380952380952381,
+   "lo": 0.3333333333333333,
+   "hi": 0.4090909090909091,
+   "n": 49,
+   "campaigns": 3
+  }
+ },
+ "party2|kind:elite": {
+  "rounds": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 41,
+   "campaigns": 3
+  },
+  "base.dir": {
+   "m": 66.39024390243902,
+   "lo": 62.2,
+   "hi": 71.48648648648648,
+   "n": 41,
+   "campaigns": 3
+  },
+  "base.hero": {
+   "m": 89.92682926829268,
+   "lo": 82.46666666666667,
+   "hi": 96.45454545454545,
+   "n": 41,
+   "campaigns": 3
+  },
+  "atk.dir": {
+   "m": 0.8455284552845528,
+   "lo": 0.8181818181818182,
+   "hi": 0.8666666666666667,
+   "n": 41,
+   "campaigns": 3
+  },
+  "atk.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 41,
+   "campaigns": 3
+  },
+  "atk.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 41,
+   "campaigns": 3
+  },
+  "atk.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 41,
+   "campaigns": 3
+  },
+  "pierce.dir": {
+   "m": 0.8455284552845528,
+   "lo": 0.8181818181818182,
+   "hi": 0.8666666666666667,
+   "n": 41,
+   "campaigns": 3
+  },
+  "pierce.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 41,
+   "campaigns": 3
+  },
+  "pierce.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 41,
+   "campaigns": 3
+  },
+  "pierce.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 41,
+   "campaigns": 3
+  },
+  "splash.dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 41,
+   "campaigns": 3
+  },
+  "splash.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 41,
+   "campaigns": 3
+  },
+  "splash.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 41,
+   "campaigns": 3
+  },
+  "splash.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 41,
+   "campaigns": 3
+  },
+  "block.dir": {
+   "m": 0.024390243902439025,
+   "lo": 0,
+   "hi": 0.06666666666666667,
+   "n": 41,
+   "campaigns": 3
+  },
+  "block.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 41,
+   "campaigns": 3
+  },
+  "block.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 41,
+   "campaigns": 3
+  },
+  "block.hero": {
+   "m": 0.14634146341463414,
+   "lo": 0.07207207207207207,
+   "hi": 0.24444444444444444,
+   "n": 41,
+   "campaigns": 3
+  },
+  "heal.dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 41,
+   "campaigns": 3
+  },
+  "heal.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 41,
+   "campaigns": 3
+  },
+  "heal.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 41,
+   "campaigns": 3
+  },
+  "heal.hero": {
+   "m": 0.25203252032520324,
+   "lo": 0,
+   "hi": 0.37777777777777777,
+   "n": 41,
+   "campaigns": 3
+  }
+ },
+ "party2|def:guard": {
+  "rounds": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 8,
+   "campaigns": 3
+  },
+  "base.dir": {
+   "m": 50,
+   "lo": 27.625,
+   "hi": 72.375,
+   "n": 8,
+   "campaigns": 3
+  },
+  "base.hero": {
+   "m": 70.875,
+   "lo": 64.33333333333333,
+   "hi": 85,
+   "n": 8,
+   "campaigns": 3
+  },
+  "atk.dir": {
+   "m": 0.375,
+   "lo": 0.125,
+   "hi": 0.6666666666666666,
+   "n": 8,
+   "campaigns": 3
+  },
+  "atk.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 8,
+   "campaigns": 3
+  },
+  "atk.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 8,
+   "campaigns": 3
+  },
+  "atk.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 8,
+   "campaigns": 3
+  },
+  "pierce.dir": {
+   "m": 0.375,
+   "lo": 0,
+   "hi": 0.6666666666666666,
+   "n": 8,
+   "campaigns": 3
+  },
+  "pierce.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 8,
+   "campaigns": 3
+  },
+  "pierce.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 8,
+   "campaigns": 3
+  },
+  "pierce.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 8,
+   "campaigns": 3
+  },
+  "splash.dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 8,
+   "campaigns": 3
+  },
+  "splash.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 8,
+   "campaigns": 3
+  },
+  "splash.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 8,
+   "campaigns": 3
+  },
+  "splash.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 8,
+   "campaigns": 3
+  },
+  "block.dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 8,
+   "campaigns": 3
+  },
+  "block.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 8,
+   "campaigns": 3
+  },
+  "block.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 8,
+   "campaigns": 3
+  },
+  "block.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 8,
+   "campaigns": 3
+  },
+  "heal.dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 8,
+   "campaigns": 3
+  },
+  "heal.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 8,
+   "campaigns": 3
+  },
+  "heal.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 8,
+   "campaigns": 3
+  },
+  "heal.hero": {
+   "m": 0.625,
+   "lo": 0.5,
+   "hi": 0.6666666666666666,
+   "n": 8,
+   "campaigns": 3
+  }
+ },
+ "party2|def:Shield Special": {
+  "rounds": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 29,
+   "campaigns": 3
+  },
+  "base.dir": {
+   "m": 55.48275862068966,
+   "lo": 42.5,
+   "hi": 66.07692307692308,
+   "n": 29,
+   "campaigns": 3
+  },
+  "base.hero": {
+   "m": 72.96551724137932,
+   "lo": 58.5,
+   "hi": 80.38461538461539,
+   "n": 29,
+   "campaigns": 3
+  },
+  "atk.dir": {
+   "m": 2.28735632183908,
+   "lo": 0.5,
+   "hi": 3.8974358974358974,
+   "n": 29,
+   "campaigns": 3
+  },
+  "atk.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 29,
+   "campaigns": 3
+  },
+  "atk.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 29,
+   "campaigns": 3
+  },
+  "atk.hero": {
+   "m": -0.022988505747126436,
+   "lo": -0.04444444444444444,
+   "hi": 0,
+   "n": 29,
+   "campaigns": 3
+  },
+  "pierce.dir": {
+   "m": 0.6896551724137931,
+   "lo": 0.6666666666666666,
+   "hi": 0.75,
+   "n": 29,
+   "campaigns": 3
+  },
+  "pierce.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 29,
+   "campaigns": 3
+  },
+  "pierce.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 29,
+   "campaigns": 3
+  },
+  "pierce.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 29,
+   "campaigns": 3
+  },
+  "splash.dir": {
+   "m": 0.034482758620689655,
+   "lo": 0,
+   "hi": 0.25,
+   "n": 29,
+   "campaigns": 3
+  },
+  "splash.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 29,
+   "campaigns": 3
+  },
+  "splash.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 29,
+   "campaigns": 3
+  },
+  "splash.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 29,
+   "campaigns": 3
+  },
+  "block.dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 29,
+   "campaigns": 3
+  },
+  "block.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 29,
+   "campaigns": 3
+  },
+  "block.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 29,
+   "campaigns": 3
+  },
+  "block.hero": {
+   "m": 0.32183908045977005,
+   "lo": 0.25,
+   "hi": 0.3333333333333333,
+   "n": 29,
+   "campaigns": 3
+  },
+  "heal.dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 29,
+   "campaigns": 3
+  },
+  "heal.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 29,
+   "campaigns": 3
+  },
+  "heal.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 29,
+   "campaigns": 3
+  },
+  "heal.hero": {
+   "m": 0.6896551724137931,
+   "lo": 0.25,
+   "hi": 0.7692307692307693,
+   "n": 29,
+   "campaigns": 3
+  }
+ },
+ "party2|kind:boss": {
+  "rounds": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 51,
+   "campaigns": 3
+  },
+  "base.dir": {
+   "m": 78.31372549019608,
+   "lo": 66.23809523809524,
+   "hi": 87.52941176470588,
+   "n": 51,
+   "campaigns": 3
+  },
+  "base.hero": {
+   "m": 75.45098039215686,
+   "lo": 70.34545454545454,
+   "hi": 81.42553191489361,
+   "n": 51,
+   "campaigns": 3
+  },
+  "atk.dir": {
+   "m": 1.1111111111111112,
+   "lo": 0.8095238095238095,
+   "hi": 1.6862745098039216,
+   "n": 51,
+   "campaigns": 3
+  },
+  "atk.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 51,
+   "campaigns": 3
+  },
+  "atk.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 51,
+   "campaigns": 3
+  },
+  "atk.hero": {
+   "m": 0.11764705882352941,
+   "lo": 0,
+   "hi": 0.2857142857142857,
+   "n": 51,
+   "campaigns": 3
+  },
+  "pierce.dir": {
+   "m": 1.1111111111111112,
+   "lo": 0.8095238095238095,
+   "hi": 1.6862745098039216,
+   "n": 51,
+   "campaigns": 3
+  },
+  "pierce.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 51,
+   "campaigns": 3
+  },
+  "pierce.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 51,
+   "campaigns": 3
+  },
+  "pierce.hero": {
+   "m": 0.11764705882352941,
+   "lo": 0,
+   "hi": 0.21818181818181817,
+   "n": 51,
+   "campaigns": 3
+  },
+  "splash.dir": {
+   "m": 0.17647058823529413,
+   "lo": 0,
+   "hi": 0.35294117647058826,
+   "n": 51,
+   "campaigns": 3
+  },
+  "splash.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 51,
+   "campaigns": 3
+  },
+  "splash.sum": {
+   "m": -0.13725490196078433,
+   "lo": -0.23529411764705882,
+   "hi": -0.07692307692307693,
+   "n": 51,
+   "campaigns": 3
+  },
+  "splash.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 51,
+   "campaigns": 3
+  },
+  "block.dir": {
+   "m": 0.0196078431372549,
+   "lo": 0,
+   "hi": 0.03636363636363636,
+   "n": 51,
+   "campaigns": 3
+  },
+  "block.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 51,
+   "campaigns": 3
+  },
+  "block.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 51,
+   "campaigns": 3
+  },
+  "block.hero": {
+   "m": 0.17647058823529413,
+   "lo": 0.07692307692307693,
+   "hi": 0.23728813559322035,
+   "n": 51,
+   "campaigns": 3
+  },
+  "heal.dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 51,
+   "campaigns": 3
+  },
+  "heal.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 51,
+   "campaigns": 3
+  },
+  "heal.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 51,
+   "campaigns": 3
+  },
+  "heal.hero": {
+   "m": 0.7189542483660131,
+   "lo": 0.5882352941176471,
+   "hi": 0.8095238095238095,
+   "n": 51,
+   "campaigns": 3
+  }
+ },
+ "party2|act:II": {
+  "rounds": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 182,
+   "campaigns": 3
+  },
+  "base.dir": {
+   "m": 70.61538461538461,
+   "lo": 64.53731343283582,
+   "hi": 78.35185185185185,
+   "n": 182,
+   "campaigns": 3
+  },
+  "base.hero": {
+   "m": 82.28571428571429,
+   "lo": 77.6984126984127,
+   "hi": 89.85185185185185,
+   "n": 182,
+   "campaigns": 3
+  },
+  "atk.dir": {
+   "m": 0.9487179487179487,
+   "lo": 0.7213114754098361,
+   "hi": 1.4382716049382713,
+   "n": 182,
+   "campaigns": 3
+  },
+  "atk.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 182,
+   "campaigns": 3
+  },
+  "atk.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 182,
+   "campaigns": 3
+  },
+  "atk.hero": {
+   "m": -0.003663003663003663,
+   "lo": -0.007889546351084813,
+   "hi": 0,
+   "n": 182,
+   "campaigns": 3
+  },
+  "pierce.dir": {
+   "m": 0.7472527472527473,
+   "lo": 0.7037037037037037,
+   "hi": 0.7761194029850746,
+   "n": 182,
+   "campaigns": 3
+  },
+  "pierce.reg": {
+   "m": 0.005494505494505495,
+   "lo": 0,
+   "hi": 0.01639344262295082,
+   "n": 182,
+   "campaigns": 3
+  },
+  "pierce.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 182,
+   "campaigns": 3
+  },
+  "pierce.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 182,
+   "campaigns": 3
+  },
+  "splash.dir": {
+   "m": 0.32783882783882784,
+   "lo": 0.20987654320987653,
+   "hi": 0.46994535519125685,
+   "n": 182,
+   "campaigns": 3
+  },
+  "splash.reg": {
+   "m": 0.03296703296703297,
+   "lo": 0,
+   "hi": 0.08196721311475409,
+   "n": 182,
+   "campaigns": 3
+  },
+  "splash.sum": {
+   "m": -0.695970695970696,
+   "lo": -1.0163934426229508,
+   "hi": -0.4647619047619048,
+   "n": 182,
+   "campaigns": 3
+  },
+  "splash.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 182,
+   "campaigns": 3
+  },
+  "block.dir": {
+   "m": 0.02197802197802198,
+   "lo": 0,
+   "hi": 0.05970149253731343,
+   "n": 182,
+   "campaigns": 3
+  },
+  "block.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 182,
+   "campaigns": 3
+  },
+  "block.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 182,
+   "campaigns": 3
+  },
+  "block.hero": {
+   "m": 0.32783882783882784,
+   "lo": 0.29012345679012347,
+   "hi": 0.36318407960199006,
+   "n": 182,
+   "campaigns": 3
+  },
+  "heal.dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 182,
+   "campaigns": 3
+  },
+  "heal.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 182,
+   "campaigns": 3
+  },
+  "heal.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 182,
+   "campaigns": 3
+  },
+  "heal.hero": {
+   "m": 0.6043956043956044,
+   "lo": 0.5719921104536488,
+   "hi": 0.6467661691542289,
+   "n": 182,
+   "campaigns": 3
+  }
+ },
+ "party2|class:wizard": {
+  "rounds": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 94,
+   "campaigns": 2
+  },
+  "base.dir": {
+   "m": 70.15957446808511,
+   "lo": 63.31818181818182,
+   "hi": 76.18,
+   "n": 94,
+   "campaigns": 2
+  },
+  "base.hero": {
+   "m": 72.55319148936171,
+   "lo": 65.31818181818181,
+   "hi": 78.92,
+   "n": 94,
+   "campaigns": 2
+  },
+  "atk.dir": {
+   "m": 1.3617021276595744,
+   "lo": 0.606060606060606,
+   "hi": 2.026666666666667,
+   "n": 94,
+   "campaigns": 2
+  },
+  "atk.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 94,
+   "campaigns": 2
+  },
+  "atk.sum": {
+   "m": -0.16312056737588654,
+   "lo": -0.3066666666666667,
+   "hi": 0,
+   "n": 94,
+   "campaigns": 2
+  },
+  "atk.hero": {
+   "m": 0.02127659574468085,
+   "lo": 0,
+   "hi": 0.04,
+   "n": 94,
+   "campaigns": 2
+  },
+  "pierce.dir": {
+   "m": 0.9290780141843973,
+   "lo": 0.6287878787878788,
+   "hi": 1.1933333333333334,
+   "n": 94,
+   "campaigns": 2
+  },
+  "pierce.reg": {
+   "m": 0.010638297872340425,
+   "lo": 0,
+   "hi": 0.022727272727272728,
+   "n": 94,
+   "campaigns": 2
+  },
+  "pierce.sum": {
+   "m": -0.16312056737588654,
+   "lo": -0.3066666666666667,
+   "hi": 0,
+   "n": 94,
+   "campaigns": 2
+  },
+  "pierce.hero": {
+   "m": 0.028368794326241134,
+   "lo": 0,
+   "hi": 0.05333333333333333,
+   "n": 94,
+   "campaigns": 2
+  },
+  "splash.dir": {
+   "m": 0.3829787234042553,
+   "lo": 0.34848484848484845,
+   "hi": 0.4133333333333333,
+   "n": 94,
+   "campaigns": 2
+  },
+  "splash.reg": {
+   "m": 0.010638297872340425,
+   "lo": 0,
+   "hi": 0.022727272727272728,
+   "n": 94,
+   "campaigns": 2
+  },
+  "splash.sum": {
+   "m": -0.8120567375886526,
+   "lo": -0.8866666666666667,
+   "hi": -0.7272727272727273,
+   "n": 94,
+   "campaigns": 2
+  },
+  "splash.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 94,
+   "campaigns": 2
+  },
+  "block.dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 94,
+   "campaigns": 2
+  },
+  "block.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 94,
+   "campaigns": 2
+  },
+  "block.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 94,
+   "campaigns": 2
+  },
+  "block.hero": {
+   "m": 0.24113475177304966,
+   "lo": 0.23333333333333336,
+   "hi": 0.25,
+   "n": 94,
+   "campaigns": 2
+  },
+  "heal.dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 94,
+   "campaigns": 2
+  },
+  "heal.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 94,
+   "campaigns": 2
+  },
+  "heal.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 94,
+   "campaigns": 2
+  },
+  "heal.hero": {
+   "m": 0.49290780141843965,
+   "lo": 0.38,
+   "hi": 0.6212121212121212,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r1:min:dir": {
+   "m": 5.659574468085107,
+   "lo": 3.159090909090909,
+   "hi": 7.86,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r1:min:hero": {
+   "m": 0.06382978723404255,
+   "lo": 0,
+   "hi": 0.12,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r1:min:perMagic": {
+   "m": 2.8617021276595747,
+   "lo": 1.5795454545454546,
+   "hi": 3.99,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r1:min:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r1:full:dir": {
+   "m": 22.53191489361702,
+   "lo": 20.34090909090909,
+   "hi": 24.46,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r1:full:hero": {
+   "m": 1.0212765957446808,
+   "lo": 1,
+   "hi": 1.0454545454545454,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r1:full:perMagic": {
+   "m": 1.9627659574468086,
+   "lo": 1.7821969696969695,
+   "hi": 2.121666666666667,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r1:full:cost": {
+   "m": 12,
+   "lo": 12,
+   "hi": 12,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r4:min:dir": {
+   "m": 16.351063829787233,
+   "lo": 13.681818181818182,
+   "hi": 18.7,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r4:min:hero": {
+   "m": 1.0319148936170213,
+   "lo": 1.02,
+   "hi": 1.0454545454545454,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r4:min:perMagic": {
+   "m": 8.691489361702128,
+   "lo": 7.363636363636363,
+   "hi": 9.86,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r4:min:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r4:full:dir": {
+   "m": 22.53191489361702,
+   "lo": 20.34090909090909,
+   "hi": 24.46,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r4:full:hero": {
+   "m": 1.0212765957446808,
+   "lo": 1,
+   "hi": 1.0454545454545454,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r4:full:perMagic": {
+   "m": 3.925531914893617,
+   "lo": 3.564393939393939,
+   "hi": 4.243333333333334,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:arcbolt:r4:full:cost": {
+   "m": 6,
+   "lo": 6,
+   "hi": 6,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:bolt:r1:cast:dir": {
+   "m": 1.8617021276595744,
+   "lo": 1.2727272727272727,
+   "hi": 2.38,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:bolt:r1:cast:hero": {
+   "m": 0.1702127659574468,
+   "lo": 0,
+   "hi": 0.32,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:bolt:r1:cast:perMagic": {
+   "m": 2.0319148936170213,
+   "lo": 1.2727272727272727,
+   "hi": 2.7,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:bolt:r1:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:bolt:r4:cast:dir": {
+   "m": 4.723404255319149,
+   "lo": 3.727272727272727,
+   "hi": 5.6,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:bolt:r4:cast:hero": {
+   "m": 0.0851063829787234,
+   "lo": 0,
+   "hi": 0.16,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:bolt:r4:cast:perMagic": {
+   "m": 4.808510638297872,
+   "lo": 3.727272727272727,
+   "hi": 5.76,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:bolt:r4:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:barrier:r1:cast:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:barrier:r1:cast:hero": {
+   "m": 0.925531914893617,
+   "lo": 0.9,
+   "hi": 0.9545454545454546,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:barrier:r1:cast:perMagic": {
+   "m": 0.925531914893617,
+   "lo": 0.9,
+   "hi": 0.9545454545454546,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:barrier:r1:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:barrier:r4:cast:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:barrier:r4:cast:hero": {
+   "m": 1.702127659574468,
+   "lo": 1.66,
+   "hi": 1.75,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:barrier:r4:cast:perMagic": {
+   "m": 1.702127659574468,
+   "lo": 1.66,
+   "hi": 1.75,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:barrier:r4:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use1:dir": {
+   "m": 3.5425531914893615,
+   "lo": 1.5454545454545454,
+   "hi": 5.3,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use1:hero": {
+   "m": 0.14893617021276595,
+   "lo": 0,
+   "hi": 0.28,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use1:perMagic": {
+   "m": 3.6914893617021276,
+   "lo": 1.5454545454545454,
+   "hi": 5.58,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use2:dir": {
+   "m": 7.117021276595745,
+   "lo": 4.636363636363637,
+   "hi": 9.3,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use2:hero": {
+   "m": 0.06382978723404255,
+   "lo": 0,
+   "hi": 0.12,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use2:perMagic": {
+   "m": 3.5904255319148937,
+   "lo": 2.3181818181818183,
+   "hi": 4.71,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use3:dir": {
+   "m": 12.138297872340425,
+   "lo": 9.636363636363637,
+   "hi": 14.34,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use3:hero": {
+   "m": 0.4574468085106383,
+   "lo": 0.3181818181818182,
+   "hi": 0.58,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use3:perMagic": {
+   "m": 4.198581560283688,
+   "lo": 3.3181818181818183,
+   "hi": 4.973333333333334,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use4:dir": {
+   "m": 18.23404255319149,
+   "lo": 15.681818181818182,
+   "hi": 20.48,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use4:hero": {
+   "m": 1.0212765957446808,
+   "lo": 1,
+   "hi": 1.0454545454545454,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use4:perMagic": {
+   "m": 4.8138297872340425,
+   "lo": 4.181818181818182,
+   "hi": 5.37,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r1:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use1:dir": {
+   "m": 8.74468085106383,
+   "lo": 6.181818181818182,
+   "hi": 11,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use1:hero": {
+   "m": 0.2127659574468085,
+   "lo": 0.12,
+   "hi": 0.3181818181818182,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use1:perMagic": {
+   "m": 8.957446808510639,
+   "lo": 6.5,
+   "hi": 11.12,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use2:dir": {
+   "m": 16.76595744680851,
+   "lo": 14.227272727272727,
+   "hi": 19,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use2:hero": {
+   "m": 0.7021276595744681,
+   "lo": 0.3181818181818182,
+   "hi": 1.04,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use2:perMagic": {
+   "m": 8.73404255319149,
+   "lo": 7.2727272727272725,
+   "hi": 10.02,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use3:dir": {
+   "m": 25.48936170212766,
+   "lo": 22.59090909090909,
+   "hi": 28.04,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use3:hero": {
+   "m": 1.2659574468085106,
+   "lo": 1,
+   "hi": 1.5681818181818181,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use3:perMagic": {
+   "m": 8.918439716312058,
+   "lo": 8.053030303030305,
+   "hi": 9.680000000000001,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use4:dir": {
+   "m": 36.53191489361702,
+   "lo": 32.61363636363637,
+   "hi": 39.98,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use4:hero": {
+   "m": 1.7127659574468086,
+   "lo": 1.5681818181818181,
+   "hi": 1.84,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use4:perMagic": {
+   "m": 9.561170212765957,
+   "lo": 8.545454545454545,
+   "hi": 10.455,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:coil:r4:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use1:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use1:hero": {
+   "m": 2.3617021276595747,
+   "lo": 1.88,
+   "hi": 2.909090909090909,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use1:perMagic": {
+   "m": 2.3617021276595747,
+   "lo": 1.88,
+   "hi": 2.909090909090909,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use2:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use2:hero": {
+   "m": 4.223404255319149,
+   "lo": 3.42,
+   "hi": 5.136363636363637,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use2:perMagic": {
+   "m": 2.1117021276595747,
+   "lo": 1.71,
+   "hi": 2.5681818181818183,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use3:dir": {
+   "m": 0.6063829787234043,
+   "lo": 0,
+   "hi": 1.2954545454545454,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use3:hero": {
+   "m": 4.98936170212766,
+   "lo": 3.88,
+   "hi": 6.25,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use3:perMagic": {
+   "m": 1.8652482269503543,
+   "lo": 1.2933333333333332,
+   "hi": 2.515151515151515,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use4:dir": {
+   "m": 0.6063829787234043,
+   "lo": 0,
+   "hi": 1.2954545454545454,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use4:hero": {
+   "m": 5.0212765957446805,
+   "lo": 3.94,
+   "hi": 6.25,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use4:perMagic": {
+   "m": 1.4069148936170213,
+   "lo": 0.985,
+   "hi": 1.8863636363636365,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r1:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use1:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use1:hero": {
+   "m": 4.053191489361702,
+   "lo": 3.3,
+   "hi": 4.909090909090909,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use1:perMagic": {
+   "m": 4.053191489361702,
+   "lo": 3.3,
+   "hi": 4.909090909090909,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use2:dir": {
+   "m": 0.6063829787234043,
+   "lo": 0,
+   "hi": 1.2954545454545454,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use2:hero": {
+   "m": 5.0212765957446805,
+   "lo": 3.94,
+   "hi": 6.25,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use2:perMagic": {
+   "m": 2.8138297872340425,
+   "lo": 1.97,
+   "hi": 3.772727272727273,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use3:dir": {
+   "m": 0.6063829787234043,
+   "lo": 0,
+   "hi": 1.2954545454545454,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use3:hero": {
+   "m": 5.0212765957446805,
+   "lo": 3.94,
+   "hi": 6.25,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use3:perMagic": {
+   "m": 1.8758865248226948,
+   "lo": 1.3133333333333332,
+   "hi": 2.515151515151515,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use4:dir": {
+   "m": 0.6063829787234043,
+   "lo": 0,
+   "hi": 1.2954545454545454,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use4:hero": {
+   "m": 5.0212765957446805,
+   "lo": 3.94,
+   "hi": 6.25,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use4:perMagic": {
+   "m": 1.4069148936170213,
+   "lo": 0.985,
+   "hi": 1.8863636363636365,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:light:r4:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 94,
+   "campaigns": 2
+  },
+  "card:meteor:r1:cast:dir": {
+   "m": 17.755555555555556,
+   "lo": 15.428571428571429,
+   "hi": 19.791666666666668,
+   "n": 45,
+   "campaigns": 2
+  },
+  "card:meteor:r1:cast:hero": {
+   "m": 1.1111111111111112,
+   "lo": 0.75,
+   "hi": 1.5238095238095237,
+   "n": 45,
+   "campaigns": 2
+  },
+  "card:meteor:r1:cast:perMagic": {
+   "m": 3.7733333333333334,
+   "lo": 3.3904761904761913,
+   "hi": 4.108333333333333,
+   "n": 45,
+   "campaigns": 2
+  },
+  "card:meteor:r1:cast:cost": {
+   "m": 5,
+   "lo": 5,
+   "hi": 5,
+   "n": 45,
+   "campaigns": 2
+  },
+  "card:meteor:r4:cast:dir": {
+   "m": 28.77777777777778,
+   "lo": 28.75,
+   "hi": 28.80952380952381,
+   "n": 45,
+   "campaigns": 2
+  },
+  "card:meteor:r4:cast:hero": {
+   "m": 1.8888888888888888,
+   "lo": 0.75,
+   "hi": 3.1904761904761907,
+   "n": 45,
+   "campaigns": 2
+  },
+  "card:meteor:r4:cast:perMagic": {
+   "m": 6.133333333333334,
+   "lo": 5.900000000000001,
+   "hi": 6.4,
+   "n": 45,
+   "campaigns": 2
+  },
+  "card:meteor:r4:cast:cost": {
+   "m": 5,
+   "lo": 5,
+   "hi": 5,
+   "n": 45,
+   "campaigns": 2
+  }
+ },
+ "party2|class:dwarf": {
+  "rounds": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 44,
+   "campaigns": 1
+  },
+  "base.dir": {
+   "m": 62.02272727272727,
+   "lo": 62.02272727272727,
+   "hi": 62.02272727272727,
+   "n": 44,
+   "campaigns": 1
+  },
+  "base.hero": {
+   "m": 72.04545454545455,
+   "lo": 72.04545454545455,
+   "hi": 72.04545454545455,
+   "n": 44,
+   "campaigns": 1
+  },
+  "atk.dir": {
+   "m": 0.5227272727272727,
+   "lo": 0.5227272727272727,
+   "hi": 0.5227272727272727,
+   "n": 44,
+   "campaigns": 1
+  },
+  "atk.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "atk.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "atk.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "pierce.dir": {
+   "m": 0.5681818181818182,
+   "lo": 0.5681818181818182,
+   "hi": 0.5681818181818182,
+   "n": 44,
+   "campaigns": 1
+  },
+  "pierce.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "pierce.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "pierce.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "splash.dir": {
+   "m": 0.25,
+   "lo": 0.25,
+   "hi": 0.25,
+   "n": 44,
+   "campaigns": 1
+  },
+  "splash.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "splash.sum": {
+   "m": -0.393939393939394,
+   "lo": -0.393939393939394,
+   "hi": -0.393939393939394,
+   "n": 44,
+   "campaigns": 1
+  },
+  "splash.hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "block.dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "block.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "block.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "block.hero": {
+   "m": 0.3484848484848485,
+   "lo": 0.3484848484848485,
+   "hi": 0.3484848484848485,
+   "n": 44,
+   "campaigns": 1
+  },
+  "heal.dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "heal.reg": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "heal.sum": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "heal.hero": {
+   "m": 0.6590909090909091,
+   "lo": 0.6590909090909091,
+   "hi": 0.6590909090909091,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r1:min:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r1:min:hero": {
+   "m": 1.4772727272727273,
+   "lo": 1.4772727272727273,
+   "hi": 1.4772727272727273,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r1:min:perMagic": {
+   "m": 1.4772727272727273,
+   "lo": 1.4772727272727273,
+   "hi": 1.4772727272727273,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r1:min:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r1:full:dir": {
+   "m": 0.6136363636363636,
+   "lo": 0.6136363636363636,
+   "hi": 0.6136363636363636,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r1:full:hero": {
+   "m": 4.590909090909091,
+   "lo": 4.590909090909091,
+   "hi": 4.590909090909091,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r1:full:perMagic": {
+   "m": 0.8674242424242423,
+   "lo": 0.8674242424242423,
+   "hi": 0.8674242424242423,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r1:full:cost": {
+   "m": 6,
+   "lo": 6,
+   "hi": 6,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r4:min:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r4:min:hero": {
+   "m": 4.2727272727272725,
+   "lo": 4.2727272727272725,
+   "hi": 4.2727272727272725,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r4:min:perMagic": {
+   "m": 4.2727272727272725,
+   "lo": 4.2727272727272725,
+   "hi": 4.2727272727272725,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r4:min:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r4:full:dir": {
+   "m": 0.6136363636363636,
+   "lo": 0.6136363636363636,
+   "hi": 0.6136363636363636,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r4:full:hero": {
+   "m": 4.590909090909091,
+   "lo": 4.590909090909091,
+   "hi": 4.590909090909091,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r4:full:perMagic": {
+   "m": 1.7348484848484846,
+   "lo": 1.7348484848484846,
+   "hi": 1.7348484848484846,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:anvil:r4:full:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:grudge:r1:cast:dir": {
+   "m": 4.795454545454546,
+   "lo": 4.795454545454546,
+   "hi": 4.795454545454546,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:grudge:r1:cast:hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:grudge:r1:cast:perMagic": {
+   "m": 2.397727272727273,
+   "lo": 2.397727272727273,
+   "hi": 2.397727272727273,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:grudge:r1:cast:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:grudge:r4:cast:dir": {
+   "m": 8.090909090909092,
+   "lo": 8.090909090909092,
+   "hi": 8.090909090909092,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:grudge:r4:cast:hero": {
+   "m": 0.18181818181818182,
+   "lo": 0.18181818181818182,
+   "hi": 0.18181818181818182,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:grudge:r4:cast:perMagic": {
+   "m": 4.136363636363637,
+   "lo": 4.136363636363637,
+   "hi": 4.136363636363637,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:grudge:r4:cast:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:bulwark:r1:cast:dir": {
+   "m": 2.1136363636363638,
+   "lo": 2.1136363636363638,
+   "hi": 2.1136363636363638,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:bulwark:r1:cast:hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:bulwark:r1:cast:perMagic": {
+   "m": 2.1136363636363638,
+   "lo": 2.1136363636363638,
+   "hi": 2.1136363636363638,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:bulwark:r1:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:bulwark:r4:cast:dir": {
+   "m": 4.340909090909091,
+   "lo": 4.340909090909091,
+   "hi": 4.340909090909091,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:bulwark:r4:cast:hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:bulwark:r4:cast:perMagic": {
+   "m": 4.340909090909091,
+   "lo": 4.340909090909091,
+   "hi": 4.340909090909091,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:bulwark:r4:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:brace:r1:cast:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:brace:r1:cast:hero": {
+   "m": 1.3863636363636365,
+   "lo": 1.3863636363636365,
+   "hi": 1.3863636363636365,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:brace:r1:cast:perMagic": {
+   "m": 1.3863636363636365,
+   "lo": 1.3863636363636365,
+   "hi": 1.3863636363636365,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:brace:r1:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:brace:r4:cast:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:brace:r4:cast:hero": {
+   "m": 2.727272727272727,
+   "lo": 2.727272727272727,
+   "hi": 2.727272727272727,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:brace:r4:cast:perMagic": {
+   "m": 2.727272727272727,
+   "lo": 2.727272727272727,
+   "hi": 2.727272727272727,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:brace:r4:cast:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use1:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use1:hero": {
+   "m": 2.409090909090909,
+   "lo": 2.409090909090909,
+   "hi": 2.409090909090909,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use1:perMagic": {
+   "m": 2.409090909090909,
+   "lo": 2.409090909090909,
+   "hi": 2.409090909090909,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use2:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use2:hero": {
+   "m": 4.136363636363637,
+   "lo": 4.136363636363637,
+   "hi": 4.136363636363637,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use2:perMagic": {
+   "m": 2.0681818181818183,
+   "lo": 2.0681818181818183,
+   "hi": 2.0681818181818183,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use3:dir": {
+   "m": 0.6136363636363636,
+   "lo": 0.6136363636363636,
+   "hi": 0.6136363636363636,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use3:hero": {
+   "m": 4.590909090909091,
+   "lo": 4.590909090909091,
+   "hi": 4.590909090909091,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use3:perMagic": {
+   "m": 1.7348484848484846,
+   "lo": 1.7348484848484846,
+   "hi": 1.7348484848484846,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use4:dir": {
+   "m": 0.6136363636363636,
+   "lo": 0.6136363636363636,
+   "hi": 0.6136363636363636,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use4:hero": {
+   "m": 4.613636363636363,
+   "lo": 4.613636363636363,
+   "hi": 4.613636363636363,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use4:perMagic": {
+   "m": 1.3068181818181819,
+   "lo": 1.3068181818181819,
+   "hi": 1.3068181818181819,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r1:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use1:dir": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use1:hero": {
+   "m": 3.7954545454545454,
+   "lo": 3.7954545454545454,
+   "hi": 3.7954545454545454,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use1:perMagic": {
+   "m": 3.7954545454545454,
+   "lo": 3.7954545454545454,
+   "hi": 3.7954545454545454,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use2:dir": {
+   "m": 0.6136363636363636,
+   "lo": 0.6136363636363636,
+   "hi": 0.6136363636363636,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use2:hero": {
+   "m": 4.613636363636363,
+   "lo": 4.613636363636363,
+   "hi": 4.613636363636363,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use2:perMagic": {
+   "m": 2.6136363636363638,
+   "lo": 2.6136363636363638,
+   "hi": 2.6136363636363638,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use3:dir": {
+   "m": 0.6136363636363636,
+   "lo": 0.6136363636363636,
+   "hi": 0.6136363636363636,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use3:hero": {
+   "m": 4.613636363636363,
+   "lo": 4.613636363636363,
+   "hi": 4.613636363636363,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use3:perMagic": {
+   "m": 1.7424242424242422,
+   "lo": 1.7424242424242422,
+   "hi": 1.7424242424242422,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use4:dir": {
+   "m": 0.6136363636363636,
+   "lo": 0.6136363636363636,
+   "hi": 0.6136363636363636,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use4:hero": {
+   "m": 4.7727272727272725,
+   "lo": 4.7727272727272725,
+   "hi": 4.7727272727272725,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use4:perMagic": {
+   "m": 1.3465909090909092,
+   "lo": 1.3465909090909092,
+   "hi": 1.3465909090909092,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:stonehide:r4:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use1:dir": {
+   "m": 1.5681818181818181,
+   "lo": 1.5681818181818181,
+   "hi": 1.5681818181818181,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use1:hero": {
+   "m": 0.36363636363636365,
+   "lo": 0.36363636363636365,
+   "hi": 0.36363636363636365,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use1:perMagic": {
+   "m": 1.9318181818181819,
+   "lo": 1.9318181818181819,
+   "hi": 1.9318181818181819,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use2:dir": {
+   "m": 4.340909090909091,
+   "lo": 4.340909090909091,
+   "hi": 4.340909090909091,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use2:hero": {
+   "m": 1.3863636363636365,
+   "lo": 1.3863636363636365,
+   "hi": 1.3863636363636365,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use2:perMagic": {
+   "m": 2.8636363636363638,
+   "lo": 2.8636363636363638,
+   "hi": 2.8636363636363638,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use3:dir": {
+   "m": 9.454545454545455,
+   "lo": 9.454545454545455,
+   "hi": 9.454545454545455,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use3:hero": {
+   "m": 3.409090909090909,
+   "lo": 3.409090909090909,
+   "hi": 3.409090909090909,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use3:perMagic": {
+   "m": 4.287878787878788,
+   "lo": 4.287878787878788,
+   "hi": 4.287878787878788,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use4:dir": {
+   "m": 14.113636363636363,
+   "lo": 14.113636363636363,
+   "hi": 14.113636363636363,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use4:hero": {
+   "m": 4.5227272727272725,
+   "lo": 4.5227272727272725,
+   "hi": 4.5227272727272725,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use4:perMagic": {
+   "m": 4.659090909090909,
+   "lo": 4.659090909090909,
+   "hi": 4.659090909090909,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r1:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use1:dir": {
+   "m": 4.909090909090909,
+   "lo": 4.909090909090909,
+   "hi": 4.909090909090909,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use1:hero": {
+   "m": 2.409090909090909,
+   "lo": 2.409090909090909,
+   "hi": 2.409090909090909,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use1:perMagic": {
+   "m": 7.318181818181818,
+   "lo": 7.318181818181818,
+   "hi": 7.318181818181818,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use1:cost": {
+   "m": 1,
+   "lo": 1,
+   "hi": 1,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use2:dir": {
+   "m": 12.136363636363637,
+   "lo": 12.136363636363637,
+   "hi": 12.136363636363637,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use2:hero": {
+   "m": 4.568181818181818,
+   "lo": 4.568181818181818,
+   "hi": 4.568181818181818,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use2:perMagic": {
+   "m": 8.352272727272727,
+   "lo": 8.352272727272727,
+   "hi": 8.352272727272727,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use2:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use3:dir": {
+   "m": 18.977272727272727,
+   "lo": 18.977272727272727,
+   "hi": 18.977272727272727,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use3:hero": {
+   "m": 4.9772727272727275,
+   "lo": 4.9772727272727275,
+   "hi": 4.9772727272727275,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use3:perMagic": {
+   "m": 7.984848484848484,
+   "lo": 7.984848484848484,
+   "hi": 7.984848484848484,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use3:cost": {
+   "m": 3,
+   "lo": 3,
+   "hi": 3,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use4:dir": {
+   "m": 27.613636363636363,
+   "lo": 27.613636363636363,
+   "hi": 27.613636363636363,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use4:hero": {
+   "m": 4.909090909090909,
+   "lo": 4.909090909090909,
+   "hi": 4.909090909090909,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use4:perMagic": {
+   "m": 8.130681818181818,
+   "lo": 8.130681818181818,
+   "hi": 8.130681818181818,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:forgefury:r4:use4:cost": {
+   "m": 4,
+   "lo": 4,
+   "hi": 4,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r1:min:dir": {
+   "m": 1.75,
+   "lo": 1.75,
+   "hi": 1.75,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r1:min:hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r1:min:perMagic": {
+   "m": 0.875,
+   "lo": 0.875,
+   "hi": 0.875,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r1:min:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r1:full:dir": {
+   "m": 13.159090909090908,
+   "lo": 13.159090909090908,
+   "hi": 13.159090909090908,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r1:full:hero": {
+   "m": 0.6590909090909091,
+   "lo": 0.6590909090909091,
+   "hi": 0.6590909090909091,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r1:full:perMagic": {
+   "m": 1.1515151515151516,
+   "lo": 1.1515151515151516,
+   "hi": 1.1515151515151516,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r1:full:cost": {
+   "m": 12,
+   "lo": 12,
+   "hi": 12,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r4:min:dir": {
+   "m": 8.863636363636363,
+   "lo": 8.863636363636363,
+   "hi": 8.863636363636363,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r4:min:hero": {
+   "m": 0,
+   "lo": 0,
+   "hi": 0,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r4:min:perMagic": {
+   "m": 4.431818181818182,
+   "lo": 4.431818181818182,
+   "hi": 4.431818181818182,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r4:min:cost": {
+   "m": 2,
+   "lo": 2,
+   "hi": 2,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r4:full:dir": {
+   "m": 13.159090909090908,
+   "lo": 13.159090909090908,
+   "hi": 13.159090909090908,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r4:full:hero": {
+   "m": 0.6590909090909091,
+   "lo": 0.6590909090909091,
+   "hi": 0.6590909090909091,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r4:full:perMagic": {
+   "m": 2.303030303030303,
+   "lo": 2.303030303030303,
+   "hi": 2.303030303030303,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:whirlwind:r4:full:cost": {
+   "m": 6,
+   "lo": 6,
+   "hi": 6,
+   "n": 44,
+   "campaigns": 1
+  },
+  "card:avalanche:r1:cast:dir": {
+   "m": 12.85,
+   "lo": 12.85,
+   "hi": 12.85,
+   "n": 20,
+   "campaigns": 1
+  },
+  "card:avalanche:r1:cast:hero": {
+   "m": 3.15,
+   "lo": 3.15,
+   "hi": 3.15,
+   "n": 20,
+   "campaigns": 1
+  },
+  "card:avalanche:r1:cast:perMagic": {
+   "m": 2.666666666666667,
+   "lo": 2.666666666666667,
+   "hi": 2.666666666666667,
+   "n": 20,
+   "campaigns": 1
+  },
+  "card:avalanche:r1:cast:cost": {
+   "m": 6,
+   "lo": 6,
+   "hi": 6,
+   "n": 20,
+   "campaigns": 1
+  },
+  "card:avalanche:r4:cast:dir": {
+   "m": 24.6,
+   "lo": 24.6,
+   "hi": 24.6,
+   "n": 20,
+   "campaigns": 1
+  },
+  "card:avalanche:r4:cast:hero": {
+   "m": 3.75,
+   "lo": 3.75,
+   "hi": 3.75,
+   "n": 20,
+   "campaigns": 1
+  },
+  "card:avalanche:r4:cast:perMagic": {
+   "m": 4.725,
+   "lo": 4.725,
+   "hi": 4.725,
+   "n": 20,
+   "campaigns": 1
+  },
+  "card:avalanche:r4:cast:cost": {
+   "m": 6,
+   "lo": 6,
+   "hi": 6,
+   "n": 20,
+   "campaigns": 1
+  }
+ }
+}
