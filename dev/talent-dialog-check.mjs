@@ -11,13 +11,13 @@ try{
  const setup=async({gold=420,size=4,act=3,filled=[],both=true,cls='knight'}={})=>{
   await p.evaluate(async cfg=>{const Q=window.QD,h=Q.E.newHero({name:'TalentUI'+cfg.seq,cls:cfg.cls,seed:7});h.level=9;h.gold=cfg.gold;h.campaign.act=cfg.act;h.special.SW=cfg.size;h.talent.SW=cfg.filled;
    if(cfg.both)h.dice=[...new Set([...(h.dice||[]),'SW','SE'])];Q.S.hero=h;Q.S.company={members:[h]};Q.S.seat=0;Q.S.tab='forge';Q.S.campPage='dice';await(await import('./js/save.js')).createSave(h,'testpass');Q.showCamp();
-  },{gold,size,act,filled,both,cls,seq:++sequence});await p.locator('.cw-cell.s-SW').tap();await p.waitForTimeout(100);
+  },{gold,size,act,filled,both,cls,seq:++sequence});await p.locator('.cw-cell.s-SW').tap();await p.waitForTimeout(500);
  };
  const face=(f=0,s='SW')=>p.locator(`.td-face[data-slot="${s}"][data-face="${f}"]`);
  const scrolls=()=>p.evaluate(()=>({pop:document.querySelector('body>.cw-pop')?.scrollTop||0,side:document.querySelector('.sx-side')?.scrollTop||0,window:scrollY}));
  const fit=async()=>{const r=await p.locator('.td-dialog').boundingBox(),b=await p.locator('.td-confirm').boundingBox();assert(r.x>=0&&r.y>=0&&r.x+r.width<=p.viewportSize().width+1&&r.y+r.height<=p.viewportSize().height+1,JSON.stringify(r));assert(b.y>=0&&b.y+b.height<=p.viewportSize().height+1);assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);};
  for(const [width,height]of[[390,844],[430,932],[375,667],[375,548]]){
-  await p.setViewportSize({width,height});await setup();assert.equal(await p.locator('.tw-detail,.tw-symbols,.tw-grow').count(),0);
+  await p.setViewportSize({width,height});await setup();assert.equal(await p.locator('.tw-detail,.tw-symbols,.tw-grow').count(),0);assert.equal(await p.locator('.td-die-context .cw-die').count(),2);assert.equal(await p.locator('.td-column[data-slot="SW"] .td-fixed-face').count(),3);
   await p.evaluate(()=>window.originalTalentCard=document.querySelector('.td-card'));await face().tap();const before=await scrolls();
   assert.equal(await p.locator('.td-overlay .td-option').count(),5);assert(await p.locator('.td-confirm').isDisabled());await p.locator('.td-option[data-symbol="magic"]').tap();await fit();
   assert(await p.evaluate(()=>window.originalTalentCard===document.querySelector('.td-card')),'preview must not rebuild camp');assert.deepEqual(await scrolls(),before,'selection must not scroll the card or page');
@@ -25,12 +25,13 @@ try{
   if(width===390)await p.screenshot({path:`${out}/symbol-picker.png`});
   await p.locator('.td-cancel').tap();assert.equal(await p.locator('.td-overlay').count(),0);assert.equal(await p.evaluate(()=>window.QD.S.hero.gold),420);
   await face().tap();await p.locator('.td-option[data-symbol="magic"]').tap();await p.locator('.td-confirm').tap();
-  assert.equal(await p.evaluate(()=>window.QD.S.hero.gold),410);assert.equal(await p.evaluate(()=>window.QD.S.hero.talent.SW[0][0]),'magic');assert.match(await face().innerText(),/Magic/);assert.deepEqual(await scrolls(),before);
+  assert.equal(await p.evaluate(()=>window.QD.S.hero.gold),410);assert.equal(await p.evaluate(()=>window.QD.S.hero.talent.SW[0][0]),'magic');assert.match(await face().getAttribute('aria-label'),/Magic/);assert.deepEqual(await scrolls(),before);
   assert.equal(await p.locator('.td-overlay').count(),0);assert.equal(await p.evaluate(()=>document.querySelector('body>.cw-pop').inert),false);
   const saved=await p.evaluate(async()=>{const Q=window.QD,SV=await import('./js/save.js');const h=await SV.openHero(Q.S.hero.name,'testpass');return{gold:h.gold,sym:h.talent.SW[0][0]};});assert.deepEqual(saved,{gold:410,sym:'magic'});
-  if(width===390)await p.screenshot({path:`${out}/updated-card.png`});results.push({width,height,selectionNoScroll:true,cancelNoCost:true,buyOnce:true,persisted:true});
+  if(width===390){await p.waitForFunction(()=>[...document.querySelectorAll('.td-die-context .cw-die')].every(e=>e.classList.contains('ready')));await p.screenshot({path:`${out}/updated-card.png`});}results.push({width,height,selectionNoScroll:true,cancelNoCost:true,buyOnce:true,persisted:true});
  }
- await p.setViewportSize({width:390,height:844});await setup({filled:[['magic']]});await p.locator('.td-column[data-slot="SW"] .td-size[data-size="6"]').tap();await fit();await p.waitForFunction(()=>[...document.querySelectorAll('.td-growth-preview .cw-die')].every(e=>e.classList.contains('ready')),{},{timeout:45000});await p.screenshot({path:`${out}/grow-popup.png`});await p.locator('.td-confirm').tap();
+ await p.setViewportSize({width:390,height:844});await setup({size:6,both:false,filled:[['heal'],['gold'],['magic']]});await p.waitForFunction(()=>document.querySelector('.td-die-context .cw-die.ready'));await p.screenshot({path:out+'/d6-card.png'});results.push({dieImageAndAllSixFaces:true});
+ await setup({filled:[['magic']]});await p.locator('.td-column[data-slot="SW"] .td-size[data-size="6"]').tap();await fit();await p.waitForFunction(()=>[...document.querySelectorAll('.td-growth-preview .cw-die')].every(e=>e.classList.contains('ready')),{},{timeout:45000});await p.screenshot({path:`${out}/grow-popup.png`});await p.locator('.td-confirm').tap();
  assert.equal(await p.evaluate(()=>window.QD.S.hero.special.SW),6);assert.equal(await p.evaluate(()=>window.QD.S.hero.gold),360);assert.equal(await p.evaluate(()=>window.QD.S.hero.talent.SW[0][0]),'magic');assert.equal(await face(1).count(),1);
  await face(1).tap();await p.locator('.td-option[data-symbol="gold"]').tap();await p.locator('.td-confirm').tap();assert.equal(await p.evaluate(()=>window.QD.S.hero.gold),310);assert.equal(await p.evaluate(()=>window.QD.S.hero.talent.SW[1][0]),'gold');results.push({growthPreservesSymbols:true,newFacePurchase:true});
  await setup({size:6,filled:[['magic'],['magic'],[]]});await face(2).tap();assert(await p.locator('.td-option[data-symbol="magic"]').isDisabled());await p.locator('.td-option[data-symbol="heal"]').tap();await p.locator('.td-cancel').focus();await p.keyboard.press('Shift+Tab');assert(await p.locator('.td-confirm').evaluate(e=>e===document.activeElement));await p.keyboard.press('Tab');assert(await p.locator('.td-cancel').evaluate(e=>e===document.activeElement));await p.keyboard.press('Escape');assert.equal(await p.locator('.td-overlay').count(),0);assert.equal(await p.locator('.td-card').count(),1);results.push({limits:true,focusTrap:true,escape:true});

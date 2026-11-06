@@ -1537,25 +1537,27 @@ function talentWorkshop(hero, slot) {
     const faceButton = f => {
       const n = info.nums[f], k = symbol(f), selected = TAL.slot === s && TAL.face === f;
       return h('button', { type: 'button', class: `td-face ${k ? SYM_ICO[k][1] : 'empty'} ${selected ? 'selected' : ''}`, 'data-slot': s, 'data-face': String(f), 'aria-label': `Talent ${s === 'SW' ? '1' : '2'}, face ${n}: ${k ? `${n} ${D.TALENT_SYMS[k].name}` : `empty, ${info.costs[f]} gold`}`,
-        onclick: () => talentFaceDialog(hero, s, f) }, h('b', {}, String(n)), k ? ico(SYM_ICO[k][0]) : h('span', { class: 'td-add' }, '+'), k ? h('small', {}, D.TALENT_SYMS[k].name) : priceChip(info.costs[f], { poor: hero.gold < info.costs[f] }));
+        onclick: () => talentFaceDialog(hero, s, f) }, h('b', {}, String(n)), k ? ico(SYM_ICO[k][0]) : priceChip(info.costs[f], { poor: hero.gold < info.costs[f] }));
     };
-    const rows = [4, 6, 8, 10].map(z => {
-      if (z > size || !active) {
-        const from = { 6: 4, 8: 6, 10: 8 }[z], cost = D.SPECIAL_STEPS[from]?.[0];
-        if (!active && z === 4) { const u = E.unlockInfo(hero, s); return h('button', { class: 'td-unlock td-size next', type: 'button', 'data-slot': s, onclick: () => talentGrowDialog(hero, s, 4) }, ico('lock'), h('b', {}, 'Unlock d4'), priceChip(u.cost, { poor: hero.gold < u.cost })); }
-        const next = active && D.NEXT_SIZE[size] === z;
-        return h('button', { class: `td-size ${next ? 'next' : 'later'}`, type: 'button', 'data-size': z, disabled: !active, onclick: () => talentGrowDialog(hero, s, z) }, h('b', {}, `d${z}`), h('span', {}, next ? 'Grow die' : active ? `After d${from}` : 'Unlock first'), priceChip(cost || 0, { poor: hero.gold < cost }));
-      }
-      const idx = z === 4 ? [0] : { 6: [1, 2], 8: [3, 4], 10: [5, 6] }[z];
-      return h('div', { class: 'td-tier', 'data-size': z }, h('span', { class: 'td-tier-label' }, `d${z}`), h('div', { class: 'td-tier-faces' }, ...idx.map(faceButton)));
+    const fixed = active ? [1, 2, 3].map(n => h('div', { class: 'td-fixed-face', 'aria-label': `Face ${n}: ${n === 2 ? 'double hand' : 'blank'}` },
+      h('b', {}, String(n)), h('span', {}, n === 2 ? '×2' : '—'))) : [];
+    const faces = active ? h('div', { class: 'td-face-list' }, ...fixed, ...Array.from({ length: info.faces }, (_, f) => faceButton(f))) : null;
+    const growth = [4, 6, 8, 10].filter(z => !active || z > size).map(z => {
+      const from = { 6: 4, 8: 6, 10: 8 }[z], cost = D.SPECIAL_STEPS[from]?.[0];
+      if (!active && z === 4) { const u = E.unlockInfo(hero, s); return h('button', { class: 'td-unlock td-size next', type: 'button', 'data-slot': s, onclick: () => talentGrowDialog(hero, s, 4) }, ico('lock'), h('span', {}, h('b', {}, 'Unlock d4')), priceChip(u.cost, { poor: hero.gold < u.cost })); }
+      const next = active && D.NEXT_SIZE[size] === z;
+      return h('button', { class: `td-size ${next ? 'next' : 'later'}`, type: 'button', 'data-size': z, disabled: !active, onclick: () => talentGrowDialog(hero, s, z) }, ico(`d${z}`), h('span', {}, h('b', {}, `d${z}`), h('small', {}, next ? 'Grow die' : active ? `After d${from}` : 'Unlock first')), priceChip(cost || 0, { poor: hero.gold < cost }));
     });
-    return h('section', { class: `td-column ${s === slot ? 'focused' : ''}`, 'data-slot': s }, h('header', {}, h('b', {}, `Talent ${s === 'SW' ? '1' : '2'}`), h('span', {}, active ? `d${size}` : 'Locked')), ...rows);
+    return h('section', { class: `td-column ${s === slot ? 'focused' : ''}`, 'data-slot': s },
+      h('header', {}, h('b', {}, `Talent ${s === 'SW' ? '1' : '2'}`)),
+      h('div', { class: `td-die-context ${active ? '' : 'locked'}` }, active ? campDie(hero, s, size) : h('span', { class: 'td-locked-die' }, ico('d4', '', 76)), h('span', {}, active ? `d${size}` : 'Locked')),
+      faces, h('div', { class: 'td-growth-list' }, ...growth));
   };
   const info = E.talentInfo(hero, slot);
   return h('div', { class: 'tw-workshop td-workshop' }, h('div', { class: 'td-card' },
     h('header', { class: 'td-card-title' }, h('h2', {}, 'Talent dice'), h('p', {}, 'Tap a face to choose its symbol.')),
     h('div', { class: 'td-columns' }, column('SW'), column('SE')),
-    h('div', { class: 'td-fixed' }, 'Fixed faces: 1 blank · 2 ×2 hand · 3 blank'), h('p', { class: 'td-limit' }, `Max ${info.same} of each symbol per die.`)));
+    h('div', { class: 'td-fixed' }, '2 ×2 doubles the hand above.'), h('p', { class: 'td-limit' }, `Max ${info.same} of each symbol per die.`)));
 }
 function talentSheet(hero, slot) { return [talentWorkshop(hero, slot)]; }
 function closeSlot() {
