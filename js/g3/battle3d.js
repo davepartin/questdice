@@ -940,7 +940,9 @@ async function doCard(id, opts = {}) {
   // a Dice Card or a Side-Game Card rolls on the card itself; the counters fill when you tap Continue (Dave, 6 Nov 2026)
   const cardEl = () => B.hud.cards?.querySelector(`.mc-card[data-card="${id}"]`) || B.hud.sheet?.querySelector(`.mc-card[data-card="${id}"]`);
   const onCard = (k?.kind === 'scale' || k?.kind === 'mix') && r.rolls?.length ? cardEl() : null;
-  const stampCard = !onCard && k?.type === 'Every-Round Card' && cardEl()?.querySelector('.t28-bonus') ? cardEl() : null; // an Every-Round Card stamps its bonus on the card
+  // an Every-Round Card stamps its bonus, a Charge Card's Use lights its charges, a Finisher Card stamps and sweeps: all on the card itself
+  const useSel = k?.type === 'Every-Round Card' ? '.t28-bonus' : k?.type === 'Finisher Card' ? '.t28-one' : k?.kind === 'charge' && r.released ? '.t28-charge .t28-sym.on' : '';
+  const stampCard = !onCard && useSel && cardEl()?.querySelector(useSel) ? cardEl() : null;
   const counter = (key) => B.hud.forecast?._chips?.[key] || null;
   B.busy = true; if (!onCard && !stampCard) refresh();
   try {
@@ -953,6 +955,7 @@ async function doCard(id, opts = {}) {
   refresh();
   if (k?.frogLoad && r.released) { togglePowers(false); bumpCounters(gains); return; }
   renderSheet(); bumpCounters(gains); sheetTop();
+  if (k?.kind === 'charge' && r.charged && !r.released) PW.chargeLit(cardEl()); // a charge stored: the new symbol pops
 }
 const sheetTop = () => B.hud.cards?.scrollTo?.({ top: 0, behavior: 'smooth' });
 // The counters that a power just filled give a little pulse, so you can see where it went.

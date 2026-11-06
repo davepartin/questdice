@@ -16,6 +16,8 @@ checks that every card has a type and that it matches how the card plays.
   on the card. At camp, "Upgrade to II" shows the next card before you buy it.
 - **The game's colours.** Red is attack, orange is pierce, pink is splash (the Fork), blue is block, green is heal, gold is gold, and purple
   is magic. Symbols are solid, with no inner line.
+- **The word is "Use".** Every power's button says Use (Dave, 6 November: "use is more universal"), never Cast or Roll. A Charge Card keeps
+  Charge for storing a charge, then Use N.
 - **Numbers come from the engine.** Never type a number into a card.
 - **Every card fits** at 390 × 844 and 375 × 667, at every rank: `node dev/magic-camp-cards.mjs` with LEVEL=0 and LEVEL=3.
 
@@ -68,8 +70,14 @@ show their number. Nothing is painted per card: a new card gets its dice for fre
 Tapping Roll or Cast rolls the card's own dice right on the card: they hop, tumble and land; the totals show in their colours; **Continue**
 sends them to the counters. A new Dice Card or Side-Game Card gets this for free. (`cardRoll` in js/g3/powers.js.)
 
-## Casting on the card (Every-Round Cards)
+## Using a card: every type has its moment on the card
 
-Tapping Cast on an Every-Round Card plays on the card: the big symbol lifts, glows in its colour and stamps down with a ring, and its
-number counts up; then the answer shows at the bottom in colour, **Continue**, and the number floats to its counter. A new Every-Round
-Card gets this for free if it is drawn with `bonus()`. (`cardCast` in js/g3/powers.js.) Charge Cards and Finisher Cards are next.
+Tapping Use plays on the card itself, then the answer shows at the bottom in colour, **Continue**, and each number floats toward its own
+counter (the counters wait for Continue). A new card of any type gets its moment for free.
+
+- **Dice Card, Side-Game Card:** the card's own dice rattle, tumble and land (`cardRoll` in js/g3/powers.js).
+- **Every-Round Card:** the big symbol lifts, glows in its colour and stamps down with a ring; its number counts up (`cardCast`).
+- **Charge Card:** Charge pops the new symbol in each row with a small ring; Use N lights the stored charges one by one, left to right
+  (`chargeLit`, `cardCast`).
+- **Finisher Card:** each bonus stamps, then a pink wave sweeps the card and the "every monster" tag flashes; the hit on every monster
+  rises toward the monsters (`cardCast`).

@@ -259,12 +259,12 @@ function powerRow(ctx, p, sel) {
     scale ? h('button', { type: 'button', class: 'pr-step', 'aria-label': 'More magic, one more die', disabled: x + E.scaleStep(k) > Math.min(E.scaleMax(k, level), Math.max(k.cost, b.magic)), onclick: () => ctx.step(k.id, x + E.scaleStep(k)) }, '+') : null);
   const relOk = k.kind === 'charge' && stored > 0 && !(b.usedRound && (b.usedRound[`${k.id}:release`] || (!k.frogLoad && b.usedRound[k.id])));
   const castable = rech;
-  const go = rech ? (castable ? h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: !!why, onclick: () => ctx.recharge(k.id) }, 'Recharge', mc(ctx.rechargeCost)) : h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: true }, 'Cast', mc(x)))
-    : h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: !!why, 'aria-label': `${k.kind === 'charge' ? 'Charge' : 'Cast'} ${k.name} for ${x} magic`, onclick: () => ctx.use(k.id) }, k.kind === 'charge' ? ['Charge', mc(x)] : ['Cast', mc(x)]);
+  const go = rech ? (castable ? h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: !!why, onclick: () => ctx.recharge(k.id) }, 'Recharge', mc(ctx.rechargeCost)) : h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: true }, 'Use', mc(x)))
+    : h('button', { type: 'button', class: 'pw-btn go pr-go', disabled: !!why, 'aria-label': `${k.kind === 'charge' ? 'Charge' : 'Use'} ${k.name} for ${x} magic`, onclick: () => ctx.use(k.id) }, k.kind === 'charge' ? ['Charge', mc(x)] : ['Use', mc(x)]);
   const friends = k.kind === 'luck' && !rech && D.CLASS2.on && D.CLASS2.verse && Array.isArray(b.fighters) ? b.fighters.map((f, j) => ({ f, j })).filter(({ f, j }) => j !== b.active && f.hp > 0) : [];
   if (friends.length) { // mp8: Lucky Verse at a table asks who it is for, right in its row: Me (attack) or a friend (the same number as healing)
-    const fb = [h('button', { type: 'button', class: 'pw-btn go pr-go pr-for', disabled: !!why, 'aria-label': `Cast ${k.name} for me, ${x} magic`, onclick: () => ctx.use(k.id) }, 'Me', mc(x)),
-      ...friends.map(({ f, j }) => h('button', { type: 'button', class: 'pw-btn go pr-go pr-for friend', disabled: !!why, 'aria-label': `Cast ${k.name} for ${f.hero.name} (heals), ${x} magic`, onclick: () => ctx.use(k.id, { to: j }) }, HK.icon('heal'), f.hero.name.split(' ')[0], mc(x)))];
+    const fb = [h('button', { type: 'button', class: 'pw-btn go pr-go pr-for', disabled: !!why, 'aria-label': `Use ${k.name} for me, ${x} magic`, onclick: () => ctx.use(k.id) }, 'Me', mc(x)),
+      ...friends.map(({ f, j }) => h('button', { type: 'button', class: 'pw-btn go pr-go pr-for friend', disabled: !!why, 'aria-label': `Use ${k.name} for ${f.hero.name} (heals), ${x} magic`, onclick: () => ctx.use(k.id, { to: j }) }, HK.icon('heal'), f.hero.name.split(' ')[0], mc(x)))];
     return h('div', { class: `pr-row t-${toneOf(k)} ${why && why !== 'Roll first' ? 'off' : ''}`, 'data-row': k.id },
       h('span', { class: 'pr-id' }, h('b', { class: 'pr-name' }, k.name), h('small', { class: `pr-tag ${why && why !== 'Roll first' ? 'low' : ''}` }, tag)),
       pay, h('span', { class: `pr-get t-${toneOf(k)}` }, icons), h('span', { class: 'pr-acts pr-fors' }, fb));
@@ -300,7 +300,7 @@ function utilRow(ctx, u) {
   } else {
     const n = u.id === 'u:bigheal' ? E.potionHpOf(b.hero) : E.healAmountOf(b.hero);
     get = h('span', { class: 'pr-get t-heal' }, HK.icon('heal'), h('b', {}, `+${n}`));
-    acts = u.actions.map((a) => h('button', { type: 'button', class: `pw-btn go pr-go`, disabled: !!u.why || a.disabled, 'aria-label': a.aria || a.label, onclick: run(a) }, ...(u.id === 'u:bigheal' || !u.cost ? ['Drink'] : ['Cast', mc(u.cost)])));
+    acts = u.actions.map((a) => h('button', { type: 'button', class: `pw-btn go pr-go`, disabled: !!u.why || a.disabled, 'aria-label': a.aria || a.label, onclick: run(a) }, ...(u.id === 'u:bigheal' || !u.cost ? ['Drink'] : ['Use', mc(u.cost)])));
   }
   const note = u.note ? h('div', { class: `pd-result pr-note t-${u.tone}`, role: 'status' }, HK.icon(u.note.icon || 'heal'), h('b', {}, u.note.big), h('span', {}, u.note.text)) : null;
   return h('div', { class: `pr-row pr-util ${u.id === 'u:heart' ? 'pr-hrow' : 'pr-half'} t-${u.tone} ${why && !soft ? 'off' : ''}`, 'data-row': u.id },
@@ -329,7 +329,7 @@ function detailPanel(ctx, sel) {
     const relOk = k.kind === 'charge' && stored > 0 && !(b.usedRound && (b.usedRound[`${k.id}:release`] || (!k.frogLoad && b.usedRound[k.id]))); // store or release, one a round
     const release = relOk ? h('button', { type: 'button', class: 'pw-btn alt', onclick: () => ctx.use(k.id, { release: true }) }, HK.icon('windup'), `Use ${stored} charge${stored > 1 ? 's' : ''}`) : null;
     const main = rech ? (st.spent && canRecharge(k) ? h('button', { type: 'button', class: 'pw-btn go', disabled: !!why, onclick: () => ctx.recharge(k.id) }, HK.icon('reroll'), `Recharge · ${ctx.rechargeCost}`) : null)
-      : h('button', { type: 'button', class: 'pw-btn go has-after', disabled: !!why, onclick: () => ctx.use(k.id) }, HK.icon('magic'), h('span', { class: 'pb-lines' }, h('b', {}, k.kind === 'charge' ? `Store a charge · ${x}` : `Cast · ${x} magic`)));
+      : h('button', { type: 'button', class: 'pw-btn go has-after', disabled: !!why, onclick: () => ctx.use(k.id) }, HK.icon('magic'), h('span', { class: 'pb-lines' }, h('b', {}, k.kind === 'charge' ? `Store a charge · ${x}` : `Use · ${x} magic`)));
     // Verse for a friend (CLASS2.verse, the lab): at a table Lucky Verse asks who it is for. You: attack, as now. A friend: the same number as healing.
     const friends = k.kind === 'luck' && !rech && D.CLASS2.on && D.CLASS2.verse && Array.isArray(b.fighters) ? b.fighters.map((f, j) => ({ f, j })).filter(({ f, j }) => j !== b.active && f.hp > 0) : [];
     const forRow = friends.length ? h('div', { class: 'pd-for' }, h('small', {}, 'Who is it for? You: attack. A friend: the same number as healing.'),
@@ -471,43 +471,69 @@ function floatAway(res, target, reduced) {
     setTimeout(() => ghost.remove(), reduced ? 0 : 1300);
   }
 }
-// The cast on an Every-Round Card (Dave, 6 Nov 2026: the cast moment for every card type, like the dice roll): the big symbol lifts, glows in
-// its colour and stamps down with a ring; the number beside it counts up; then the same answer as a dice roll, Continue, and each number
-// floats toward its own counter. Resolves when the numbers have gone.
+// Using a card on the card itself (Dave, 6 Nov 2026: a moment for every card type, like the dice roll; "Use" is the word for all of them).
+//   Every-Round Card: the big symbol lifts, glows in its colour and stamps down with a ring; the number beside it counts up.
+//   Charge Card, Use: the stored charges light one by one, left to right (every row together); each symbol already holds the running total.
+//   Finisher Card: each bonus stamps, then a pink wave sweeps the card and its "every monster" tag flashes.
+// Then the same answer as a dice roll at the bottom of the card, Continue, and each number floats toward its own counter.
+// Resolves when the numbers have gone.
 export function cardCast(card, { k, r, gains, level = 0, target = () => null }) {
   return new Promise((resolve) => {
     const reduced = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     const timers = []; const later = (ms, fn) => timers.push(setTimeout(fn, reduced ? 0 : ms));
-    const pairs = [...card.querySelectorAll('.t28-bonus .t28-bpair')];
+    const mode = r.released ? 'release' : k.kind === 'super' || k.kind === 'round' ? 'finisher' : 'every';
+    // the beats: the symbols that light together
+    let beats;
+    if (mode === 'every') beats = [...card.querySelectorAll('.t28-bonus .t28-bpair')].map((p) => [{ sym: p.querySelector('.t28-sym, .t28-reroll'), num: p.querySelector('.t28-bnum'), host: p, count: true }]);
+    else if (mode === 'finisher') beats = [...card.querySelectorAll('.t28-one .t28-sym')].map((sym) => [{ sym, num: sym.querySelector('.t28-num'), host: sym.parentElement, count: true }]);
+    else { const rows = [...card.querySelectorAll('.t28-charge .t28-row')]; beats = Array.from({ length: r.released }, (_, i) => rows.map((row) => ({ sym: row.children[i], host: row, num: null })).filter((u) => u.sym)); }
+    const GAP = mode === 'release' ? 300 : mode === 'finisher' ? 320 : 260;
     card.classList.add('mc-rolling-card');
     const count = (el) => { const m = el.textContent.match(/^([^0-9]*)(\d+)$/); if (!m || reduced) return; const [, pre, n] = m; const t0 = performance.now();
       const tick = () => { const q = Math.min(1, (performance.now() - t0) / 420); el.textContent = `${pre}${Math.round(+n * q)}`; if (q < 1) requestAnimationFrame(tick); }; el.textContent = `${pre}0`; requestAnimationFrame(tick); };
-    const stamp = (pair) => { if (pair.classList.contains('mc-stamped')) return; pair.classList.add('mc-stamped');
-      const sym = pair.firstElementChild; const num = pair.querySelector('.t28-bnum'); if (num) count(num);
-      if (!reduced && sym) { const a = sym.getBoundingClientRect(); const b = pair.getBoundingClientRect(); const ring = h('i', { class: 'mc-ring', style: { left: `${a.left - b.left + a.width / 2}px`, top: `${a.top - b.top + a.height / 2}px`, width: `${a.width}px`, height: `${a.width}px` } });
-        pair.prepend(ring); setTimeout(() => ring.remove(), 900);
-        sym.animate?.([{ transform: 'translateY(0) scale(1)' }, { transform: 'translateY(-14%) scale(1.32)', offset: 0.38 }, { transform: 'translateY(2%) scale(.9)', offset: 0.7 }, { transform: 'translateY(0) scale(1)' }], { duration: 560, easing: 'ease-out' }); }
-      try { sfx.coin?.(); } catch { /* sound is optional */ } };
-    // the answer: the counters it fills, then softer hits or free rerolls; a power that gave nothing says why
-    const keys = [...ROLL_ORDER.filter((f) => gains[f] > 0), ...['weaken', 'free'].filter((f) => gains[f] > 0)];
-    const sign = (f) => (f === 'weaken' ? '−' : f === 'free' ? '×' : '+');
-    const nums = keys.map((f) => h('b', { class: `mc-res-n t-${TONE[f] || f}${f === 'free' ? ' t-magic' : ''}`, 'data-k': f }, HK.icon(FX_ICON[f] || f), `${sign(f)}${gains[f]}`));
+    const lit = [];
+    const light = (beat, big) => { for (const u of beat) { if (!u.sym || u.sym.classList.contains('mc-lit')) continue; u.sym.classList.add('mc-lit'); lit.push(u.sym);
+        if (u.count && u.num) count(u.num); if (u.num) { u.num.classList.add('mc-lit-num'); lit.push(u.num); }
+        if (!reduced) ringAt(u.sym, u.host, big);
+        if (!reduced) u.sym.animate?.([{ transform: 'translateY(0) scale(1)' }, { transform: `translateY(-14%) scale(${big ? 1.32 : 1.22})`, offset: 0.38 }, { transform: 'translateY(2%) scale(.92)', offset: 0.7 }, { transform: 'translateY(0) scale(1)' }], { duration: 560, easing: 'ease-out' }); }
+      try { (mode === 'release' ? sfx.dieSettle : sfx.coin)?.(); } catch { /* sound is optional */ } };
+    const sweep = () => { const panel = card.querySelector('.t28'); if (panel && !reduced) { panel.classList.remove('mc-sweep'); void panel.offsetWidth; panel.classList.add('mc-sweep'); }
+      card.querySelector('.t28-splash')?.classList.add('mc-lit'); try { sfx.level?.(); } catch { /* optional */ } };
+    // the answer: the counters it fills, then softer hits, free rerolls and the hit on every monster; a power that gave nothing says why
+    const keys = [...ROLL_ORDER.filter((f) => gains[f] > 0), ...['weaken', 'free', 'aoe'].filter((f) => gains[f] > 0)];
+    const sign = (f) => (f === 'weaken' ? '−' : f === 'free' ? '×' : f === 'aoe' ? '' : '+');
+    const nums = keys.map((f) => h('b', { class: `mc-res-n t-${f === 'aoe' ? 'splash' : f === 'free' ? 'magic' : TONE[f] || f}`, 'data-k': f }, HK.icon(f === 'aoe' ? 'splash' : FX_ICON[f] || f), `${sign(f)}${gains[f]}`));
     const notes = [];
-    if (k.grudge && !keys.length) notes.push('Nothing got past your block last round');
-    if (k.markGold) notes.push(`+${E.scaleNum(k.markGold, level)} gold if your target falls`);
+    if (gains.aoe > 0) notes.push(['splash', 'to every monster']);
+    if (k.grudge && !keys.length) notes.push(['', 'Nothing got past your block last round']);
+    if (k.markGold) notes.push(['gold', `+${E.scaleNum(k.markGold, level)} gold if your target falls`]);
     const go = h('button', { type: 'button', class: 'mc-res-go', disabled: true }, 'Continue');
-    const res = h('div', { class: 'mc-result', role: 'status', 'aria-live': 'polite', 'aria-label': keys.map((f) => `${gains[f]} ${NAME[f] || f}`).join(', ') || notes[0] || 'Done' },
-      h('div', { class: 'mc-res-row' }, ...nums, ...notes.map((t) => h('span', { class: `mc-res-miss${k.markGold ? ' t-gold' : ''}` }, t))), go);
-    const finish = () => { if (res.isConnected) return; timers.forEach(clearTimeout); pairs.forEach(stamp); card.append(res); requestAnimationFrame(() => res.classList.add('in')); later(250, () => { go.disabled = false; go.focus?.({ preventScroll: true }); }); };
-    pairs.forEach((pair, i) => later(120 + i * 260, () => stamp(pair)));
-    later(120 + pairs.length * 260 + 520, finish);
+    const res = h('div', { class: 'mc-result', role: 'status', 'aria-live': 'polite', 'aria-label': keys.map((f) => `${gains[f]} ${NAME[f] || f}`).join(', ') || notes[0]?.[1] || 'Done' },
+      h('div', { class: 'mc-res-row' }, ...nums, ...notes.map(([t, txt]) => h('span', { class: `mc-res-miss${t ? ` t-${t}` : ''}` }, txt))), go);
+    const finish = () => { if (res.isConnected) return; timers.forEach(clearTimeout); beats.forEach((b) => light(b, mode !== 'release')); if (mode === 'finisher') card.querySelector('.t28-splash')?.classList.add('mc-lit');
+      card.append(res); requestAnimationFrame(() => res.classList.add('in')); later(250, () => { go.disabled = false; go.focus?.({ preventScroll: true }); }); };
+    beats.forEach((beat, i) => later(140 + i * GAP, () => light(beat, mode !== 'release' || i === beats.length - 1)));
+    const end = 140 + beats.length * GAP;
+    if (mode === 'finisher') { later(end + 60, sweep); later(end + 900, finish); } else later(end + 480, finish);
     card.addEventListener('click', function hurry(e) { if (e.target === go || res.isConnected) return; card.removeEventListener('click', hurry); finish(); }); // a tap hurries it along
     go.addEventListener('click', (e) => {
       e.stopPropagation(); go.disabled = true; floatAway(res, target, reduced);
-      res.classList.add('out'); card.classList.remove('mc-rolling-card'); for (const p of pairs) p.classList.remove('mc-stamped');
+      res.classList.add('out'); card.classList.remove('mc-rolling-card'); for (const el of lit) el.classList.remove('mc-lit', 'mc-lit-num'); card.querySelector('.t28-splash')?.classList.remove('mc-lit'); card.querySelector('.t28')?.classList.remove('mc-sweep');
       setTimeout(() => { res.remove(); resolve(); }, reduced ? 0 : 900);
     });
   });
+}
+// a ring in the symbol's own colour, spreading out from it (host: a positioned box around the symbol)
+function ringAt(sym, host, big = true) {
+  const a = sym.getBoundingClientRect(); const b = host.getBoundingClientRect(); const c = getComputedStyle(sym).getPropertyValue('--c').trim() || getComputedStyle(sym).color || '#a64dff';
+  const ring = h('i', { class: `mc-ring${big ? '' : ' small'}`, style: { left: `${a.left - b.left + a.width / 2}px`, top: `${a.top - b.top + a.height / 2}px`, width: `${a.width}px`, height: `${a.width}px`, borderColor: c } });
+  host.prepend(ring); setTimeout(() => ring.remove(), 900);
+}
+// A charge stored (Charge Card): the new symbol in each row pops with a small ring. Nothing to add to the counters, so no Continue.
+export function chargeLit(card) {
+  if (!card || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+  for (const sym of card.querySelectorAll('.t28-charge .t28-sym.now')) { ringAt(sym, sym.parentElement, false);
+    sym.animate?.([{ transform: 'scale(.6)' }, { transform: 'scale(1.3)', offset: 0.5 }, { transform: 'scale(1)' }], { duration: 480, easing: 'ease-out' }); }
 }
 export function castReveal(host, { k, r, gains, round = 1, level = 0, inline = null }) {
   if (k?.frogLoad && r.released) return frogReveal(host, k, r);

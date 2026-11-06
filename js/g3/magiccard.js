@@ -359,7 +359,7 @@ function card(k, p, glyph) {
   // (one card per rank, Dave, 6 Nov 2026: "a different card for each one, and you know when you upgrade it, the next card's gonna be better";
   // the next rank is shown at camp by its Upgrade button, js/g3/scrui.js)
 }
-// the buttons above the card: −/+ (with the magic each die costs) and Roll; Cast; CHARGE and USE N (Dave, mc6). Colours follow the power.
+// the buttons above the card: −/+ (with the magic each die costs) and Use; Use; CHARGE and USE N (Dave, mc6; "Use" for every power, 6 Nov 2026). Colours follow the power.
 function buttons(ctx, p) {
   const { b, reset } = ctx; const { k, st, stored } = p; const x = p.x ?? k.cost; const f = FX(k); const level = p.level || 0;
   const why = st.spent ? 'Used this round' : st.early ? `Round ${k.minRound}+` : reset && E.needsDice(k) ? 'Roll your dice first' : ''; // before the roll everything but a free reroll can be used
@@ -373,12 +373,12 @@ function buttons(ctx, p) {
   if (k.kind === 'scale') { const step = E.scaleStep(k); const cap = Math.min(E.scaleMax(k, level), Math.max(k.cost, b.magic));
     return [btn('sub', ['−', HK.icon('magic'), String(step)], () => ctx.step(k.id, x - step), !!why || x <= k.cost, `One die fewer, ${step} magic back`),
       btn('add', ['+', HK.icon('magic'), String(step)], () => ctx.step(k.id, x + step), !!why || x + step > cap, `One more die for ${step} magic`),
-      btn(`go pc-${f}`, ['Roll', HK.icon('magic'), String(x)], () => ctx.use(k.id), why || b.magic < x, `Roll ${E.powerDice(k, x, level)} dice for ${x} magic`)]; }
+      btn(`go pc-${f}`, ['Use', HK.icon('magic'), String(x)], () => ctx.use(k.id), why || b.magic < x, `Use ${k.name}: roll ${E.powerDice(k, x, level)} dice for ${x} magic`)]; }
   if (k.kind === 'charge') { const relUsed = !!(b.usedRound && (b.usedRound[`${k.id}:release`] || (!k.frogLoad && b.usedRound[k.id])));
     return [btn('add mc-charge', ['Charge', HK.icon('magic'), String(k.cost)], () => ctx.use(k.id), why || b.magic < k.cost || stored >= k.max, `Charge: 1 magic (${stored || 0} of ${k.max} charged)`),
       usesBuildTemplate(k) ? h('span', { class: 'mc-or' }, 'OR') : null,
       btn(`go pc-${f}`, [`Use ${stored || 0}`], () => ctx.use(k.id, { release: true }), !stored || relUsed, k.frogNeed ? `Use ${stored || 0} charge${stored === 1 ? '' : 's'} on your target: ${!stored ? 'none stored' : E.frogNeed(k, stored, level) <= 1 ? 'a sure frog' : `a frog on ${E.frogRange(E.frogNeed(k, stored, level))}`}` : `Use ${stored || 0} charge${stored === 1 ? '' : 's'} for ${stored ? E.chargeGain(k, stored, level)[f] : 0} ${WORD[f]}`)]; }
-  return [btn(`go pc-${f}`, ['Cast', HK.icon('magic'), String(x)], () => ctx.use(k.id), why || b.magic < x)];
+  return [btn(`go pc-${f}`, ['Use', HK.icon('magic'), String(x)], () => ctx.use(k.id), why || b.magic < x)]; // "Use" for every power (Dave, 6 Nov 2026: "use is more universal")
 }
 function tile(ctx, id, name, ico, cost, on, extra = null, spent = '') {
   const rl = tileRoles(id);
