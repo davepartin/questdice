@@ -391,6 +391,7 @@ export function frogReveal(host, k, r) {
 // bottom of the card in their colours; Continue sends each number down into its counter (target(key) is that counter). Dice and Side-Game
 // Cards only. Resolves when the numbers have gone.
 export const warmCardDice = (k) => MC.warmFaces(k);
+const COUNTERS = ['atk', 'pierce', 'splash', 'block', 'magic', 'heal', 'gold']; // the counter row, left to right (hudkit.js forecastStrip)
 const ROLL_ORDER = ['atk', 'pierce', 'splash', 'block', 'heal', 'gold', 'magic'];
 export function cardRoll(card, { k, r, gains, target = () => null }) {
   return new Promise((resolve) => {
@@ -405,22 +406,22 @@ export function cardRoll(card, { k, r, gains, target = () => null }) {
     // random path and spin per die, faces flipping fast then slower as it settles, landing at its own moment with a little wobble
     const rnd = (a, b) => a + Math.random() * (b - a);
     const dice = each.map((d, i) => { const old = slots[i]; if (!old) return null; const el = MC.dieFace(d.fx, d.s, 1 + Math.floor(Math.random() * d.s)); el.classList.add('mc-rolling');
-      const wrap = h('span', { class: 'mc-tumble' }, el); old.replaceWith(wrap); return { ...d, el, wrap, dur: rnd(760, 1120) + i * rnd(60, 160), anims: [] }; }).filter(Boolean);
-    const RATTLE = reduced ? 0 : 260; if (!reduced && row) { row.classList.add('mc-shake'); setTimeout(() => row.classList.remove('mc-shake'), RATTLE); }
+      const wrap = h('span', { class: 'mc-tumble' }, el); old.replaceWith(wrap); return { ...d, el, wrap, dur: rnd(1250, 1650) + i * rnd(80, 200), anims: [] }; }).filter(Boolean);
+    const RATTLE = reduced ? 0 : 420; if (!reduced && row) { row.classList.add('mc-shake'); setTimeout(() => row.classList.remove('mc-shake'), RATTLE); }
     const swapFace = (d, v, cls) => { const next = MC.dieFace(d.fx, d.s, v, cls === 'mc-landed'); next.classList.add(cls); d.el.replaceWith(next); d.el = next; };
     const tumble = (d) => { if (reduced || !d.wrap.animate) return;
       const dir = Math.random() < 0.5 ? -1 : 1; const turns = dir * 360 * (Math.random() < 0.6 ? 1 : 2); const x = () => `${rnd(-26, 26).toFixed(0)}%`;
-      d.anims.push(d.wrap.animate([
-        { transform: 'translate(0,0) rotate(0deg) scale(1)' },
-        { transform: `translate(${x()},${rnd(-62, -40).toFixed(0)}%) rotate(${(turns * rnd(0.22, 0.32)).toFixed(0)}deg) scale(1.1)`, offset: 0.2 },
-        { transform: `translate(${x()},${rnd(-10, -2).toFixed(0)}%) rotate(${(turns * rnd(0.5, 0.6)).toFixed(0)}deg) scale(.96,1.04)`, offset: 0.44 },
-        { transform: `translate(${x()},${rnd(-30, -16).toFixed(0)}%) rotate(${(turns * rnd(0.74, 0.84)).toFixed(0)}deg) scale(1.05)`, offset: 0.64 },
-        { transform: `translate(${rnd(-8, 8).toFixed(0)}%,${rnd(-6, 0).toFixed(0)}%) rotate(${(turns * rnd(0.95, 0.99)).toFixed(0)}deg) scale(1)`, offset: 0.86 },
-        { transform: `translate(0,0) rotate(${turns}deg) scale(1)` },
-      ], { duration: d.dur, easing: 'cubic-bezier(.25,.65,.35,1)', fill: 'forwards' }));
+      // the die keeps moving until it lands: bounces that shrink, a spin that slows, small shakes between (Dave: "a little bit shakier"),
+      // all on a near-even pace, so the last face flip and the end of the spin are the same moment
+      const j = () => `${rnd(-7, 7).toFixed(0)}%`; const steps = [
+        [0, 0, 0, 0, 1], [0.12, x(), rnd(-64, -46), 0.18, 1.1], [0.2, j(), rnd(-30, -18), 0.27, 1.06], [0.3, x(), rnd(-8, -2), 0.38, 0.95],
+        [0.4, x(), rnd(-42, -28), 0.5, 1.07], [0.5, j(), rnd(-14, -6), 0.6, 1], [0.6, x(), rnd(-4, 0), 0.7, 0.96], [0.7, x(), rnd(-22, -12), 0.8, 1.04],
+        [0.8, j(), rnd(-5, -1), 0.88, 1], [0.88, `${rnd(-10, 10).toFixed(0)}%`, rnd(-9, -3), 0.94, 1.02], [0.95, `${rnd(-4, 4).toFixed(0)}%`, rnd(-2, 0), 0.985, 1], [1, '0%', 0, 1, 1]];
+      d.anims.push(d.wrap.animate(steps.map(([o, tx, ty, r, sc]) => ({ offset: o, transform: `translate(${typeof tx === 'number' ? `${tx}%` : tx},${Number(ty).toFixed(0)}%) rotate(${(turns * r + (o > 0 && o < 1 ? rnd(-12, 12) : 0)).toFixed(0)}deg) scale(${sc})` })),
+        { duration: d.dur, easing: 'linear', fill: 'forwards' }));
       // the faces flip quickly, then slower and slower as the die runs out of energy
-      let gap = rnd(38, 55); let at = 0;
-      const flip = () => { if (!d.el.classList.contains('mc-rolling')) return; at += gap; if (at > d.dur - 90) return; swapFace(d, 1 + Math.floor(Math.random() * d.s), 'mc-rolling'); gap *= rnd(1.12, 1.24); d.flipT = setTimeout(flip, gap); };
+      let gap = rnd(42, 58); let at = 0;
+      const flip = () => { if (!d.el.classList.contains('mc-rolling')) return; at += gap; if (at > d.dur - 40) return; swapFace(d, 1 + Math.floor(Math.random() * d.s), 'mc-rolling'); gap *= rnd(1.07, 1.13); d.flipT = setTimeout(flip, gap); };
       d.flipT = setTimeout(flip, gap); };
     const flick = null;
     const land = (d) => { if (d.el.classList.contains('mc-landed')) return; clearTimeout(d.flipT); for (const a of d.anims) { try { a.cancel(); } catch { /* gone */ } }
@@ -452,12 +453,17 @@ export function cardRoll(card, { k, r, gains, target = () => null }) {
       for (const n of res.querySelectorAll('.mc-res-n')) {
         const from = n.getBoundingClientRect(); const to = target(n.dataset.k)?.getBoundingClientRect?.(); const ghost = n.cloneNode(true); ghost.classList.add('mc-res-fly');
         Object.assign(ghost.style, { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px` }); document.body.append(ghost);
-        const dx = to && to.width ? to.left + to.width / 2 - (from.left + from.width / 2) : 0; const dy = to && to.height && to.top > from.top ? to.top + to.height / 2 - (from.top + from.height / 2) : window.innerHeight - from.top + 20;
-        requestAnimationFrame(() => { ghost.style.transform = `translate(${dx}px, ${dy}px) scale(.55)`; ghost.style.opacity = '0'; });
-        setTimeout(() => ghost.remove(), reduced ? 0 : 750);
+        // toward its own counter (Dave: "based on which color they are … slowly float towards that part of the screen"): the counters sit in a
+        // row across the bottom, Attack at the left to Gold at the right; when the sheet covers them, aim where they would be
+        const seen = to && to.width > 4 && to.top > from.bottom && to.top < window.innerHeight;
+        const slot = Math.max(0, COUNTERS.indexOf(n.dataset.k)); const W = window.innerWidth; const H = window.innerHeight;
+        const tx = seen ? to.left + to.width / 2 : W * (slot + 0.5) / COUNTERS.length; const ty = seen ? to.top + to.height / 2 : H - Math.min(150, H * 0.17);
+        const dx = tx - (from.left + from.width / 2); const dy = ty - (from.top + from.height / 2);
+        requestAnimationFrame(() => { ghost.style.transform = `translate(${dx.toFixed(0)}px, ${dy.toFixed(0)}px) scale(.6)`; ghost.style.opacity = '0'; });
+        setTimeout(() => ghost.remove(), reduced ? 0 : 1300);
       }
       res.classList.add('out'); card.classList.remove('mc-rolling-card'); setTimeout(() => card.classList.remove('mc-answering'), reduced ? 0 : 560);
-      setTimeout(() => { res.remove(); resolve(); }, reduced ? 0 : 560);
+      setTimeout(() => { res.remove(); resolve(); }, reduced ? 0 : 900);
     });
   });
 }

@@ -847,7 +847,7 @@ img.mc-die.mc-3d.d4{transform:scale(1.08) translateY(-3%)}
 .mc-res-n.t-atk{--c:#e0262e}.mc-res-n.t-pierce{--c:#e8740c}.mc-res-n.t-splash{--c:#e0309a}.mc-res-n.t-block{--c:#2f7fe0}.mc-res-n.t-heal{--c:#17a852}.mc-res-n.t-gold{--c:#c99200}.mc-res-n.t-magic{--c:#8a4de0}
 .mc-res-go{min-height:44px;width:100%;border:0;border-radius:2.6cqi;background:linear-gradient(180deg,#f2c14e,#c9932a);color:#2a1806;font:900 5.6cqi/1 var(--ui,sans-serif);letter-spacing:.08em;text-transform:uppercase;box-shadow:inset 0 -1cqi 0 #8a6a2a;cursor:pointer}
 .mc-res-go:disabled{opacity:.5}
-.mc-res-fly{position:fixed;z-index:99999;margin:0;pointer-events:none;transition:transform .7s cubic-bezier(.5,0,.7,1),opacity .7s ease-in;font-size:40px!important;justify-content:center}
+.mc-res-fly{position:fixed;z-index:99999;margin:0;pointer-events:none;transition:transform 1.2s cubic-bezier(.45,.05,.55,.95),opacity 1.2s cubic-bezier(.7,0,.9,.6);font-size:40px!important;justify-content:center}
 .mc-res-fly .ic{width:28px!important;height:28px!important}
 @media (prefers-reduced-motion: reduce){.mc-die.mc-rolling,.mc-die.mc-landed{animation:none}.mc-result,.mc-res-fly{transition:none}}
 /* a Side-Game Card's answer sits above its table (the table stays readable), and the row that was rolled lights up */
@@ -860,6 +860,6 @@ img.mc-die.mc-3d.d4{transform:scale(1.08) translateY(-3%)}
 /* the random tumble (Dave, 6 Nov 2026): each die moves in its own wrapper; a quick rattle of the row first */
 .mc-tumble{display:inline-flex;flex:none;align-items:center;justify-content:center;will-change:transform}
 .mc-tumble .mc-die.mc-rolling,.mc-tumble .mc-die.mc-landed{animation:none}
-.t28-dice.mc-shake{animation:mcRattle .26s linear}
-@keyframes mcRattle{0%{transform:translate(0,0) rotate(0)}15%{transform:translate(-2.4%,1%) rotate(-2deg)}30%{transform:translate(2%,-1.2%) rotate(1.6deg)}45%{transform:translate(-1.6%,-.6%) rotate(-1.2deg)}60%{transform:translate(1.8%,1%) rotate(1.8deg)}75%{transform:translate(-1%,.4%) rotate(-.8deg)}100%{transform:none}}
+.t28-dice.mc-shake{animation:mcRattle .42s linear}
+@keyframes mcRattle{0%{transform:none}10%{transform:translate(-4%,2%) rotate(-3.5deg)}20%{transform:translate(3.5%,-2%) rotate(3deg)}30%{transform:translate(-3%,-1.5%) rotate(-2.5deg)}40%{transform:translate(4%,1.5%) rotate(3.5deg)}50%{transform:translate(-3.5%,1%) rotate(-3deg)}60%{transform:translate(3%,-1.5%) rotate(2.5deg)}70%{transform:translate(-2.5%,1%) rotate(-2deg)}80%{transform:translate(2%,-.5%) rotate(1.5deg)}90%{transform:translate(-1%,.5%) rotate(-1deg)}100%{transform:none}}
 @media (prefers-reduced-motion: reduce){.t28-dice.mc-shake{animation:none}}
