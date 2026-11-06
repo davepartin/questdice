@@ -1691,4 +1691,4 @@ Build `20261106cr1` repairs a confirmed rules inconsistency: solo splash omitted
 
 ## 6 November 2026 — Continue closes Magical Powers for the float
 
-Tapping Continue after a magic-card roll or Use now closes the Magical Powers overlay at the same moment the coloured totals start floating toward the battle counters, so the drift is visible on the board. Charge Use and Finisher Cards share that Continue path; storing a charge still has no Continue. No card rules, prices, dice, templates or destination colours changed. Details: docs/team/tasks/magic-continue-close.md.
+Build `20261106a18`. Tapping Continue after a magic-card roll or Use now closes the Magical Powers overlay at the same moment the coloured totals start floating toward the battle counters, so the drift is visible on the board. Charge Use and Finisher Cards share that Continue path; storing a charge still has no Continue. No card rules, prices, dice, templates or destination colours changed. Details: docs/team/tasks/magic-continue-close.md.
