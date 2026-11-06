@@ -131,7 +131,7 @@ function buildHud() {
   hud.place = h('small', {}); hud.round = h('b', {}); hud.score = h('span', { class: 'b3-score', 'aria-label': 'Battle points' }, h('i', {}, 'PTS'), h('b', {}, '0'));
   hud.again = h('button', { type: 'button', class: 'rc-again', hidden: true, 'aria-label': 'Show the last round again', onclick: () => showCard(B.lastCard) }, HK.icon('dice'), h('span', {}, 'Recap'));
   hud.leave = h('button', { type: 'button', class: 'b3-leave-camp', hidden: true, 'aria-label': 'Back to camp', onclick: donePractice }, 'Back to camp');
-  hud.top = h('div', { class: 'b3-top' }, hud.menu, h('div', { class: 'b3-round' }, hud.place, h('span', { class: 'b3-rline' }, hud.round, hud.score, hud.again), hud.leave));
+  hud.top = h('div', { class: 'b3-top' }, hud.menu, h('div', { class: 'b3-round' }, hud.place, h('span', { class: 'b3-rline' }, hud.round, hud.score, hud.again, hud.leave)));
   hud.coach = h('div', { class: 'b3-coach' });
   hud.ribbon = h('div', { class: 'b3-ribbon' });
   hud.hero = buildHero();
@@ -547,7 +547,8 @@ function setHud({ phase }) {
   const practice = !!b?.campPractice;
   B.root.classList.toggle('is-practice', practice);
   if (hud.leave) hud.leave.hidden = !practice;
-  if (practice) hud.again.hidden = true;
+  if (practice) { hud.again.hidden = true; hud.score.hidden = true; }
+  else if (hud.score) hud.score.hidden = false;
 }
 // Controls stay on screen (no reflow, no tray jump) but go quiet while a round plays out.
 function clearDock() {

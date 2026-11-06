@@ -39,13 +39,22 @@ const waitPractice = async () => {
 };
 const leaveBtn = () => p.evaluate(() => {
   const btn = document.querySelector('.b3-leave-camp');
+  const recap = document.querySelector('.b3-top .rc-again');
+  const round = document.querySelector('.b3-rline b, .b3-round b');
+  const hero = document.querySelector('.fb-slot.hero');
   const r = btn?.getBoundingClientRect();
+  const rr = round?.getBoundingClientRect();
+  const hr = hero?.getBoundingClientRect();
   const style = btn ? getComputedStyle(btn) : null;
+  const recapStyle = recap ? getComputedStyle(recap) : null;
   return {
     visible: !!(btn && !btn.hidden && style?.display !== 'none' && (btn.offsetParent || style?.position === 'absolute' || style?.position === 'fixed')),
     text: (btn?.textContent || '').trim(),
     inHeader: !!btn?.closest('.b3-top'),
-    w: r?.width || 0, h: r?.height || 0, y: r?.top || 0,
+    inRoundLine: !!btn?.closest('.b3-rline'),
+    recap: !!(recap && !recap.hidden && recapStyle?.display !== 'none' && recap.offsetParent),
+    w: r?.width || 0, h: r?.height || 0, y: r?.top || 0, bottom: r?.bottom || 0,
+    roundY: rr?.top || 0, heroTop: hr?.top || 0,
     overlay: [...document.querySelectorAll('button')].some((b) => b.offsetParent && b.classList.contains('b3-practice-done')),
   };
 });
@@ -108,8 +117,10 @@ if (rollBtn.asElement()) {
   }
 }
 const midLeave = await leaveBtn();
-check('Back to camp is in the practice header before Lock in', midLeave.visible && midLeave.inHeader && midLeave.text === 'Back to camp' && !midLeave.overlay, JSON.stringify(midLeave));
-check('header Back to camp is large enough to tap on a phone', midLeave.w >= 88 && midLeave.h >= 36, JSON.stringify(midLeave));
+check('Back to camp is in the practice header before Lock in', midLeave.visible && midLeave.inHeader && midLeave.inRoundLine && midLeave.text === 'Back to camp' && !midLeave.overlay, JSON.stringify(midLeave));
+check('header Back to camp sits on the ROUND line, not on the hero', midLeave.visible && Math.abs(midLeave.y - midLeave.roundY) <= 24 && (midLeave.heroTop === 0 || midLeave.bottom <= midLeave.heroTop + 8), JSON.stringify(midLeave));
+check('Recap is not the practice exit; Back to camp is', !midLeave.recap && midLeave.visible, JSON.stringify(midLeave));
+check('header Back to camp is large enough to tap on a phone', midLeave.w >= 88 && midLeave.h >= 32, JSON.stringify(midLeave));
 await p.screenshot({ path: path.join(OUT, 'practice-mid-round.png') });
 
 await p.evaluate(() => {

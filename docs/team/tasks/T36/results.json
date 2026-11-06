@@ -34,9 +34,14 @@
     "visible": true,
     "text": "Back to camp",
     "inHeader": true,
-    "w": 122,
-    "h": 44,
-    "y": 45.5,
+    "inRoundLine": true,
+    "recap": false,
+    "w": 101.90625,
+    "h": 38.390625,
+    "y": 18.40625,
+    "bottom": 56.796875,
+    "roundY": 26.84375,
+    "heroTop": 131.234375,
     "overlay": false
   },
   "midRestored": {
@@ -60,30 +65,35 @@
     "phase": "practice-end",
     "again": true,
     "totals": {
-      "atk": "0",
-      "pierce": "4",
+      "atk": "10",
+      "pierce": "3",
       "splash": "0",
-      "block": "11",
-      "magic": "2",
+      "block": "14",
+      "magic": "0",
       "heal": "3",
-      "gold": "0"
+      "gold": "12"
     },
     "T": {
-      "atk": 0,
-      "pierce": 4,
-      "block": 11,
+      "atk": 10,
+      "pierce": 3,
+      "block": 14,
       "heal": 3,
-      "magic": 2,
-      "gold": 0
+      "magic": 0,
+      "gold": 12
     }
   },
   "endLeave": {
     "visible": true,
     "text": "Back to camp",
     "inHeader": true,
-    "w": 122,
-    "h": 44,
-    "y": 45.5,
+    "inRoundLine": true,
+    "recap": false,
+    "w": 101.90625,
+    "h": 38.390625,
+    "y": 18.40625,
+    "bottom": 56.796875,
+    "roundY": 26.84375,
+    "heroTop": 130.234375,
     "overlay": true
   },
   "zeroed": {
