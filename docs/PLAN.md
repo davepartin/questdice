@@ -1687,6 +1687,8 @@ Build `20261106cr1` repairs a confirmed rules inconsistency: solo splash omitted
 
 6 November 2026 — T34: Talent upgrades now use focused symbol/growth dialogs rather than an inline editor and scroll jumps. Bright digital colours follow Dave's revised direction. Both Talent dice and the d4/d6/d8/d10 progression remain visible. Done with price commits, Cancel preserves everything, and the updated face is visible on return. Prices, rules, save format and shared operation path unchanged. Details and browser evidence: [T34](team/tasks/T34-talent-dialog.md).
 
+6 November 2026 — T35: Dave requested Splash as the sixth Talent symbol. Existing pink fork, normal face price and two-per-die limit; rolled face value damages every other monster and respects their guard/Shield. Teal die portraits, numbered rows and focused Done flow retained. Existing generic engine paths handle it; meaningful solo/co-op/save/browser checks document the addition. [T35](team/tasks/T35-talent-splash.md).
+
 ## 6 November 2026 — Continue closes Magical Powers for the float
 
-Build `20261106a17`. Tapping Continue after a magic-card roll or Use now closes the Magical Powers overlay at the same moment the coloured totals start floating toward the battle counters, so the drift is visible on the board. Charge Use and Finisher Cards share that Continue path; storing a charge still has no Continue. No card rules, prices, dice, templates or destination colours changed. Details: docs/team/tasks/magic-continue-close.md.
+Tapping Continue after a magic-card roll or Use now closes the Magical Powers overlay at the same moment the coloured totals start floating toward the battle counters, so the drift is visible on the board. Charge Use and Finisher Cards share that Continue path; storing a charge still has no Continue. No card rules, prices, dice, templates or destination colours changed. Details: docs/team/tasks/magic-continue-close.md.
