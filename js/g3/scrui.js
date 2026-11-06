@@ -1967,7 +1967,7 @@ export function camp(fromBoard) {
   if (resetScroll) { const side = $('.sx-side'); if (side) { side.scrollTop = 0; SCR.scrolled?.(0); } }
   { const side = $('.sx-side'); const st = side?.querySelector('.sx-sidetop'); if (side && st) side.style.setProperty('--stick', `${st.offsetHeight}px`); }
   lay('camp');
-  SCR.enter('camp', { hero, heroes: X.members() }, `camp:${hero.name}`).then((hd) => { if (hd) { hd.sync?.(hero); } });
+  SCR.enter('camp', { hero, heroes: X.members(), onDummy: X.net ? null : X.startCampPractice }, `camp:${hero.name}`).then((hd) => { if (hd) { hd.sync?.(hero); } });
   SCR.current()?.sync?.(hero);
   refreshSheet();
 }

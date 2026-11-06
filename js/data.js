@@ -469,6 +469,22 @@ export const needsFlip = (def, want) => {
   return look !== want;
 };
 const IB = (W, H, cx, by, bw) => ({ x: cx / W, y: by / H, w: bw / W });
+// Camp practice dummy (Dave, 6 Nov 2026): a fireside scarecrow, not a monster. Kept out of MONSTERS so it never
+// wanders, drops loot, or changes the 50-monster catalog. mdef() in engine.js falls back to this sheet.
+export const TRAINING_DUMMY = {
+  id: 'training-dummy',
+  name: 'Practice Dummy', glyph: '🎯',
+  img: 'assets/miniatures/training-dummy.webp', look: 'front',
+  imgBase: IB(347, 512, 174, 507, 320),
+  short: 'DUMMY', init: 4, hp: 9999, power: 4, xp: 0, gold: 0,
+  tier: 'minion', threat: 0, land: 1,
+  faces: [
+    { n: 'Still', v: 'idle', f: 0, m: 0 },
+    { n: 'Still', v: 'idle', f: 0, m: 0 },
+    { n: 'Still', v: 'idle', f: 0, m: 0 },
+    { n: 'Still', v: 'idle', f: 0, m: 0 },
+  ],
+};
 export const CLASSES = {
   // Asymmetric starts, uniform dice (Dave): every class has the same nine dice and rules. They differ in health, speed
   // (feet), a strong hand, starting weapons and magic: startMagic, magicCap (default MAGIC_CAP), powerLevels (how far powers upgrade, default 3) and maxFeet (default 6).

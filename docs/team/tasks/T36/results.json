@@ -1,0 +1,85 @@
+{
+  "setup": {
+    "gold": 77,
+    "xp": 12,
+    "potions": 2,
+    "rounds": 0
+  },
+  "camp": {
+    "dummy": true,
+    "label": "Practice",
+    "hero": true,
+    "tap": true,
+    "dummyX": 280.7038269042969,
+    "heroX": 115.30635070800781
+  },
+  "entered": {
+    "practice": true,
+    "free": true,
+    "foe": "training-dummy",
+    "mag": "∞",
+    "counters": {
+      "atk": "0",
+      "pierce": "0",
+      "splash": "0",
+      "block": "0",
+      "magic": "0",
+      "heal": "0",
+      "gold": "0"
+    },
+    "picker": false,
+    "foeImg": "assets/miniatures/training-dummy.webp"
+  },
+  "scored": {
+    "block": 4,
+    "atk": 0,
+    "splash": 0,
+    "modsBlock": 4,
+    "lastCast": "riposte",
+    "sheet": false,
+    "potions": 2
+  },
+  "endState": {
+    "phase": "practice-end",
+    "again": true,
+    "totals": {
+      "atk": "6",
+      "pierce": "3",
+      "splash": "0",
+      "block": "8",
+      "magic": "4",
+      "heal": "3",
+      "gold": "2"
+    },
+    "T": {
+      "atk": 6,
+      "pierce": 3,
+      "block": 8,
+      "heal": 3,
+      "magic": 4,
+      "gold": 2
+    }
+  },
+  "zeroed": {
+    "phase": "reset",
+    "counters": {
+      "atk": "0",
+      "pierce": "0",
+      "splash": "0",
+      "block": "0",
+      "magic": "0",
+      "heal": "0",
+      "gold": "0"
+    },
+    "used": []
+  },
+  "restored": {
+    "gold": 77,
+    "xp": 12,
+    "potions": 2,
+    "practice": false,
+    "dummy": true
+  },
+  "errors": [],
+  "bad": 0
+}

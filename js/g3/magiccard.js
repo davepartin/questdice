@@ -366,19 +366,19 @@ function buttons(ctx, p) {
   const btn = (cls, label, on, dis, aria) => h('button', { type: 'button', class: `mc-use ${cls}`, disabled: !!dis, 'aria-label': aria || null, onclick: on }, ...label);
   if (k.frogLoad) {
     const used = !!b.usedRound?.[`${k.id}:release`], full = stored >= k.max;
-    return [btn('add mc-frog-load', [full ? 'Full' : st.spent ? 'Loaded' : 'Load 2', HK.icon('magic'), String(k.cost)], () => ctx.use(k.id), st.spent || st.early || b.magic < k.cost || full, `Load the next two numbered dice for ${k.cost} magic`),
+    return [btn('add mc-frog-load', [full ? 'Full' : st.spent ? 'Loaded' : 'Load 2', HK.icon('magic'), String(k.cost)], () => ctx.use(k.id), st.spent || st.early || !E.canPay(b, k.cost) || full, `Load the next two numbered dice for ${k.cost} magic`),
       h('span', { class: 'mc-or fm-then', 'aria-hidden': 'true' }, '→'),
       btn('go pc-magic', [used ? 'Used' : 'Use', die('magic', 6, 6)], () => ctx.use(k.id, { release: true }), !stored || used, `Roll one purple d6; match ${E.frogMatchRange(k, stored)}. Loaded dice are spent.`)];
   }
-  if (k.kind === 'scale') { const step = E.scaleStep(k); const cap = Math.min(E.scaleMax(k, level), Math.max(k.cost, b.magic));
+  if (k.kind === 'scale') { const step = E.scaleStep(k); const cap = Math.min(E.scaleMax(k, level), b.freeMagic ? E.scaleMax(k, level) : Math.max(k.cost, b.magic));
     return [btn('sub', ['−', HK.icon('magic'), String(step)], () => ctx.step(k.id, x - step), !!why || x <= k.cost, `One die fewer, ${step} magic back`),
       btn('add', ['+', HK.icon('magic'), String(step)], () => ctx.step(k.id, x + step), !!why || x + step > cap, `One more die for ${step} magic`),
-      btn(`go pc-${f}`, ['Use', HK.icon('magic'), String(x)], () => ctx.use(k.id), why || b.magic < x, `Use ${k.name}: roll ${E.powerDice(k, x, level)} dice for ${x} magic`)]; }
+      btn(`go pc-${f}`, ['Use', HK.icon('magic'), String(x)], () => ctx.use(k.id), why || !E.canPay(b, x), `Use ${k.name}: roll ${E.powerDice(k, x, level)} dice for ${x} magic`)]; }
   if (k.kind === 'charge') { const relUsed = !!(b.usedRound && (b.usedRound[`${k.id}:release`] || (!k.frogLoad && b.usedRound[k.id])));
-    return [btn('add mc-charge', ['Charge', HK.icon('magic'), String(k.cost)], () => ctx.use(k.id), why || b.magic < k.cost || stored >= k.max, `Charge: 1 magic (${stored || 0} of ${k.max} charged)`),
+    return [btn('add mc-charge', ['Charge', HK.icon('magic'), String(k.cost)], () => ctx.use(k.id), why || !E.canPay(b, k.cost) || stored >= k.max, `Charge: 1 magic (${stored || 0} of ${k.max} charged)`),
       usesBuildTemplate(k) ? h('span', { class: 'mc-or' }, 'OR') : null,
       btn(`go pc-${f}`, [`Use ${stored || 0}`], () => ctx.use(k.id, { release: true }), !stored || relUsed, k.frogNeed ? `Use ${stored || 0} charge${stored === 1 ? '' : 's'} on your target: ${!stored ? 'none stored' : E.frogNeed(k, stored, level) <= 1 ? 'a sure frog' : `a frog on ${E.frogRange(E.frogNeed(k, stored, level))}`}` : `Use ${stored || 0} charge${stored === 1 ? '' : 's'} for ${stored ? E.chargeGain(k, stored, level)[f] : 0} ${WORD[f]}`)]; }
-  return [btn(`go pc-${f}`, ['Use', HK.icon('magic'), String(x)], () => ctx.use(k.id), why || b.magic < x)]; // "Use" for every power (Dave, 6 Nov 2026: "use is more universal")
+  return [btn(`go pc-${f}`, ['Use', HK.icon('magic'), String(x)], () => ctx.use(k.id), why || !E.canPay(b, x))]; // "Use" for every power (Dave, 6 Nov 2026: "use is more universal")
 }
 function tile(ctx, id, name, ico, cost, on, extra = null, spent = '') {
   const rl = tileRoles(id);
@@ -477,7 +477,7 @@ function utilityCard(ctx, u, glyph) {
 export function sheet(ctx, { glyph, detailPanel, tally }) {
   const order = ['A', 'B', 'C']; const ps = order.map((s) => ctx.powers.find((p) => p.k.slot === s)).filter(Boolean);
   const sel = ctx.selected; const p = ps.find((q) => q.k.id === sel); const u = ctx.utils.find((q) => q.id === sel);
-  if (p && usesCardTemplate(p.k) && p.k.kind === 'scale' && !p.st.spent) { const remaining = Math.max(0, ctx.b.magic - (p.x ?? p.k.cost)); const meter = tally?.querySelector('.pw-center'); if (meter) { meter.querySelector('b').textContent = String(remaining); meter.setAttribute('aria-label', `${remaining} magic available after reserving ${p.x ?? p.k.cost} for ${p.k.name}`); meter.title = 'Magic remaining after the selected cost; paid on Roll'; } }
+  if (p && usesCardTemplate(p.k) && p.k.kind === 'scale' && !p.st.spent) { const meter = tally?.querySelector('.pw-center'); if (meter) { if (ctx.b.freeMagic) { meter.querySelector('b').textContent = '∞'; meter.setAttribute('aria-label', 'Unlimited magic'); meter.title = 'Unlimited magic'; } else { const remaining = Math.max(0, ctx.b.magic - (p.x ?? p.k.cost)); meter.querySelector('b').textContent = String(remaining); meter.setAttribute('aria-label', `${remaining} magic available after reserving ${p.x ?? p.k.cost} for ${p.k.name}`); meter.title = 'Magic remaining after the selected cost; paid on Roll'; } } }
   const utils = ['u:bigheal', 'u:heal', 'u:heart'].map((id) => ctx.utils.find((q) => q.id === id)).filter(Boolean);
   const spentTile = q => q.k.frogLoad ? !!(ctx.b.usedRound?.[q.k.id] && ctx.b.usedRound?.[`${q.k.id}:release`]) : q.st.spent;
   const grid = h('div', { class: 'mc-grid', 'aria-label': 'Your magic' },
