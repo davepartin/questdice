@@ -24,9 +24,11 @@ const SIZE = {
   moonjelly: 0.85, visitor: 0.9, hedgeboar: 0.95, silkwood: 1.65, gargoyle: 0.95, yeti: 1.6,
   direbear: 1.6, tuskraider: 1.0, tuskwarlord: 1.6, barrowrider: 1.7, stormtyrant: 1.55,
   hivedrone: 0.78, hivequeen: 1.7, nightblade: 1.0, basilisk: 0.95, slagcolossus: 1.7, frostgiant: 1.7,
+  'training-dummy': 0.95,
 };
 const REL_MAX = 0.62 + 0.38 * 1.7;
 export const relOf = (id) => (0.62 + 0.38 * (SIZE[id] || 1)) / REL_MAX; // 'hero' is 1.0
+const foeLook = (e, camp) => monsterOf(e.id, camp) || D.MONSTERS[e.id] || (e.id === D.TRAINING_DUMMY?.id ? D.TRAINING_DUMMY : {}) || {};
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const easeOut = (k) => 1 - (1 - k) ** 3;
@@ -258,7 +260,7 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     return { el: h('div', { class: 'fb-card foe' }, name, hp, intent, special), name, hp, hpNum, intent, def, special };
   };
   fb.addFoe = (e) => {
-    const def = monsterOf(e.id, camp) || D.MONSTERS[e.id] || {};
+    const def = foeLook(e, camp);
     const pc = new Piece(fb, { kind: 'foe', key: e.uid, img: def.img || 'assets/miniatures/goblin.webp', name: e.name, rel: relOf(e.id), flip: D.needsFlip(def, 'left') }).seat(def.imgBase); // every monster looks toward the heroes
     pc.el.classList.add('foe', `tier-${e.tier}`); pc.el.dataset.uid = e.uid;
     const c = cardOf(e); pc.c = c;
@@ -268,8 +270,10 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     const tap = () => onPick?.(e.uid);
     pc.el.addEventListener('click', tap); c.el.addEventListener('click', tap);
     // a small gold "i" on the plaque: tap it to read about this monster (tapping the chosen one again does the same)
-    const info = h('button', { type: 'button', class: 'fb-info', 'aria-label': `About ${e.name}`, onclick: (ev) => { ev.stopPropagation(); onInfo?.(e.uid); } }, 'i');
-    c.el.append(info);
+    if (e.id !== 'training-dummy') {
+      const info = h('button', { type: 'button', class: 'fb-info', 'aria-label': `About ${e.name}`, onclick: (ev) => { ev.stopPropagation(); onInfo?.(e.uid); } }, 'i');
+      c.el.append(info);
+    }
     foeSide.append(slot); fb.pieces.set(e.uid, pc); fb.foes.set(e.uid, pc);
     fb.layout();
     return pc;
@@ -385,10 +389,10 @@ export function createFlat({ host, tween, wait, enemies, heroes, quest, onPick, 
     const dead = hpNow <= 0; const k = clamp(hpNow / Math.max(1, e.maxHp), 0, 1);
     c.hp.querySelector('.fb-hp-fill').style.width = `${k * 100}%`;
     const ghost = c.hp.querySelector('.fb-hp-ghost'); if (k * 100 >= parseFloat(ghost.style.width || '100')) ghost.style.width = `${k * 100}%`; else { clearTimeout(c.gt); c.gt = setTimeout(() => { ghost.style.width = `${k * 100}%`; }, 420); }
-    c.hpNum.textContent = String(Math.max(0, Math.ceil(hpNow)));
+    c.hpNum.textContent = e.id === 'training-dummy' ? '—' : String(Math.max(0, Math.ceil(hpNow)));
     if (c.defSig !== (e.armor ? 'a' : '') + (e.faces?.length || 0)) { // its defence (guard die, armour, or none) does not change with the round
       c.defSig = (e.armor ? 'a' : '') + (e.faces?.length || 0);
-      const d = monsterOf(e.id, camp) || D.MONSTERS[e.id] || {}; const faces = e.faces || d.faces || []; const armor = e.armor || d.armor; const size = e.powerDie || d.power;
+      const d = foeLook(e, camp); const faces = e.faces || d.faces || []; const armor = e.armor || d.armor; const size = e.powerDie || d.power;
       const guard = faces.some((f) => ['guard', 'ward'].includes(f.v)); const phase = faces.some((f) => f.v === 'phase');
       const txt = guard ? `d${size}` : armor ? `${armor.n}d${armor.s}` : '';
       c.def.className = `fb-def${txt || phase ? '' : ' none'}`;

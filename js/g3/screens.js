@@ -53,8 +53,8 @@ const MODES = {
     music.setMood?.('road');
     return { hero: null, sync() {} };
   },
-  async camp({ hero, heroes } = {}, token) {
-    await Scenery.enter('camp', { heroes: heroes?.length ? heroes : [hero], act: hero?.campaign?.act || 1 });
+  async camp({ hero, heroes, onDummy } = {}, token) {
+    await Scenery.enter('camp', { heroes: heroes?.length ? heroes : [hero], act: hero?.campaign?.act || 1, onDummy });
     music.setMood?.('camp');
     return { hero: null, sync() {} };
   },

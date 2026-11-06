@@ -1692,3 +1692,9 @@ Build `20261106cr1` repairs a confirmed rules inconsistency: solo splash omitted
 ## 6 November 2026 — Continue closes Magical Powers for the float
 
 Build `20261106a18`. Tapping Continue after a magic-card roll or Use now closes the Magical Powers overlay at the same moment the coloured totals start floating toward the battle counters, so the drift is visible on the board. Charge Use and Finisher Cards share that Continue path; storing a charge still has no Continue. No card rules, prices, dice, templates or destination colours changed. Details: docs/team/tasks/magic-continue-close.md.
+
+## 6 November 2026 — camp fireside practice dummy
+
+Dave asked for a Minecraft Dungeons-style training dummy by the campfire. A painted miniature stands to the right of the fire on the camp banner (hero still left). Tapping it starts a one-round practice session with the current loadout, unlimited magic, colour counters at zero each attempt, and no XP, loot or campaign progress. Again resets the round; Back to camp restores a snapshot of the real run. Dummy sheet is `TRAINING_DUMMY` (not in `MONSTERS`).
+
+Build `20261106pd1`. 590/590 tests pass. Headless Chromium check (`dev/camp-practice-check.mjs`) opens camp, taps the dummy, confirms unlimited magic and zeroed counters, Uses Counterstrike, locks in coloured totals, Again zeros, Done restores gold/potions/XP. Not Safari. Details: docs/team/tasks/T36.md.

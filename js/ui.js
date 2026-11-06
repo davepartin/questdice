@@ -87,7 +87,7 @@ function persist() {
     if (mine) { SV.saveHero(mine); queueCloud(mine); }
     return;
   }
-  if (S.practice || S.daily) return; // the practice battle and the daily challenge are never saved to a hero
+  if (S.practice || S.daily || S.campPractice) return; // tutorial practice, the daily, and the camp dummy never write the real run
   const members = membersOf();
   if (!members.length) return;
   const campaign = members[0].campaign;
@@ -702,6 +702,7 @@ function revealSolo(won) {
 // battleCtx().portrait: the monster sheet's picture, from the front; four-legged monsters turned a little so the face and body both show
 function battleCtx() {
   if (S.net) return { S, net: true, gear: openGear, menu: Online.menu, persist() {}, banner, showVictory: () => { B3.stop(); Online.afterBattle(); }, defeat: () => { B3.stop(); Online.afterBattle(); } };
+  if (S.campPractice) return { S, gear: openGear, menu: battleMenu, persist() {}, banner, leaveCampPractice, showVictory: () => { B3.stop(); leaveCampPractice(); }, defeat: () => { B3.stop(); leaveCampPractice(); } };
   if (S.practice) return { S, gear: openGear, menu: battleMenu, persist, banner, tut: S.practice.guide, showVictory: () => { B3.stop(); TUT.showDone(true); }, defeat: () => { B3.stop(); TUT.showDone(false); } };
   if (S.daily) return { S, gear: openGear, menu: battleMenu, persist() {}, banner, showVictory: () => { B3.stop(); dailyAfter(true); }, defeat: () => { B3.stop(); dailyAfter(false); } };
   return { S, gear: openGear, menu: battleMenu, persist, banner, showVictory: () => { B3.stop(); showVictory(); }, defeat: (r) => { B3.stop(); defeat(r); } };
@@ -820,8 +821,9 @@ function battleMenu() {
       soundItem(() => close()),
       deviceItem(() => close()),
       downloadItem(() => close()),
-      S.practice ? ghost('Leave practice', () => { close(); askHome(); }) : ghost('Retreat (lose 15% gold). Live to try again.', () => { close(); B3.stop(); defeat(true); }),
-      S.practice ? null : ghost('Go home', () => { close(); askHome(); }), ghost('Back to the fight', () => close()))));
+      S.campPractice ? ghost('Back to camp', () => { close(); leaveCampPractice(); })
+        : S.practice ? ghost('Leave practice', () => { close(); askHome(); }) : ghost('Retreat (lose 15% gold). Live to try again.', () => { close(); B3.stop(); defeat(true); }),
+      S.practice || S.campPractice ? null : ghost('Go home', () => { close(); askHome(); }), ghost('Back to the fight', () => close()))));
 }
 function toggle(slot) {
   if (S.busy) return; const b = S.battle; const info = E.rerollInfo(b);
@@ -1103,9 +1105,54 @@ function chronicleBlock() {
   return section('The road remembers', h('div', { class: 'cardlist' }, log.slice(0, 8).map((entry) => h('div', { class: 'mini-card' }, h('b', {}, entry.title), h('small', {}, entry.text)))));
 }
 
+function snapshotRun() {
+  const members = membersOf();
+  return {
+    members: structuredClone(members),
+    seat: S.seat,
+    heroName: S.hero?.name,
+    company: S.company ? { ...S.company, members: structuredClone(S.company.members), campaign: structuredClone(S.company.campaign) } : null,
+  };
+}
+function restoreRun(snap) {
+  if (!snap) return;
+  if (snap.company) {
+    S.company = { ...snap.company, members: structuredClone(snap.members), campaign: snap.company.campaign ? structuredClone(snap.company.campaign) : snap.members[0]?.campaign };
+    S.seat = snap.seat || 0;
+    S.hero = S.company.members[S.seat] || S.company.members[0];
+  } else {
+    S.hero = structuredClone(snap.members[0]);
+    S.company = S.hero ? { members: [S.hero], campaign: S.hero.campaign } : null;
+    S.seat = 0;
+  }
+}
+function startCampPractice() {
+  if (S.net) return;
+  const hero = S.hero || membersOf()[S.seat || 0];
+  if (!hero) return;
+  S.campPractice = { snap: snapshotRun() };
+  const quest = { id: 'camp-practice', name: 'Practice dummy', kind: 'ordinary', enemies: ['training-dummy'], rewardMult: 0, hpMult: 1, flat: 0, campPractice: true };
+  S.quest = quest;
+  S.battle = E.newBattle(hero, quest, fresh(), 1);
+  S.battle.campPractice = true; S.battle.freeMagic = true;
+  S.hero = hero;
+  S.lastReport = null; S.sel.clear(); S.target = 0; S.focus = null; S.straight = 'atk';
+  S.envelope = null; S.bonus = null;
+  if (world.available) { SCR.release(); B3.start(battleCtx()); }
+  else renderReset();
+}
+function leaveCampPractice() {
+  const snap = S.campPractice?.snap;
+  try { B3.stop(); } catch { /* already closed */ }
+  S.battle = null; S.quest = null;
+  restoreRun(snap);
+  S.campPractice = null;
+  document.body.classList.remove('in-battle');
+  showCamp();
+}
 TUT.bind({ showTitle, showCreate, practice, hasHero: () => !!S.hero });
 SCRUI.bind({
-  S, members: membersOf, persist, fresh, mountAs, adopt, unlock, tip, menu, startQuest, showCamp, showBoard, showCreate, showStories, showTogether: Online.together, showImport, showHowTo, resume: Online.resume,
+  S, members: membersOf, persist, fresh, mountAs, adopt, unlock, tip, menu, startQuest, startCampPractice, showCamp, showBoard, showCreate, showStories, showTogether: Online.together, showImport, showHowTo, resume: Online.resume,
   showCloudLoad, showHeroHub, showStepPick, openNamedHero, stashNewHero, rememberPw, flushCloud, cloudBrowse, showHostLoaded: () => Online.hostLoaded(), hostPack: (id) => Online.hostPack(id),
   showRoadOrBoard, actName, actOf, nextPerkOffer, renderVictory, renderCamp, currentCode, copyCode, showTitle, showDaily, showLessons: () => TUT.showLessons(),
   // at a shared table: who is there, and the road's choice goes to the table
@@ -1120,4 +1167,4 @@ export async function boot() {
   await Online.boot(showTitle);
   if (retired) setTimeout(() => toast('Welcome to the beta! Heroes from the test builds have retired to a quiet farm. Forge a fresh one.', 'good'), 1200);
 }
-export const debugApi = { dailyAfter: (w) => dailyAfter(w), S, E, D, TUT, session: Sess, online: Online, startQuest, showBoard, showCamp, renderBattle, renderReset, world, B3, scr: SCR, showTitle, showCreate, showStories, showRoad, showRoadResult, showVictory, defeat, adopt, showRoadOrBoard, showHeroHub, showStepPick, showCloudLoad, renderVictory, showStory };
+export const debugApi = { dailyAfter: (w) => dailyAfter(w), S, E, D, TUT, session: Sess, online: Online, startQuest, startCampPractice, leaveCampPractice, showBoard, showCamp, renderBattle, renderReset, world, B3, scr: SCR, showTitle, showCreate, showStories, showRoad, showRoadResult, showVictory, defeat, adopt, showRoadOrBoard, showHeroHub, showStepPick, showCloudLoad, renderVictory, showStory };
