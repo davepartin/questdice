@@ -108,7 +108,7 @@ const names = await p.evaluate(async ({ CSS, WID, METAL, OWNED, SPLASH }) => {
   const st = document.createElement('style'); st.textContent = CSS; document.head.append(st);
   const wrap = document.createElement('div'); wrap.id = 't30'; document.body.append(wrap);
   const inst = E.makeWeapon(WID, METAL, () => 0.5, OWNED); const metal = ['Bronze', 'Silver', 'Gold'][METAL];
-  const art = `assets/cards/weapons/${WID === 'staff' ? 'staff-wide' : `${WID}-${metal.toLowerCase()}-512`}.webp`;
+  const art = `assets/cards/weapons/${WID === 'staff' ? `staff-${metal.toLowerCase()}-wide` : `${WID}-${metal.toLowerCase()}-512`}.webp`;
   const groups = [[4, 0, 4], [6, 4, 6], [8, 6, 8], [10, 8, 10]].map(([s, a, b]) => {
     const faces = E.weaponFaces({ ...inst, size: s }, s); const spec = DI.weaponSpec({ ...inst, size: s }, s);
     return { s, owned: s <= OWNED, price: D.WEAPON_TRAINING.prices[{ 6: 4, 8: 6, 10: 8 }[s]] || 0, imgs: faces.slice(a, b).map((f, i) => DI.faceShot(spec, a + i + 1, 240)) };

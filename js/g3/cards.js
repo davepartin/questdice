@@ -12,7 +12,7 @@ const WART = `${ART}weapons/`;
 // One painted master per weapon TYPE. A type missing here gets the labelled silhouette; a legendary uses its model's art.
 export const WEAPON_ART = { staff: 'staff', dagger: 'dagger', sword: 'sword', mace: 'mace', axe: 'axe', spear: 'spear', shield: 'shield', tower: 'tower', bow: 'bow', quiver: 'quiver' };
 // baked steel-only tints (wood and leather keep their colour); the mace has only the neutral file
-const BAKED = new Set(['dagger', 'sword', 'axe', 'spear', 'shield', 'tower', 'bow', 'quiver']);
+const BAKED = new Set(['dagger', 'staff', 'sword', 'axe', 'spear', 'shield', 'tower', 'bow', 'quiver']);
 
 // Symbol colours from css/powers.css
 export const SYM = {
@@ -109,8 +109,8 @@ const TRAY = { 4: { cols: 2, w: 23 }, 6: { cols: 3, w: 19.5 }, 8: { cols: 4, w: 
 const faceWords = (f) => `${f.arrow ? `${f.arrow} arrowhead, ` : ''}${f.c === 'b' ? 'block' : 'attack'} +${f.v}${(f.plus || Object.keys(f.fx || {}).length) ? ', with bonus symbols' : ''}`;
 function weaponArt17(d) {
   const key = artKey(d); const m = key ? bakedMetal(d, key) : '';
-  if (key === 'dagger' && ['bronze', 'silver', 'gold'].includes(m)) return `<img class="art9" src="${WART}dagger-${m}-wide.webp" alt="${esc(d.name)}">`;
-  if (key === 'staff') return `<img class="art9" src="${WART}staff-wide.webp" alt="${esc(d.name)}">`; // T29: a stand-in from the Wizard's Barrier painting until the Staff has its own (art wishlist)
+  if (['dagger', 'staff'].includes(key) && ['bronze', 'silver', 'gold'].includes(m)) return `<img class="art9" src="${WART}${key}-${m}-wide.webp" alt="${esc(d.name)}">`;
+  if (key === 'staff') return `<img class="art9" src="${WART}staff-wide.webp" alt="${esc(d.name)}">`; // generic fallback (silver Staff) when the metal is not Bronze/Silver/Gold
   if (!key) return `<div class="ph17">${esc(d.name)}<small>art to come</small></div>`;
   return `<div class="win scene-forge"><img class="art${m ? '' : ' tint-' + d.metal.toLowerCase()}" src="${WART}${key}-${m ? m + '-' : ''}512.webp" alt="${esc(d.name)}"></div>`;
 }

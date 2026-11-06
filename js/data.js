@@ -489,8 +489,8 @@ export const CLASSES = {
       { id: 'secondwind', slot: 'C', name: 'Second Wind', type: 'Charge Card', kind: 'charge', atwill: true, cost: 1, max: 4, per: { heal: 5 }, fx: { heal: 5 }, text: 'Charge 1 magic a round (max 4), then use: heal 4, 6, 8, 10. Up you get.' },
       // T31 side games (Dave, 6 Nov 2026: "1-6 are awesome. Build it"): a little dice game on a card. roll: dice groups, each paying
       // its colour (to); a gold die reads its table [[highest face, pays], ...]. Ranks add a die to the first group.
-      { id: 'showboat', slot: 'B', name: 'Showboat', type: 'Side-Game Card', kind: 'mix', atwill: true, cost: 2, roll: [{ n: 1, s: 6, to: 'atk' }, { n: 1, s: 6, to: 'gold', table: [[4, 0], [6, 5]] }], fx: { atk: 3 }, art: 'knight-rally', text: 'Every round, 2 magic: a red d6 at your target, and a gold d6 for the crowd (5–6: +5 gold).' },
-      { id: 'dressing', slot: 'A', name: 'Field Dressing', type: 'Side-Game Card', kind: 'mix', atwill: true, cost: 2, roll: [{ n: 1, s: 6, to: 'heal' }, { n: 1, s: 6, to: 'block' }], fx: { heal: 3 }, art: 'knight-riposte', text: 'Every round, 2 magic: a green d6 heals you and a blue d6 blocks. Patch up, brace.' },
+      { id: 'showboat', slot: 'B', name: 'Showboat', type: 'Side-Game Card', kind: 'mix', atwill: true, cost: 2, roll: [{ n: 1, s: 6, to: 'atk' }, { n: 1, s: 6, to: 'gold', table: [[4, 0], [6, 5]] }], fx: { atk: 3 }, art: 'knight-showboat', text: 'Every round, 2 magic: a red d6 at your target, and a gold d6 for the crowd (5–6: +5 gold).' },
+      { id: 'dressing', slot: 'A', name: 'Field Dressing', type: 'Side-Game Card', kind: 'mix', atwill: true, cost: 2, roll: [{ n: 1, s: 6, to: 'heal' }, { n: 1, s: 6, to: 'block' }], fx: { heal: 3 }, art: 'knight-fielddressing', text: 'Every round, 2 magic: a green d6 heals you and a blue d6 blocks. Patch up, brace.' },
     ],
   },
   ranger: {
@@ -507,7 +507,7 @@ export const CLASSES = {
     { id: 'snare', slot: 'B', name: 'Snare', type: 'Every-Round Card', kind: 'flat', atwill: true, cost: 1, fx: { weaken: 2 }, text: 'Every round: monsters hit 2 softer. Trip them. Politely.' },
       { id: 'volley', slot: 'C', start: true, name: 'Volley', type: 'Charge Card', kind: 'charge', atwill: true, cost: 1, max: 4, per: { pierce: 5 }, fx: { pierce: 5 }, text: 'Charge 1 magic a round (max 4), then use: 4, 6, 8, 10 pierce (28 at four). (T31: 4 → 5 a step, priced by what pierce is worth)' },
       { id: 'vanish', slot: 'C', name: 'Vanish', type: 'Charge Card', kind: 'charge', atwill: true, cost: 1, max: 4, per: { block: 5 }, fx: { block: 5 }, text: 'Charge 1 magic a round (max 4), then use: 4, 6, 8, 10 block. Now you see me.' },
-      { id: 'gambit', slot: 'B', name: "Thief's Gambit", type: 'Side-Game Card', kind: 'mix', atwill: true, cost: 2, roll: [{ n: 1, s: 4, to: 'pierce' }, { n: 1, s: 6, to: 'gold', table: [[4, 0], [6, 5]] }], fx: { pierce: 2 }, art: 'ranger-mark', text: 'Every round, 2 magic: an orange d4 of pierce, and a gold d6 for a purse (5–6: +5 gold).' },
+      { id: 'gambit', slot: 'B', name: "Thief's Gambit", type: 'Side-Game Card', kind: 'mix', atwill: true, cost: 2, roll: [{ n: 1, s: 4, to: 'pierce' }, { n: 1, s: 6, to: 'gold', table: [[4, 0], [6, 5]] }], fx: { pierce: 2 }, art: 'ranger-thiefsgambit', text: 'Every round, 2 magic: an orange d4 of pierce, and a gold d6 for a purse (5–6: +5 gold).' },
     ],
   },
   wizard: {
@@ -540,7 +540,7 @@ export const CLASSES = {
       { id: 'brace', slot: 'B', name: 'Brace', type: 'Every-Round Card', kind: 'flat', atwill: true, cost: 1, fx: { block: 4 }, text: 'Every round: +4 block. Plant the boots. Stay planted.' },
       { id: 'stonehide', slot: 'C', start: true, name: 'Stonehide', type: 'Charge Card', kind: 'charge', atwill: true, cost: 1, max: 4, per: { block: 8 }, fx: { block: 8 }, text: 'Charge 1 magic a round (max 4), then use: 7, 9, 11, 13 block (40 at four). (T31: 6 → 8 a step; block is worth about half an attack point)' },
       { id: 'forgefury', slot: 'C', name: 'Forge Fury', type: 'Charge Card', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 4, block: 2 }, fx: { atk: 4, block: 2 }, text: 'Charge 1 magic a round (max 4), then use: 3, 5, 7, 9 attack and 1, 3, 5, 7 block.' },
-      { id: 'whirlwind', slot: 'B', name: 'Whirlwind', type: 'Dice Card', kind: 'scale', atwill: true, cost: 2, step: 2, max: 12, maxDice: 6, dice: { n: 1, s: 4, to: 'whirl' }, fx: { atk: 3 }, art: 'dwarf-forgefury', text: 'Every round: 2 magic per pink d4 (up to 6). The total hits every monster; each one\'s block stops it.' },
+      { id: 'whirlwind', slot: 'B', name: 'Whirlwind', type: 'Dice Card', kind: 'scale', atwill: true, cost: 2, step: 2, max: 12, maxDice: 6, dice: { n: 1, s: 4, to: 'whirl' }, fx: { atk: 3 }, art: 'dwarf-whirlwind', text: 'Every round: 2 magic per pink d4 (up to 6). The total hits every monster; each one\'s block stops it.' },
     ],
   },
   bard: {
@@ -556,8 +556,8 @@ export const CLASSES = {
       { id: 'discord', slot: 'B', name: 'Discord', type: 'Every-Round Card', kind: 'flat', atwill: true, cost: 1, fx: { weaken: 2 }, text: 'Every round: monsters hit 2 softer. A note they did not ask for.' },
       { id: 'ballad', slot: 'C', start: true, name: 'Rising Ballad', type: 'Charge Card', kind: 'charge', atwill: true, cost: 1, max: 4, per: { atk: 3, heal: 2 }, fx: { atk: 3, heal: 2 }, text: 'Charge 1 magic a round (max 4), then use: 2, 4, 6, 8 attack and 1, 3, 5, 7 heal. (mb1, PROPOSED heal 3 → 2)' },
       { id: 'goldhymn', slot: 'C', name: 'Hymn of Gold', type: 'Charge Card', kind: 'charge', atwill: true, cost: 1, max: 4, per: { gold: 4 }, fx: { gold: 4 }, text: 'Charge 1 magic a round (max 4), then use: 3, 5, 7, 9 gold. Music to a peddler\'s ears.' },
-      { id: 'crowd', slot: 'B', name: 'Crowd Pleaser', type: 'Side-Game Card', kind: 'mix', atwill: true, cost: 2, roll: [{ n: 1, s: 6, to: 'gold', table: [[2, 0], [4, 5], [6, 10]] }], fx: { gold: 5 }, art: 'bard-goldhymn', text: 'Every round, 2 magic: roll a gold d6. 1–2 nothing, 3–4 +5 gold, 5–6 +10 gold. Impress the crowd.' },
-      { id: 'hymn', slot: 'A', name: 'Battle Hymn', type: 'Side-Game Card', kind: 'mix', atwill: true, cost: 3, party: true, roll: [{ n: 2, s: 6, to: 'heal' }, { n: 1, s: 4, to: 'splash' }], fx: { heal: 7 }, art: 'bard-mending', text: 'Every round, 3 magic: two green d6 heal every hero, and a pink d4 splashes every other monster.' },
+      { id: 'crowd', slot: 'B', name: 'Crowd Pleaser', type: 'Side-Game Card', kind: 'mix', atwill: true, cost: 2, roll: [{ n: 1, s: 6, to: 'gold', table: [[2, 0], [4, 5], [6, 10]] }], fx: { gold: 5 }, art: 'bard-crowdpleaser', text: 'Every round, 2 magic: roll a gold d6. 1–2 nothing, 3–4 +5 gold, 5–6 +10 gold. Impress the crowd.' },
+      { id: 'hymn', slot: 'A', name: 'Battle Hymn', type: 'Side-Game Card', kind: 'mix', atwill: true, cost: 3, party: true, roll: [{ n: 2, s: 6, to: 'heal' }, { n: 1, s: 4, to: 'splash' }], fx: { heal: 7 }, art: 'bard-battlehymn', text: 'Every round, 3 magic: two green d6 heal every hero, and a pink d4 splashes every other monster.' },
     ],
   },
 };

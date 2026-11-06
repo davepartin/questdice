@@ -160,5 +160,33 @@ test('index.html links the weapon card stylesheet and every die and card asset e
   assert.match(html, /<link rel="stylesheet" href="css\/cards17\.css\?v=[A-Za-z0-9]+">/);
   assert.ok(existsSync(new URL('../assets/cards/frame-t17.webp', import.meta.url)) && existsSync(new URL('../js/g3/dice3d.js', import.meta.url)));
   for (const m of ['bronze', 'silver', 'gold']) assert.ok(existsSync(new URL(`../assets/cards/weapons/dagger-${m}-wide.webp`, import.meta.url)));
+  for (const m of ['bronze', 'silver', 'gold']) {
+    assert.ok(existsSync(new URL(`../assets/cards/weapons/staff-${m}-wide.webp`, import.meta.url)), `staff ${m} wide`);
+    for (const px of [512, 128, 64]) assert.ok(existsSync(new URL(`../assets/cards/weapons/staff-${m}-${px}.webp`, import.meta.url)), `staff ${m} ${px}`);
+    const d = CW.weaponData(inst('staff', { bronze: 0, silver: 1, gold: 2 }[m], 4));
+    assert.match(CW.weaponCardHtml(d), new RegExp(`staff-${m}-wide\\.webp`));
+    assert.match(CW.icon(d, 128), new RegExp(`staff-${m}-128\\.webp`));
+  }
+});
+
+test('the six side-game cards have their own paintings; the cards they used to borrow keep theirs', async () => {
+  const { existsSync } = await import('node:fs');
+  const { powerArt } = await import('../js/g3/magiccard.js');
+  const of = (cls, id) => D.CLASSES[cls].cards.find((c) => c.id === id);
+  const own = [
+    ['bard', 'crowd', 'bard-crowdpleaser'], ['bard', 'hymn', 'bard-battlehymn'],
+    ['knight', 'showboat', 'knight-showboat'], ['knight', 'dressing', 'knight-fielddressing'],
+    ['ranger', 'gambit', 'ranger-thiefsgambit'], ['dwarf', 'whirlwind', 'dwarf-whirlwind'],
+  ];
+  const kept = [
+    ['bard', 'goldhymn', 'bard-goldhymn'], ['bard', 'mending', 'bard-mending'],
+    ['knight', 'rally', 'knight-rally'], ['knight', 'riposte', 'knight-riposte'],
+    ['ranger', 'mark', 'ranger-mark'], ['dwarf', 'forgefury', 'dwarf-forgefury'],
+  ];
+  for (const [cls, id, file] of [...own, ...kept]) {
+    assert.ok(existsSync(new URL(`../assets/cards/magic/${file}.webp`, import.meta.url)), file);
+    assert.equal(powerArt(of(cls, id), cls), `assets/cards/magic/${file}.webp`, `${id} art`);
+  }
+  assert.equal(of('bard', 'hymn').roll[0].n, 2, 'Battle Hymn still rolls two green d6');
 });
 

@@ -68,17 +68,17 @@ const LV = ['I', 'II', 'III', 'IV'];
 // First approved template. Roll out to other cards only after their review.
 const usesCardTemplate = (k) => ['knight', 'wizard', 'ranger', 'dwarf', 'bard'].some(cls => D.CLASSES[cls].cards.some(c => c.id === k.id));
 const usesBuildTemplate = (k) => usesCardTemplate(k) && k.kind === 'charge';
-const BARD_ART = { finale: 'bard-finale', discord: 'bard-discord', goldhymn: 'bard-goldhymn' };
+const BARD_ART = { finale: 'bard-finale', discord: 'bard-discord', goldhymn: 'bard-goldhymn', crowd: 'bard-crowdpleaser', hymn: 'bard-battlehymn' };
 const isBardCard = (k) => D.CLASSES.bard.cards.some(c => c.id === k.id);
-const DWARF_ART = { avalanche: 'dwarf-avalanche', bulwark: 'dwarf-shieldbash', brace: 'dwarf-brace', forgefury: 'dwarf-forgefury' };
+const DWARF_ART = { avalanche: 'dwarf-avalanche', bulwark: 'dwarf-shieldbash', brace: 'dwarf-brace', forgefury: 'dwarf-forgefury', whirlwind: 'dwarf-whirlwind' };
 const isDwarfCard = (k) => D.CLASSES.dwarf.cards.some(c => c.id === k.id);
-const RANGER_ART = { rain: 'ranger-rain', quickdraw: 'ranger-quickdraw', snare: 'ranger-snare', vanish: 'ranger-vanish' };
+const RANGER_ART = { rain: 'ranger-rain', quickdraw: 'ranger-quickdraw', snare: 'ranger-snare', vanish: 'ranger-vanish', gambit: 'ranger-thiefsgambit' };
 const isRangerCard = (k) => D.CLASSES.ranger.cards.some(c => c.id === k.id);
 const WIZARD_ART = { meteor: 'wizard-meteor', bolt: 'wizard-missile', barrier: 'wizard-barrier', light: 'wizard-light' };
 const isWizardCard = (k) => D.CLASSES.wizard.cards.some(c => c.id === k.id);
 // The painted picture for any power (T28: the Camp Store's Learn-magic shelf shows it too).
 export const powerArt = (k, cls) => `assets/cards/magic/${k.art || KNIGHT_ART[k.id] || WIZARD_ART[k.id] || RANGER_ART[k.id] || DWARF_ART[k.id] || BARD_ART[k.id] || `${cls || 'ranger'}-${k.id}`}.webp`;
-const KNIGHT_ART = { judgment: 'knight-cleave', shieldwall: 'knight-riposte', press: 'knight-cleave', secondwind: 'knight-rally' };
+const KNIGHT_ART = { judgment: 'knight-cleave', shieldwall: 'knight-riposte', press: 'knight-cleave', secondwind: 'knight-rally', showboat: 'knight-showboat', dressing: 'knight-fielddressing' };
 // the camp cardboard emblem (cardboard.js emblems), the magic triangle, purple tint, in the four corner sockets of frame-t17
 function corners() {
   const W = 720, H = 1052, c = document.createElement('canvas'); c.width = W; c.height = H; c.className = 'mc-stamps'; const g = c.getContext('2d');

@@ -89,7 +89,7 @@ const names = await p.evaluate(async ({ CSS, WID, METAL, OWNED }) => {
   const wrap = document.createElement('div'); wrap.id = 't30'; document.body.append(wrap);
   const inst = E.makeWeapon(WID, METAL, () => 0.5, OWNED); const metal = ['Bronze', 'Silver', 'Gold'][METAL];
   const name = `${metal} ${D.WEAPONS[WID].name}`; const pitch = D.WEAPONS3.short[WID];
-  const art = `assets/cards/weapons/${WID === 'staff' ? 'staff-wide' : `${WID}-${metal.toLowerCase()}-512`}.webp`;
+  const art = `assets/cards/weapons/${WID === 'staff' ? `staff-${metal.toLowerCase()}-wide` : `${WID}-${metal.toLowerCase()}-512`}.webp`;
   // the groups: the d4's faces, then the two each bigger die adds; every picture cut from that size's real 3D die
   const groups = [[4, 0, 4], [6, 4, 6], [8, 6, 8], [10, 8, 10]].map(([s, a, b]) => {
     const faces = E.weaponFaces({ ...inst, size: s }, s); const spec = DI.weaponSpec({ ...inst, size: s }, s);

@@ -342,8 +342,9 @@ retired weapon and check each lands where this table says.
   the weapon's icon and its crit under each face, **a key** naming the icons on this die, and **one slim strip per bigger
   die** ("d8 · up to 5 · 100 gold"; the next one lit; tapping a later one says which comes first).
 - On a phone the few words are about 24 px and the face numbers larger; nothing smaller than about 14 px.
-- The Staff had no painted weapon art: a stand-in cropped from the Wizard's Barrier painting (assets/cards/weapons/staff-wide.webp)
-  until the art team paints one (Bronze, Silver and Gold, like the Dagger's wide pictures).
+- The Staff now has painted bronze, silver and gold wides like the Dagger (`assets/cards/weapons/staff-<metal>-wide.webp`), plus
+  512/128/64 crops of those same paintings. `staff-wide.webp` is a silver fallback. Shipped 6 November 2026; see
+  [staff-and-side-art.md](staff-and-side-art.md).
 - Checks: `node dev/weapon-cards-t29.mjs` (all 84: 7 weapons x 3 metals x 4 sizes, fails if anything spills or the parts are
   out of order) and `node dev/weapon-grow-check.mjs` (real taps in camp: open, grow d4 to d6 for 50 gold, the shelf).
 

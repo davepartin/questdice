@@ -120,4 +120,6 @@ Bots (`node tools/t31-side.mjs 20`, 20 campaigns a class, the card equipped from
 plays close to the one it replaces (Act III cleared within one or two of 20). Crowd Pleaser earns about half again the gold of Lucky Verse
 (2,041 against 1,371 a campaign): the trade Dave wanted. Whirlwind first sat in slot A and cost the Dwarf its Anvil Strike (Act III 3 of 20
 against 9); moved beside Grudge it plays level (8 against 9). Real taps in battle: `node dev/side-games-check.mjs` (each card casts, rolls
-its colours and sizes, pays its counters). Paintings are borrowed; Grok, real ones are welcome.
+its colours and sizes, pays its counters). Paintings shipped 6 November 2026 (Crowd Pleaser, Battle Hymn, Showboat, Field Dressing,
+Thief's Gambit, Whirlwind each have their own file). The cards they used to borrow keep their originals. See
+[staff-and-side-art.md](staff-and-side-art.md).

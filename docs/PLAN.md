@@ -1675,6 +1675,10 @@ Build `20261106md4a`: all 50 monsters and rage/pack variants use four move faces
 
 All 580 tests pass after preserving concurrent build 20261106a3 (mixed-dice magic cards and hero inspector). 250 phone/text layouts and four real battle phone flows pass, including target touch, Attack & Roll and reduced motion; rendered screens inspected in Chromium, not Safari. Matched 15-campaign-per-arm smoke check: Act I clears 11→12, Act II 5→4, Act III 3→1; too small to certify balance, late-game difficulty is flagged for playtesting. The campaign smoke comparison predates the concurrent a3 magic release; a real 375×667 phone/action check was repeated after integration. Details and evidence: docs/team/tasks/T32-monster-d4.md.
 
+## 6 November 2026 — Staff metal wides and six side-game paintings
+
+Build `20261106a13`. Staff bronze/silver/gold product-shot wides match the Dagger metal-wide path. Crowd Pleaser, Battle Hymn, Showboat, Field Dressing, Thief's Gambit and Whirlwind each have their own painting; the cards they used to borrow keep theirs. No mechanics change. Details: docs/team/tasks/staff-and-side-art.md.
+
 ## 5 November 2026 — visible monster Special rhythms
 
 Build `20261106mr1` adds a highlighted Wind-Up → Slam/Inferno → Normal strip and truthful next-turn warnings to the Special footer. Other Specials show Every round with remaining summons, Until broken/Until hit, or a Bounty countdown. Finished abilities are grey. The pure readout follows the real intent and Special state, including interrupted Slams; no combat timing or save rules changed. Removed the duplicate upper Wind-Up warning. All 586 tests pass; 45 phone/state/text layouts and an actual three-monster battle were checked in Chromium. Three example cards and phone screenshots: docs/team/tasks/T33-special-rhythms.md.
