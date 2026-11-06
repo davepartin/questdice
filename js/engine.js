@@ -2086,7 +2086,7 @@ export function roadsFor(hero, opts = {}) {
     flat: flat + (extra.perilous ? PERIL.flat : 0) + (kind === 'battle' && !extra.perilous && !lesson ? standardFlat(c.act, enemies) : 0) + (SET_PIECE[kind]?.flat[ai] ?? 0),
     rewardMult: extra.perilous ? PERIL.reward : 1, perilous: !!extra.perilous,
     };
-    if (first && kind === 'battle' && !extra.perilous) { q.hpMult *= first.hp; q.flat = first.flat; q.powerDie = first.die; }
+    if (first && kind === 'battle' && !extra.perilous) { q.hpMult *= first.hp; q.flat = first.flat; q.powerDie = first.die; q.practice = true; }
     return attachNemesis(q, c);
   };
   const poolPick = () => pick(rng, act.pool);
@@ -2174,7 +2174,7 @@ function wandererAtStep(c, act, s, enemies) {
   return pickWanderId(shuffleWander(roster, c), s, [...foes, prev]);
 }
 function withWanderer(q, c, act, s) {
-  if (WANDER.chance <= 0 || q.kind !== 'battle' || q.enemies.length > WANDER.maxCast) return q;
+  if (WANDER.chance <= 0 || q.kind !== 'battle' || q.enemies.length > WANDER.maxCast || q.practice) return q; // (the practice fights keep their cast and their health: FIRST_FIGHTS)
   const id = wandererAtStep(c, act, s, q.enemies);
   if (!id) return q;
   const n = q.enemies.length;
