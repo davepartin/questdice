@@ -401,9 +401,32 @@ export function cardRoll(card, { k, r, gains, target = () => null }) {
     const timers = []; const later = (ms, fn) => timers.push(setTimeout(fn, reduced ? 0 : ms));
     card.classList.add('mc-rolling-card');
     try { if (!reduced) sfx.diceRoll?.(Math.min(9, 3 + each.length * 2)); } catch { /* sound is optional */ }
-    const dice = each.map((d, i) => { const old = slots[i]; if (!old) return null; const el = MC.dieFace(d.fx, d.s, 1 + Math.floor(Math.random() * d.s)); el.classList.add('mc-rolling'); el.style.setProperty('--i', String(i)); old.replaceWith(el); return { ...d, el }; }).filter(Boolean);
-    const flick = reduced ? null : setInterval(() => { for (const d of dice) if (d.el.classList.contains('mc-rolling')) { const next = MC.dieFace(d.fx, d.s, 1 + Math.floor(Math.random() * d.s)); next.classList.add('mc-rolling'); next.style.setProperty('--i', d.el.style.getPropertyValue('--i')); d.el.replaceWith(next); d.el = next; } }, 90);
-    const land = (d) => { const done = MC.dieFace(d.fx, d.s, d.v, true); /* (true: still flat? it turns 3D the moment its face is ready) */ done.classList.add('mc-landed'); d.el.replaceWith(done); d.el = done; try { sfx.dieSettle?.(); } catch { /* optional */ } };
+    // each die tumbles its own way (Dave, 6 Nov 2026: "more random or shake a little bit to feel like a dice roll"): a rattle first, then a
+    // random path and spin per die, faces flipping fast then slower as it settles, landing at its own moment with a little wobble
+    const rnd = (a, b) => a + Math.random() * (b - a);
+    const dice = each.map((d, i) => { const old = slots[i]; if (!old) return null; const el = MC.dieFace(d.fx, d.s, 1 + Math.floor(Math.random() * d.s)); el.classList.add('mc-rolling');
+      const wrap = h('span', { class: 'mc-tumble' }, el); old.replaceWith(wrap); return { ...d, el, wrap, dur: rnd(760, 1120) + i * rnd(60, 160), anims: [] }; }).filter(Boolean);
+    const RATTLE = reduced ? 0 : 260; if (!reduced && row) { row.classList.add('mc-shake'); setTimeout(() => row.classList.remove('mc-shake'), RATTLE); }
+    const swapFace = (d, v, cls) => { const next = MC.dieFace(d.fx, d.s, v, cls === 'mc-landed'); next.classList.add(cls); d.el.replaceWith(next); d.el = next; };
+    const tumble = (d) => { if (reduced || !d.wrap.animate) return;
+      const dir = Math.random() < 0.5 ? -1 : 1; const turns = dir * 360 * (Math.random() < 0.6 ? 1 : 2); const x = () => `${rnd(-26, 26).toFixed(0)}%`;
+      d.anims.push(d.wrap.animate([
+        { transform: 'translate(0,0) rotate(0deg) scale(1)' },
+        { transform: `translate(${x()},${rnd(-62, -40).toFixed(0)}%) rotate(${(turns * rnd(0.22, 0.32)).toFixed(0)}deg) scale(1.1)`, offset: 0.2 },
+        { transform: `translate(${x()},${rnd(-10, -2).toFixed(0)}%) rotate(${(turns * rnd(0.5, 0.6)).toFixed(0)}deg) scale(.96,1.04)`, offset: 0.44 },
+        { transform: `translate(${x()},${rnd(-30, -16).toFixed(0)}%) rotate(${(turns * rnd(0.74, 0.84)).toFixed(0)}deg) scale(1.05)`, offset: 0.64 },
+        { transform: `translate(${rnd(-8, 8).toFixed(0)}%,${rnd(-6, 0).toFixed(0)}%) rotate(${(turns * rnd(0.95, 0.99)).toFixed(0)}deg) scale(1)`, offset: 0.86 },
+        { transform: `translate(0,0) rotate(${turns}deg) scale(1)` },
+      ], { duration: d.dur, easing: 'cubic-bezier(.25,.65,.35,1)', fill: 'forwards' }));
+      // the faces flip quickly, then slower and slower as the die runs out of energy
+      let gap = rnd(38, 55); let at = 0;
+      const flip = () => { if (!d.el.classList.contains('mc-rolling')) return; at += gap; if (at > d.dur - 90) return; swapFace(d, 1 + Math.floor(Math.random() * d.s), 'mc-rolling'); gap *= rnd(1.12, 1.24); d.flipT = setTimeout(flip, gap); };
+      d.flipT = setTimeout(flip, gap); };
+    const flick = null;
+    const land = (d) => { if (d.el.classList.contains('mc-landed')) return; clearTimeout(d.flipT); for (const a of d.anims) { try { a.cancel(); } catch { /* gone */ } }
+      swapFace(d, d.v, 'mc-landed');
+      if (!reduced && d.wrap.animate) d.wrap.animate([{ transform: `rotate(${rnd(-9, 9).toFixed(1)}deg)` }, { transform: `rotate(${rnd(-3, 3).toFixed(1)}deg)`, offset: 0.55 }, { transform: 'rotate(0deg)' }], { duration: 300, easing: 'ease-out' });
+      try { sfx.dieSettle?.(); } catch { /* optional */ } };
     // the answer: one number per counter it fills, in its colour, at the bottom of the card
     const shown = ROLL_ORDER.filter((f) => gains[f] > 0);
     const missed = groups.filter((g) => g.table && !g.total).map((g) => g.to); // a gold die that paid nothing still answers
@@ -416,10 +439,11 @@ export function cardRoll(card, { k, r, gains, target = () => null }) {
     const tableDie = groups.find((g) => g.table)?.rolls?.[0] ?? (k.kind === 'luck' ? r.rolls?.[0] : null);
     if (tableRows.length) { // a slim strip just under the dice: the dice, the answer and the lit row all show at once
       res.classList.add('top'); }
-    const finish = () => { clearInterval(flick); timers.forEach(clearTimeout); for (const d of dice) if (!d.el.classList.contains('mc-landed')) land(d);
+    const finish = () => { if (res.isConnected) return; void flick; timers.forEach(clearTimeout); for (const d of dice) land(d);
       if (tableDie != null) { let lo = 1; for (const row of tableRows) { const m = row.textContent.match(/(\d+)(?:\s*[–-]\s*(\d+))?/); const a = m ? +m[1] : lo; const b2 = m?.[2] ? +m[2] : a; if (tableDie >= a && tableDie <= b2) row.classList.add('hit'); lo = b2 + 1; } }
       if (res.classList.contains('top') && row) { card.classList.add('mc-answering'); row.after(res); } else card.append(res); /* a table card: the answer takes the words' place under the dice */ requestAnimationFrame(() => res.classList.add('in')); later(250, () => { go.disabled = false; go.focus?.({ preventScroll: true }); }); };
-    dice.forEach((d, i) => later(700 + i * 260, () => { land(d); if (i === dice.length - 1) later(260, finish); }));
+    let left = dice.length;
+    later(RATTLE, () => { for (const d of dice) { tumble(d); later(d.dur, () => { land(d); if (--left === 0) later(240, finish); }); } });
     if (!dice.length) later(300, finish);
     card.addEventListener('click', function hurry(e) { if (e.target === go || res.isConnected) return; card.removeEventListener('click', hurry); finish(); }); // a tap hurries it along
     go.addEventListener('click', (e) => {

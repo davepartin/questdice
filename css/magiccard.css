@@ -857,3 +857,9 @@ img.mc-die.mc-3d.d4{transform:scale(1.08) translateY(-3%)}
 .mc-result.top .mc-res-go{width:auto;flex:none;padding:0 4cqi;font-size:5cqi}
 .t28-luck-row.hit{background:#ffe7a6!important;box-shadow:inset 0 0 0 .6cqi #c9932a;transition:background .2s}
 .mc-res-miss{font:800 6cqi/1.1 var(--ui,sans-serif)!important;color:#7a6040!important}
+/* the random tumble (Dave, 6 Nov 2026): each die moves in its own wrapper; a quick rattle of the row first */
+.mc-tumble{display:inline-flex;flex:none;align-items:center;justify-content:center;will-change:transform}
+.mc-tumble .mc-die.mc-rolling,.mc-tumble .mc-die.mc-landed{animation:none}
+.t28-dice.mc-shake{animation:mcRattle .26s linear}
+@keyframes mcRattle{0%{transform:translate(0,0) rotate(0)}15%{transform:translate(-2.4%,1%) rotate(-2deg)}30%{transform:translate(2%,-1.2%) rotate(1.6deg)}45%{transform:translate(-1.6%,-.6%) rotate(-1.2deg)}60%{transform:translate(1.8%,1%) rotate(1.8deg)}75%{transform:translate(-1%,.4%) rotate(-.8deg)}100%{transform:none}}
+@media (prefers-reduced-motion: reduce){.t28-dice.mc-shake{animation:none}}
