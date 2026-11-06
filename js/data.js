@@ -1221,6 +1221,11 @@ export const PERIL = { hp: 1.3, flat: 3, reward: 1.75 };
 // The standard road hits harder (Dave: "real danger"), so most of its fights end with you a little scared: +flat[act] on
 // every monster hit, and +lone more when a monster fights alone (a pair already presses you; a lone one was a speed bump).
 // The perilous road and Act III were already tense and are left alone; so is the first fight, the lone-goblin lesson.
+// The first two battles of the first road are practice (Dave, 6 Nov 2026: "a good 4 or 5 rounds in the first and second battles ... not make the
+// enemies hit so hard, so you actually practice"). The same monsters, sturdier (hp x), with a gentle hit die and no fight bonus (flat). Measured
+// with the bots (tools/t31-first-fights.mjs): a smart player takes about 3 rounds and 4 rounds, a beginner who never rerolls 7 and 9, and loses
+// a tenth of their health, where before the first fight was over in under 2 rounds and the second took a beginner's whole health bar.
+export const FIRST_FIGHTS = { 1: { hp: 2.5, die: 4, flat: 0 }, 2: { hp: 1.3, die: 4, flat: 0 } };
 export const ORDINARY = { flat: [3, 5, 6], lone: 2 };
 // Elites and bosses by act (Acts I, II, III): extra health (x) and extra on every hit (+). Tuned with tools/progress-all.sh.
 export const SET_PIECE = { elite: { hp: [1.5, 1.45, 1.6], flat: [3, 2, 5] }, boss: { hp: [1.3, 1.15, 1.6], flat: [1, 2, 5] } }; // Act III bosses 2.2 -> 1.6 (21 Oct): about 13 rounds instead of 18

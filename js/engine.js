@@ -7,7 +7,7 @@ import {
   HEAL_AMOUNT, NUDGE_COST, RECHARGE_COST, START_MAGIC, REROLL_DICE, REROLL_DIE_COST, REROLL_DICE_MAX, RES_BY_SIZE, FACE_PAY, SPEED_STEPS, HEART_AMP, HEART_COLOR_BONUS, HEART_RANKS, normalizeHeartRank, STRAIGHT_RULE,
   STRAIGHT, RARITY_WEIGHTS, RARITY_SELL, WEAPONS, LOOT_WEIGHTS, START_DICE, UNLOCK_COST, DIFFICULTY, normalizeDifficulty, ENCOUNTER, TALENT_SYMS, TALENT_MAX_SAME, talentFaceCost, talentFaceNum, POWER_UPGRADE, TALENT_PER_FACE, TALENT_SLOT_COST, TALENT_FACES, CLASS_TALENT, RULES, STRENGTH_STEPS, POWER_LEARN, POWER_SLOTS,
   SPECIAL_STEPS, MIND_STEPS, NEXT_SIZE, PREV_SIZE, DOWNGRADE_COST, dieCapForAct, ROMAN, xpToNext, CLASSES, PERKS, MONSTERS, ACTS, QUESTS_PER_ACT, ELITE_STEPS,
-  PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, WEAPON_SIZE, WEAR, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, WELCOME_GOLD, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, MONSTER_DICE_MAX, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_LEVEL_ADD, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
+  PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, FIRST_FIGHTS, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, WEAPON_SIZE, WEAR, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, WELCOME_GOLD, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, MONSTER_DICE_MAX, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_LEVEL_ADD, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
   colorIdOf, uniqueColors, landsOf, stepKind,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, EXPERIMENT, WEAPONS2, WEAPON_TRAINING, PRESSURE, SPECIALS, CLASS2, TEAMWORK, HEART_TO_HEART, BREATH_SHARE, FLEE_REWARD,
   BUNDLE_ODDS, bundlePrice, guardianOf, WEAPONS3,
@@ -679,11 +679,11 @@ export function groupFaces(faces) {
   const grouped = order.flatMap((k) => by.get(k));
   return grouped.every((f, i) => f === faces[i]) ? faces : grouped; // preserve move-bag identity once grouped
 }
-export function spawnEnemy(id, { hpMult = 1, flat = 0, rewardMult = 1, edge = null, campaign = null, name = null, teamFlat = 0 } = {}, rng) {
+export function spawnEnemy(id, { hpMult = 1, flat = 0, rewardMult = 1, edge = null, campaign = null, name = null, teamFlat = 0, powerDie = null } = {}, rng) { // powerDie: a gentler hit die for the practice fights (FIRST_FIGHTS)
   const d = mdef(id, campaign);
   const hp = Math.max(1, Math.round(d.hp * hpMult));
   return {
-    uid: newUid(rng), id, name: name || d.name, glyph: d.glyph, tier: d.tier, hp, maxHp: hp, powerDie: d.power,
+    uid: newUid(rng), id, name: name || d.name, glyph: d.glyph, tier: d.tier, hp, maxHp: hp, powerDie: powerDie || d.power,
     faces: MONSTER_D4.on ? fourMoves(id, d) : groupFaces(d.faces), flat: flat + teamFlat, teamFlat, buff: 0, windup: false, raged: false, intent: null, p: 0, mag: 0,
     xp: Math.round(d.xp * rewardMult), gold: Math.round(d.gold * rewardMult),
     carried: 0, hpMult, rewardMult, armor: d.armor ? { ...d.armor } : null, arm: 0, edge,
@@ -1039,9 +1039,9 @@ export function newBattle(hero, quest0, rng, players = 1) {
   const enemies = [];
   for (let i = 0; i < quest.enemies.length; i++) {
     const id = quest.enemies[i];
-    enemies.push(spawnEnemy(id, { hpMult: quest.hpMult * sc.hp, flat: quest.flat, teamFlat: sc.flat, rewardMult: quest.rewardMult, edge: quest.edge, campaign: hero.campaign, name: quest.foeNames?.[i] }, rng));
+    enemies.push(spawnEnemy(id, { hpMult: quest.hpMult * sc.hp, flat: quest.flat, teamFlat: sc.flat, rewardMult: quest.rewardMult, edge: quest.edge, campaign: hero.campaign, name: quest.foeNames?.[i], powerDie: quest.powerDie }, rng));
   }
-  for (let i = 0; i < sc.adds; i++) enemies.push(spawnEnemy('goblin', { hpMult: quest.hpMult, flat: quest.flat, teamFlat: sc.flat, rewardMult: quest.rewardMult, edge: quest.edge, campaign: hero.campaign }, rng));
+  for (let i = 0; i < sc.adds; i++) enemies.push(spawnEnemy('goblin', { hpMult: quest.hpMult, flat: quest.flat, teamFlat: sc.flat, rewardMult: quest.rewardMult, edge: quest.edge, campaign: hero.campaign, powerDie: quest.powerDie }, rng));
   const boon = pullBlessings(hero);
   const pact = hasCharm(hero, 'pact'); // Blood Pact: 6 more magic, 8 less health (was full magic, worth 10 health a fight late on)
   const maxHp = Math.max(1, maxHpOf(hero) + Math.max(0, boon.startHp || 0) - (pact ? 8 : 0));
@@ -2017,6 +2017,7 @@ export function roadsFor(hero, opts = {}) {
   const guard = cycle === 0 && ELITE_STEPS.includes(s) ? guardianOf(act, c.seed) : null; // T27: this hero's step 5 guardian
   const locked = guard ? [guard] : cycle === 0 && act.fights?.[s - 1]?.length ? act.fights[s - 1] : null;
   const labels = cycle === 0 && act.names?.[s - 1]?.length ? act.names[s - 1] : null;
+  const first = cycle === 0 && c.act === 1 ? FIRST_FIGHTS[s] : null; // the practice fights (data.js)
   const mk = (kind, enemies, extra = {}) => {
     const prefix = kind === 'boss' ? null : pick(rng, PREFIX);
     // the story walks the act in order (act.route, one place per step); the draw is kept so the rest of the seeded picks stay the same
@@ -2034,6 +2035,7 @@ export function roadsFor(hero, opts = {}) {
     flat: flat + (extra.perilous ? PERIL.flat : 0) + (kind === 'battle' && !extra.perilous && !lesson ? standardFlat(c.act, enemies) : 0) + (SET_PIECE[kind]?.flat[ai] ?? 0),
     rewardMult: extra.perilous ? PERIL.reward : 1, perilous: !!extra.perilous,
     };
+    if (first && kind === 'battle' && !extra.perilous) { q.hpMult *= first.hp; q.flat = first.flat; q.powerDie = first.die; }
     return attachNemesis(q, c);
   };
   const poolPick = () => pick(rng, act.pool);
@@ -2241,9 +2243,9 @@ export function newPartyBattle(heroes, quest0, rng) {
   const enemies = [];
   for (let i = 0; i < quest.enemies.length; i++) {
     const id = quest.enemies[i];
-    enemies.push(spawnEnemy(id, { hpMult: hpMult * sc.hp, flat, teamFlat: sc.flat, rewardMult, edge, campaign: heroes[0].campaign, name: quest.foeNames?.[i] }, rng));
+    enemies.push(spawnEnemy(id, { hpMult: hpMult * sc.hp, flat, teamFlat: sc.flat, rewardMult, edge, campaign: heroes[0].campaign, name: quest.foeNames?.[i], powerDie: quest.powerDie }, rng));
   }
-  for (let i = 0; i < sc.adds; i++) enemies.push(spawnEnemy('goblin', { hpMult, flat, teamFlat: sc.flat, rewardMult, edge, campaign: heroes[0].campaign }, rng));
+  for (let i = 0; i < sc.adds; i++) enemies.push(spawnEnemy('goblin', { hpMult, flat, teamFlat: sc.flat, rewardMult, edge, campaign: heroes[0].campaign, powerDie: quest.powerDie }, rng));
   dressNemesis(enemies, quest.nemesis);
   const b = {
     kind: 'party', rng, quest, players, heroes, enemies, fighters: heroes.map(makeFighter), team: { m: +sc.m.toFixed(2), hp: +sc.hp.toFixed(2), flat: sc.flat }, // how hard the company made it
