@@ -22,7 +22,7 @@ test('camp redesign: a die opens as a pop-up over the page you are on (no scroll
   const open = src.slice(src.indexOf('function openSlot('), src.indexOf('function refreshSheet('));
   assert.doesNotMatch(open, /toCampCard\(\)/); assert.doesNotMatch(open, /campPage = 'dice'/);
   assert.match(src, /function campPopup\(\)/); assert.match(src, /class: 'cw-pop'/);
-  assert.match(src, /function toTalentSymbols\(\)/); // cp1 scroll to the face picker is untouched
+  // Talent editing now uses a focused dialog; browser coverage is in dev/talent-dialog-check.mjs.
 });
 test('cp4: the Camp Store sign carries no purse/price chip; the potions section comes first', () => {
   const css = fs.readFileSync(new URL('../css/camp.css', import.meta.url), 'utf8'); const st = scr.slice(scr.indexOf('function storeTab('), scr.indexOf('function gearTab('));
