@@ -67,3 +67,9 @@ show their number. Nothing is painted per card: a new card gets its dice for fre
 
 Tapping Roll or Cast rolls the card's own dice right on the card: they hop, tumble and land; the totals show in their colours; **Continue**
 sends them to the counters. A new Dice Card or Side-Game Card gets this for free. (`cardRoll` in js/g3/powers.js.)
+
+## Casting on the card (Every-Round Cards)
+
+Tapping Cast on an Every-Round Card plays on the card: the big symbol lifts, glows in its colour and stamps down with a ring, and its
+number counts up; then the answer shows at the bottom in colour, **Continue**, and the number floats to its counter. A new Every-Round
+Card gets this for free if it is drawn with `bonus()`. (`cardCast` in js/g3/powers.js.) Charge Cards and Finisher Cards are next.

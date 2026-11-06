@@ -449,20 +449,62 @@ export function cardRoll(card, { k, r, gains, target = () => null }) {
     card.addEventListener('click', function hurry(e) { if (e.target === go || res.isConnected) return; card.removeEventListener('click', hurry); finish(); }); // a tap hurries it along
     go.addEventListener('click', (e) => {
       e.stopPropagation(); go.disabled = true;
-      // each number drifts down into its counter (or down off the sheet, where the counters are), then the counters bump (the caller)
-      for (const n of res.querySelectorAll('.mc-res-n')) {
-        const from = n.getBoundingClientRect(); const to = target(n.dataset.k)?.getBoundingClientRect?.(); const ghost = n.cloneNode(true); ghost.classList.add('mc-res-fly');
-        Object.assign(ghost.style, { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px` }); document.body.append(ghost);
-        // toward its own counter (Dave: "based on which color they are … slowly float towards that part of the screen"): the counters sit in a
-        // row across the bottom, Attack at the left to Gold at the right; when the sheet covers them, aim where they would be
-        const seen = to && to.width > 4 && to.top > from.bottom && to.top < window.innerHeight;
-        const slot = Math.max(0, COUNTERS.indexOf(n.dataset.k)); const W = window.innerWidth; const H = window.innerHeight;
-        const tx = seen ? to.left + to.width / 2 : W * (slot + 0.5) / COUNTERS.length; const ty = seen ? to.top + to.height / 2 : H - Math.min(150, H * 0.17);
-        const dx = tx - (from.left + from.width / 2); const dy = ty - (from.top + from.height / 2);
-        requestAnimationFrame(() => { ghost.style.transform = `translate(${dx.toFixed(0)}px, ${dy.toFixed(0)}px) scale(.6)`; ghost.style.opacity = '0'; });
-        setTimeout(() => ghost.remove(), reduced ? 0 : 1300);
-      }
+      floatAway(res, target, reduced); // each number drifts toward its own counter, then the counters bump (the caller)
       res.classList.add('out'); card.classList.remove('mc-rolling-card'); setTimeout(() => card.classList.remove('mc-answering'), reduced ? 0 : 560);
+      setTimeout(() => { res.remove(); resolve(); }, reduced ? 0 : 900);
+    });
+  });
+}
+// After Continue: each number floats slowly toward its own colour's counter (Dave, 6 Nov 2026: "based on which color they are … slowly
+// float towards that part of the screen"). The counters sit in a row across the bottom, Attack at the left to Gold at the right; when the
+// sheet covers them, aim where they would be. Softer hits and free rerolls are not counters: they rise and fade.
+function floatAway(res, target, reduced) {
+  for (const n of res.querySelectorAll('.mc-res-n')) {
+    const from = n.getBoundingClientRect(); const to = target(n.dataset.k)?.getBoundingClientRect?.(); const ghost = n.cloneNode(true); ghost.classList.add('mc-res-fly');
+    Object.assign(ghost.style, { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px` }); document.body.append(ghost);
+    const slot = COUNTERS.indexOf(n.dataset.k); const W = window.innerWidth; const H = window.innerHeight;
+    const seen = slot >= 0 && to && to.width > 4 && to.top > from.bottom && to.top < H;
+    const tx = slot < 0 ? from.left + from.width / 2 : seen ? to.left + to.width / 2 : W * (slot + 0.5) / COUNTERS.length;
+    const ty = slot < 0 ? from.top - Math.min(160, H * 0.2) : seen ? to.top + to.height / 2 : H - Math.min(150, H * 0.17);
+    const dx = tx - (from.left + from.width / 2); const dy = ty - (from.top + from.height / 2);
+    requestAnimationFrame(() => { ghost.style.transform = `translate(${dx.toFixed(0)}px, ${dy.toFixed(0)}px) scale(.6)`; ghost.style.opacity = '0'; });
+    setTimeout(() => ghost.remove(), reduced ? 0 : 1300);
+  }
+}
+// The cast on an Every-Round Card (Dave, 6 Nov 2026: the cast moment for every card type, like the dice roll): the big symbol lifts, glows in
+// its colour and stamps down with a ring; the number beside it counts up; then the same answer as a dice roll, Continue, and each number
+// floats toward its own counter. Resolves when the numbers have gone.
+export function cardCast(card, { k, r, gains, level = 0, target = () => null }) {
+  return new Promise((resolve) => {
+    const reduced = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const timers = []; const later = (ms, fn) => timers.push(setTimeout(fn, reduced ? 0 : ms));
+    const pairs = [...card.querySelectorAll('.t28-bonus .t28-bpair')];
+    card.classList.add('mc-rolling-card');
+    const count = (el) => { const m = el.textContent.match(/^([^0-9]*)(\d+)$/); if (!m || reduced) return; const [, pre, n] = m; const t0 = performance.now();
+      const tick = () => { const q = Math.min(1, (performance.now() - t0) / 420); el.textContent = `${pre}${Math.round(+n * q)}`; if (q < 1) requestAnimationFrame(tick); }; el.textContent = `${pre}0`; requestAnimationFrame(tick); };
+    const stamp = (pair) => { if (pair.classList.contains('mc-stamped')) return; pair.classList.add('mc-stamped');
+      const sym = pair.firstElementChild; const num = pair.querySelector('.t28-bnum'); if (num) count(num);
+      if (!reduced && sym) { const a = sym.getBoundingClientRect(); const b = pair.getBoundingClientRect(); const ring = h('i', { class: 'mc-ring', style: { left: `${a.left - b.left + a.width / 2}px`, top: `${a.top - b.top + a.height / 2}px`, width: `${a.width}px`, height: `${a.width}px` } });
+        pair.prepend(ring); setTimeout(() => ring.remove(), 900);
+        sym.animate?.([{ transform: 'translateY(0) scale(1)' }, { transform: 'translateY(-14%) scale(1.32)', offset: 0.38 }, { transform: 'translateY(2%) scale(.9)', offset: 0.7 }, { transform: 'translateY(0) scale(1)' }], { duration: 560, easing: 'ease-out' }); }
+      try { sfx.coin?.(); } catch { /* sound is optional */ } };
+    // the answer: the counters it fills, then softer hits or free rerolls; a power that gave nothing says why
+    const keys = [...ROLL_ORDER.filter((f) => gains[f] > 0), ...['weaken', 'free'].filter((f) => gains[f] > 0)];
+    const sign = (f) => (f === 'weaken' ? '−' : f === 'free' ? '×' : '+');
+    const nums = keys.map((f) => h('b', { class: `mc-res-n t-${TONE[f] || f}${f === 'free' ? ' t-magic' : ''}`, 'data-k': f }, HK.icon(FX_ICON[f] || f), `${sign(f)}${gains[f]}`));
+    const notes = [];
+    if (k.grudge && !keys.length) notes.push('Nothing got past your block last round');
+    if (k.markGold) notes.push(`+${E.scaleNum(k.markGold, level)} gold if your target falls`);
+    const go = h('button', { type: 'button', class: 'mc-res-go', disabled: true }, 'Continue');
+    const res = h('div', { class: 'mc-result', role: 'status', 'aria-live': 'polite', 'aria-label': keys.map((f) => `${gains[f]} ${NAME[f] || f}`).join(', ') || notes[0] || 'Done' },
+      h('div', { class: 'mc-res-row' }, ...nums, ...notes.map((t) => h('span', { class: `mc-res-miss${k.markGold ? ' t-gold' : ''}` }, t))), go);
+    const finish = () => { if (res.isConnected) return; timers.forEach(clearTimeout); pairs.forEach(stamp); card.append(res); requestAnimationFrame(() => res.classList.add('in')); later(250, () => { go.disabled = false; go.focus?.({ preventScroll: true }); }); };
+    pairs.forEach((pair, i) => later(120 + i * 260, () => stamp(pair)));
+    later(120 + pairs.length * 260 + 520, finish);
+    card.addEventListener('click', function hurry(e) { if (e.target === go || res.isConnected) return; card.removeEventListener('click', hurry); finish(); }); // a tap hurries it along
+    go.addEventListener('click', (e) => {
+      e.stopPropagation(); go.disabled = true; floatAway(res, target, reduced);
+      res.classList.add('out'); card.classList.remove('mc-rolling-card'); for (const p of pairs) p.classList.remove('mc-stamped');
       setTimeout(() => { res.remove(); resolve(); }, reduced ? 0 : 900);
     });
   });

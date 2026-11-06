@@ -938,10 +938,14 @@ async function doCard(id, opts = {}) {
   // every power shows what it did, then OK (Dave: each one should feel special), inside the selected tab's panel, not a second window (mp2)
   const inline = B.hud.sheet?.querySelector('.pw-detail') || null;
   // a Dice Card or a Side-Game Card rolls on the card itself; the counters fill when you tap Continue (Dave, 6 Nov 2026)
-  const onCard = (k?.kind === 'scale' || k?.kind === 'mix') && r.rolls?.length ? (B.hud.cards?.querySelector(`.mc-card[data-card="${id}"]`) || B.hud.sheet?.querySelector(`.mc-card[data-card="${id}"]`)) : null;
-  B.busy = true; if (!onCard) refresh();
+  const cardEl = () => B.hud.cards?.querySelector(`.mc-card[data-card="${id}"]`) || B.hud.sheet?.querySelector(`.mc-card[data-card="${id}"]`);
+  const onCard = (k?.kind === 'scale' || k?.kind === 'mix') && r.rolls?.length ? cardEl() : null;
+  const stampCard = !onCard && k?.type === 'Every-Round Card' && cardEl()?.querySelector('.t28-bonus') ? cardEl() : null; // an Every-Round Card stamps its bonus on the card
+  const counter = (key) => B.hud.forecast?._chips?.[key] || null;
+  B.busy = true; if (!onCard && !stampCard) refresh();
   try {
-    if (onCard) await PW.cardRoll(onCard, { k, r, gains, target: (key) => B.hud.forecast?._chips?.[key] || null });
+    if (onCard) await PW.cardRoll(onCard, { k, r, gains, target: counter });
+    else if (stampCard) await PW.cardCast(stampCard, { k, r, gains, level: E.powerLevel(B.hero, id), target: counter });
     else await PW.castReveal(B.root || document.body, { k, r, gains, round: b.round, level: E.powerLevel(B.hero, id), inline: k?.frogLoad && r.released ? null : inline });
   } finally { B.busy = false; }
   if (gains.heal) { myPc().heal(); myPc().num(`+${gains.heal}`, 'heal'); }

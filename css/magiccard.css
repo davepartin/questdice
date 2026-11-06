@@ -874,3 +874,14 @@ img.mc-die.mc-3d.d4{transform:scale(1.08) translateY(-3%)}
 .t28-bpair.fx-atk .t28-bnum{color:#e0262e}.t28-bpair.fx-pierce .t28-bnum{color:#e8740c}.t28-bpair.fx-block .t28-bnum{color:#2f7fe0}.t28-bpair.fx-heal .t28-bnum{color:#17a852}.t28-bpair.fx-gold .t28-bnum{color:#c99a00}.t28-bpair.fx-magic .t28-bnum{color:#7434c8}.t28-bpair.fx-weaken .t28-bnum{color:#5b3fa0}
 .t28.tight .t28-bonus .t28-bpair .t28-sym.big{width:18cqi!important;height:18cqi!important}.t28.tight .t28-bonus .t28-bnum{font-size:13cqi}
 .t28.tight .t28-bonus.two .t28-bpair .t28-sym.big{width:12cqi!important;height:12cqi!important}.t28.tight .t28-bonus.two .t28-bnum{font-size:10cqi}
+/* The cast on an Every-Round Card: the symbol stamps down with a ring in its colour; the number counts up (cardCast in js/g3/powers.js) */
+.t28-bpair{position:relative}
+.t28-bpair.fx-atk{--bc:#ff3b3b}.t28-bpair.fx-pierce{--bc:#ff8a1a}.t28-bpair.fx-block{--bc:#3aa4ff}.t28-bpair.fx-heal{--bc:#38e87a}.t28-bpair.fx-gold{--bc:#ffc21a}.t28-bpair.fx-magic{--bc:#a64dff}.t28-bpair.fx-weaken{--bc:#9b7bd1}
+.t28-bpair.mc-stamped>.t28-sym,.t28-bpair.mc-stamped>.t28-reroll{filter:drop-shadow(0 0 2.4cqi var(--bc,#a64dff))}
+.t28-bpair.mc-stamped .t28-bnum{animation:mcNumPop .5s ease-out}
+.mc-ring{position:absolute;z-index:0;pointer-events:none;border-radius:50%;border:1.4cqi solid var(--bc,#a64dff);transform:translate(-50%,-50%) scale(.4);opacity:.9;animation:mcRing .8s ease-out forwards}
+@keyframes mcRing{to{transform:translate(-50%,-50%) scale(1.9);opacity:0;border-width:.3cqi}}
+@keyframes mcNumPop{0%{transform:scale(.6)}55%{transform:scale(1.25)}100%{transform:scale(1)}}
+.mc-res-n.t-weaken{--c:#5b3fa0}
+.mc-res-miss.t-gold{color:#9a7000!important}
+@media (prefers-reduced-motion: reduce){.mc-ring{display:none}.t28-bpair.mc-stamped .t28-bnum{animation:none}}
