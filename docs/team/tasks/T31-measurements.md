@@ -129,16 +129,30 @@ not in doubt. It follows from the rule that one heal die heals every hero, while
 
 Matched campaigns (same seeds, 40 a class, `node tools/t31-campaign.mjs 40` with `T31_PATCH`), baseline against one candidate each:
 
-_Running as this page was first saved; the results are added below as soon as they finish._
+| Campaigns (40 each) | Act I cleared | Act II cleared | Act III cleared | Defeats a campaign | Card casts (campaign total) |
+|---|---|---|---|---|---|
+| Ranger, today | 15 | 5 | 0 | 6.3 | Aimed Shot 505, Hunter's Mark 70, Volley 174 |
+| Ranger, **Hunter's Mark costs 1** | 12 | **0** | 0 | 5.5 | Aimed Shot 410, Hunter's Mark **139**, Volley **49** |
+| Dwarf, today | 33 | 15 | 3 | 6.3 | Anvil Strike 998, Grudge 192, Stonehide 326 |
+| Dwarf, **Stonehide 12 a step (56 block at four, was 40)** | 33 | 15 | 3 | 6.3 | identical |
+
+- **Hunter's Mark at 1 magic made the Ranger worse, not better.** The bot casts it twice as often (70 → 139) and so casts Volley a third
+  as often (174 → 49) and Aimed Shot less; Act II clears fall from 5 to 0 of 40. The Mark is 1.21 a magic against Aimed Shot's 2.06
+  (and Volley's 3.5 at four charges), so at 2 magic the bot is right to leave it mostly alone, and a cheaper one pulls the bot's
+  magic onto a weaker use. Forty campaigns is small (5 against 0 is not far outside the noise), but nothing in it supports the cut.
+- **Stonehide at 56 block changed nothing at all**: the same clears, the same defeats, the same casts, to the digit, because the Dwarf
+  already blocks more than the monsters hit for (the same finding as when the card was last re-priced). Block past the hit is wasted,
+  which is why Stonehide's worth is low (0.38 a block point) and why a bigger step does not help.
 
 ## Candidates, in order of evidence
 
-1. **Hunter's Mark is the lowest start card (1.21 a magic, next lowest 1.42), and the bot uses it 2% of the time.** Candidate: cost 1
-   magic instead of 2. This is a Ranger-only change and the bot cannot judge it by campaign; it needs a human tester. Smallest, most
-   contained change on the list.
-2. **Stonehide is the one charge card far below its peers (1.69 against 3.5 to 4.2).** Block is worth 0.38, so 40 block at four charges
-   is simply worth little. Candidate: a bigger step. The Dwarf is the bots' strongest class, so a Stonehide buff is not first in line
-   unless Dave wants a Dwarf that tanks harder.
+1. **Hunter's Mark is the lowest start card (1.21 a magic, next lowest 1.42), and the bot uses it 2% of the time.** The obvious fix,
+   cost 1 magic, was tested above and made the bot's Ranger worse (it spends the magic on the Mark instead of Volley and Aimed Shot).
+   **Not supported by the evidence.** If the Mark is to change, the lever is what it does (more pierce for the same two magic, or
+   the gold part made bigger), and a human tester is the judge, because the bot barely plays it.
+2. **Stonehide is the one charge card far below its peers (1.69 against 3.5 to 4.2),** and the bigger step tested above changed no
+   outcome at all. The weakness is block itself (worth 0.38 a point, mostly wasted past the monsters' hit). **Leave it**; making it
+   count would mean making the monsters hit harder or giving block a second job (the Counterstrike rule is one such job).
 3. **Pink's worth on average is 0.51 (not 1.16).** No pink card needs changing on this alone: Storm Coil (4.24) is level with Rally Cry
    (4.07) and Rising Ballad (4.11). Pink dice sizes were priced for the crowd, which still holds (1.58 with three or more). The
    price table's "pink 1.16" should be retired: use **0.5 on average, 1.6 in a crowd, 0 alone**.
