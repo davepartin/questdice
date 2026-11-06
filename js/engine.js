@@ -10,12 +10,13 @@ import {
   PARTY, LEVEL_STRENGTH, ENEMY_CAP, ORDINARY, SET_PIECE, ACT_GOLD, WEAPON_DICE, DIAMOND, CHARMS, CHARM_MAX, CHARM_CHANCE, CHARM_PRICE, WEAPON_SIZE, WEAR, ACT_HP, ACT_FLAT, STEP_HP, PERIL, POINTS, PLACE_GOLD, TEAM_TRIPLE_BONUS, MORAL_BOOST, SHARE_MAGIC, REVIVE_COST, REVIVE_HP, POTION_BELT, POTION_PRICE, WELCOME_GOLD, POTION_HEAL, POTION_START, RARITY_MULT, SIZE_VALUE, SELL_SHARE, BAG_MAX, DROP_SIZES, MONSTER_DICE_MAX, POWER_LEVEL_FRAC, POWER_LEVEL_MIN, CHARGE_LEVEL_FRAC, CHARGE_LEVEL_ADD, CHARGE_STEP, WEAR_BATTLES, SPOILS_RARITY, STORE_RARITY, RARITY,
   colorIdOf, uniqueColors, landsOf, stepKind,
   LEGENDARY, LEGENDARY_CHANCE, isLegendary, EXPERIMENT, WEAPONS2, WEAPON_TRAINING, PRESSURE, SPECIALS, CLASS2, TEAMWORK, HEART_TO_HEART, BREATH_SHARE, FLEE_REWARD,
-  BUNDLE_ODDS, bundlePrice, guardianOf, WEAPONS3,
+  BUNDLE_ODDS, bundlePrice, guardianOf, WEAPONS3, TRAINING_DUMMY,
 } from './data.js';
 import { TRAINING, trainingRanks } from './training.js';
 import { monsterOf as packMonster, actsOf as packActs, packIdOf, bansOf } from './campaigns.js';
 
-const mdef = (id, camp) => packMonster(id, camp) || MONSTERS[id];
+const mdef = (id, camp) => packMonster(id, camp) || MONSTERS[id] || (id === TRAINING_DUMMY.id ? TRAINING_DUMMY : undefined);
+export { TRAINING_DUMMY };
 const campOfBattle = (b) => b?.hero?.campaign || b?.fighters?.[0]?.hero?.campaign;
 const mof = (id, b) => mdef(id, campOfBattle(b));
 
@@ -697,6 +698,7 @@ export function rollIntent(e, rng) {
     e.bag = null; e.bagOf = null;
   } else if (!MONSTER_D4.on) e.faces = groupFaces(e.faces); // old rounds migrate only when next rolled
   e.face = null; // which face of its move die it rolled this round (1-4 in the release; null when the move did not come from the die: a Slam, a Pounce, asleep)
+  if (e.id === TRAINING_DUMMY.id) { e.intent = { n: 'Still', v: 'idle', f: 0, m: 0 }; return e.intent; } // camp practice dummy never fights back
   const sp = SPECIALS.on ? e.special : null;
   if (sp?.id === 'sleeping' && !sp.awake) { e.intent = { n: 'Asleep', v: 'sleep', f: 0, m: 0 }; return e.intent; } // T24: it does nothing until hurt
   if (sp?.id === 'slam') { // T24: wind up, then a blow at double, then one ordinary round, and again
@@ -1053,6 +1055,7 @@ export function newBattle(hero, quest0, rng, players = 1) {
     mods: blankMods(), nextBound: 0, nextChained: 0, lastBoard: null, nextHushed: false, hushedNow: false, goldEarned: 0, log: [], report: null, stolen: 0, stats: { dealt: 0, taken: 0, healed: 0 },
   };
   b.magic0 = b.magic; b.potions0 = b.potions; // for secret objectives
+  if (quest.campPractice || quest0.campPractice) { b.campPractice = true; b.freeMagic = true; }
   dressNemesis(b.enemies, quest.nemesis);
   assignSpecials(b); // T24 Monster Specials (off in the game)
   beginReset(b);
@@ -1094,6 +1097,22 @@ export function beginReset(b) {
   for (const e of b.enemies) if (e.hp > 0) rollIntent(e, b.rng);
   CAST_HOOK.trace?.('round', b); // observers only (the battle report): the monsters' moves are shown
 }
+// Camp practice (Dave, 6 Nov 2026): one player round, then Again starts the coloured totals at zero. Dummy HP, charges,
+// spent cards, gold-this-fight and magic return to the attempt's start. Campaign and the real run are not touched here.
+export function resetPracticeRound(b) {
+  if (!b?.campPractice) return b;
+  b.round = 1; b.phase = 'reset'; b.outcome = null; b.board = null; b.mods = blankMods();
+  b.roundGold = 0; b.goldEarned = 0; b.markGold = 0; b.riposte = false; b.used = {}; b.usedRound = {};
+  b.charge = {}; b.healsRound = 0; b.lastCast = null; b.lastBoard = null; b.nextBound = 0; b.nextChained = 0;
+  b.nextHushed = false; b.hushedNow = false; b.report = null; b.actionsLeft = 0; b.freeActions = [];
+  b.magic = b.magic0; b.potions = b.potions0; if (b.hero) b.hero.potions = b.potions0;
+  b.hp = b.maxHp; b.stats = { dealt: 0, taken: 0, healed: 0 }; b.log = [];
+  for (const e of b.enemies) {
+    e.hp = e.maxHp; e.windup = false; e.pounce = false; e.buff = 0; e.fresh = false; e.cancelled = false;
+    e.intent = { n: 'Still', v: 'idle', f: 0, m: 0 };
+  }
+  return b;
+}
 // The practice battle sets some dice: b.script = { rolls: [{ slot: value }], rerolls: [{ slot: value }] }, used in order.
 // A slot it does not name rolls as usual. Normal battles have no script.
 const scripted = (hero, slot, v, rng) => (v != null ? { v: Math.min(Math.max(1, v), sidesOf(hero, slot)), bound: false } : rollSlot(hero, slot, rng));
@@ -1125,17 +1144,23 @@ export function rerollInfo(b) {
   const first = b.actionsLeft > RULES.paid;
   return { kind: first ? 'free' : 'paid', dice: rerollDiceOf(b.hero), perDie: first ? 0 : 1, left: b.actionsLeft };
 }
+export const canPay = (b, n = 0) => !!b?.freeMagic || ((b.magic || 0) >= n);
+const payCost = (b, n, what) => {
+  if (!canPay(b, n)) return false;
+  if (!b.freeMagic && n) { b.magic -= n; CAST_HOOK.magic?.(b, what, n); }
+  return true;
+};
 export function canReroll(b, slots) {
   const info = rerollInfo(b);
   if (info.kind === 'none' || !slots.length) return false;
   if (slots.length > info.dice) return false;
   if (slots.some((s) => s === 'P' || b.board[s].bound || !isActive(b.hero, s))) return false; // the pet's die is one roll of luck (Dave)
-  return b.magic >= info.perDie * slots.length;
+  return canPay(b, info.perDie * slots.length);
 }
 export function reroll(b, slots) {
   if (!canReroll(b, slots)) return false;
   const info = rerollInfo(b);
-  b.magic -= info.perDie * slots.length; CAST_HOOK.magic?.(b, 'reroll', info.perDie * slots.length);
+  payCost(b, info.perDie * slots.length, 'reroll');
   if (info.kind === 'card') b.freeActions.shift(); else b.actionsLeft -= 1;
   const plan = b.script?.rerolls?.shift();
   for (const s of slots) b.board[s] = { ...scripted(b.hero, s, plan?.[s], b.rng), bound: false };
@@ -1144,15 +1169,15 @@ export function reroll(b, slots) {
 // Turning the heart: once a round (Dave, Oct 2026), marked on this round's board so each hero in a company has their own.
 export const nudgedThisRound = (b) => !!b.board?.nudged;
 export function nudge(b, dir) {
-  if (!b.board || b.board.nudged || b.magic < NUDGE_COST || b.hushedNow || b.board.C?.hushed) return false;
+  if (!b.board || b.board.nudged || !canPay(b, NUDGE_COST) || b.hushedNow || b.board.C?.hushed) return false;
   const v = b.board.C.v + dir;
   if (v < 1 || v > 6) return false;
-  b.magic -= NUDGE_COST; CAST_HOOK.magic?.(b, 'nudge', NUDGE_COST); b.board.C.v = v; b.board.nudged = true; return true;
+  payCost(b, NUDGE_COST, 'nudge'); b.board.C.v = v; b.board.nudged = true; return true;
 }
 export function healSpend(b) {
   const cost = healCostOf(b.hero, b);
-  if (b.magic < cost || b.hp >= b.maxHp) return false;
-  b.magic -= cost; CAST_HOOK.magic?.(b, 'heal', cost); b.healsRound = (b.healsRound || 0) + 1; const before = b.hp; b.hp = Math.min(b.maxHp, b.hp + healAmountOf(b.hero)); b.stats.healed += b.hp - before; return true;
+  if (!canPay(b, cost) || b.hp >= b.maxHp) return false;
+  payCost(b, cost, 'heal'); b.healsRound = (b.healsRound || 0) + 1; const before = b.hp; b.hp = Math.min(b.maxHp, b.hp + healAmountOf(b.hero)); b.stats.healed += b.hp - before; return true;
 }
 // Healing potions: bought at camp and carried from battle to battle (hero.potions); the belt holds potionMaxOf(hero).
 // Free to drink, heals potionHpOf(hero) (more each act). In a party a potion can be thrown to a friend (`to` = that fighter);
@@ -1234,7 +1259,7 @@ export function powerDice(card, x, lvl = 0) {
 export function powerState(b, card) {
   const spent = card.atwill ? !!(b.usedRound && (b.usedRound[card.id] || (card.kind === 'charge' && !card.frogLoad && b.usedRound[`${card.id}:release`]))) : !!b.used[card.id]; // a charge released this round cannot store too
   const early = !!(card.minRound && b.round < card.minRound);
-  return { spent, early, canPay: b.magic >= card.cost };
+  return { spent, early, canPay: canPay(b, card.cost) };
 }
 // Charges grow (Dave, Oct 2026: "the first round does three, the next four, the next five, the next six; that motivates you to keep
 // investing"): each stored charge is worth 1 more of each of its effects than the one before, so 4 charges of +5 give 5+6+7+8 = 26.
@@ -1291,8 +1316,8 @@ export function castPower(b, id, { x, release, to, song } = {}) {
     b.lastCast = { id, name: card.name, cost: 0, rolls: [], total, notes: [`released ${n}`], released: n, per }; CAST_HOOK.on?.(b, b.lastCast); return b.lastCast;
   }
   const st = powerState(b, card); if (st.spent || st.early || (card.frogLoad && (b.charge?.[id] || 0) >= card.max)) return null;
-  const cost = powerCost(card, x, powerLevel(b.hero, id)); if (b.magic < cost) return null;
-  b.magic -= cost;
+  const cost = powerCost(card, x, powerLevel(b.hero, id)); if (!canPay(b, cost)) return null;
+  if (!b.freeMagic) b.magic -= cost;
   if (card.atwill) (b.usedRound = b.usedRound || {})[id] = true; else b.used[id] = true;
   const lvl = powerLevel(b.hero, id); const out = { id, name: card.name, cost, rolls: [], total: 0, notes: [] };
   const add = (k, v) => { if (k === 'free') b.freeActions.push(v); else if (k === 'magic') b.magic = Math.min(magicCapOf(b.hero), b.magic + v);
@@ -1370,8 +1395,8 @@ export function upgradePower(hero, id) {
 }
 export function recharge(b, id) {
   const cost = rechargeCostOf(b.hero);
-  if (!b.used[id] || b.magic < cost || cardsOf(b.hero).find((c) => c.id === id)?.kind === 'super') return false;
-  b.magic -= cost; CAST_HOOK.magic?.(b, 'recharge', cost); b.used[id] = false; return true;
+  if (!b.used[id] || !canPay(b, cost) || cardsOf(b.hero).find((c) => c.id === id)?.kind === 'super') return false;
+  payCost(b, cost, 'recharge'); b.used[id] = false; return true;
 }
 
 // Resolve a locked round. Your blow lands first (the fallen do not strike back), then the survivors act.
@@ -1390,9 +1415,11 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
     round: b.round, ev, T, dealt: 0, guarded: 0, targetUid: null, killed: [], raged: [], summoned: [],
     acts: [], taken: 0, absorbed: 0, healed: 0, magicStolen: 0, goldStolen: 0, bound: 0, hpBefore: b.hp,
   };
-  if (ev.offense3) hero.stats.triples++;
-  if (ev.straight) hero.stats.straights++;
-  b.goldEarned += T.gold;
+  if (!b.campPractice) {
+    if (ev.offense3) hero.stats.triples++;
+    if (ev.straight) hero.stats.straights++;
+    b.goldEarned += T.gold;
+  }
 
   const alive = b.enemies.filter((e) => e.hp > 0);
   const frogged = m.frog ? (b.enemies[target]?.hp > 0 ? b.enemies[target] : alive[0]) : null; // Polymorph's frog: the target you lock in on
@@ -1502,6 +1529,30 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   }
   };
 
+  if (b.campPractice) {
+    // One player round against a dummy that never hits back. Strike still lands so Attack / Splash totals show.
+    strike(); arrows();
+    if (b.riposte && block > 0) {
+      const rt = tgt && tgt.hp > 0 ? tgt : living()[0];
+      if (rt) { const n = Math.min(rt.hp, Math.max(0, block - (rt.arm || 0))); rt.hp -= n; b.stats.dealt += n; rep.dealt += n; rep.riposte = { uid: rt.uid, n }; }
+    }
+    b.riposte = false;
+    if (b.board) b.lastBoard = Object.fromEntries(Object.entries(b.board).map(([s, d]) => [s, d.v]));
+    const hpBeforeHit = b.hp;
+    b.hp = Math.min(b.maxHp, b.hp + T.heal);
+    rep.healed = Math.max(0, b.hp - hpBeforeHit);
+    b.stats.healed += rep.healed;
+    CAST_HOOK.income?.(b, { earned: T.magic, stolen: 0, over: 0 });
+    if (!b.freeMagic) b.magic = Math.max(0, Math.min(magicCapOf(hero), b.magic + T.magic));
+    rep.hpAfter = b.hp; rep.magicAfter = b.magic;
+    b.report = rep;
+    logRound(b, { hero, board: b.board, mods: m, _dealt: b.stats.dealt - (rep.dealtBefore ?? b.stats.dealt), _killed: rep.killed, T, ev, straight, actionsLeft: b.actionsLeft, hp: b.hp, magic: b.magic }, { blocked: rep.absorbed || 0 });
+    CAST_HOOK.trace?.('resolved', b, rep);
+    for (const e of b.enemies) { if (e.id === TRAINING_DUMMY.id) e.hp = e.maxHp; } // dummy never looks wounded; the counters already show the hit
+    b.outcome = null; b.phase = 'practice-end';
+    rep.init = { hero: 0, heroDie: feetSize(hero), foes: [], first: 'hero', forced: true };
+    return rep;
+  }
   // Initiative: the first round always goes to you. After that each monster rolls a d4 against your feet die; ties go to you.
   const initV = ev.init; const early = [];
   rep.init = { hero: initV, heroDie: feetSize(hero), foes: [], first: 'hero', forced: b.round === 1 };
@@ -2071,6 +2122,7 @@ export function roadsFor(hero, opts = {}) {
 export const WANDER = { chance: 0.45, from: 2, share: 1.3, flatCut: 3, maxCast: 2 }; // maxCast: only fights of one or two foes get a wanderer (no crowd of four)
 // Story-only characters set wander: false on the sheet (Sir Reginald today; Marmalade, Captain Squawk, Inspector Croak, Monsieur Gratin later).
 export function mayWander(id, camp) {
+  if (id === TRAINING_DUMMY.id) return false;
   const m = mdef(id, camp) || MONSTERS[id];
   return !!(m && m.tier === 'minion' && m.wander !== false);
 }

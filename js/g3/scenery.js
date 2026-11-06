@@ -22,6 +22,9 @@ export const artFor = (list) => list[0]; // the best one that exists (the list h
 
 // Where the figures stand: [x %, feet y %, faces left (1) or right (0), size]. Pairs sit either side of the fire, then back rows.
 const AROUND_FIRE = [[26, 94, 0, 1], [74, 94, 1, 1], [17, 85, 0, 0.88], [83, 85, 1, 0.88], [37, 77, 0, 0.78], [63, 77, 1, 0.78]];
+// Practice dummy stands to the right of the fire (hero typically left). If a second hero had that slot, they step further right.
+const DUMMY_SLOT = [72, 94, 1, 0.92];
+const DUMMY_NUDGE = [88, 88, 1, 0.88];
 const ON_ROAD = [[26, 94, 0, 1], [48, 92, 0, 0.94], [16, 86, 0, 0.84], [68, 88, 0, 0.88], [36, 80, 0, 0.74], [84, 84, 0, 0.8]];
 // three or four on the road walk side by side (the third used to stand right behind the first and vanish: the bots' playtest)
 const ROAD_N = { 3: [[18, 92, 0, 0.94], [44, 94, 0, 1], [70, 90, 0, 0.92]], 4: [[12, 90, 0, 0.88], [33, 94, 0, 1], [55, 92, 0, 0.96], [77, 88, 0, 0.88]] };
@@ -53,19 +56,27 @@ function figure(hero, slot, { petSide }) {
   void petSide;
   return el;
 }
+function dummyFigure(onTap) {
+  const [x, y, flip, s] = DUMMY_SLOT; const d = D.TRAINING_DUMMY;
+  const base = d.imgBase || { x: 0.5, y: 0.98, w: 0.7 };
+  const img = h('img', { class: 'sc-img', src: d.img, alt: d.name, draggable: 'false', decoding: 'async' });
+  return h('button', { type: 'button', class: `sc-fig sc-dummy ${flip ? 'right' : ''}`, 'aria-label': 'Practice dummy', onclick: onTap,
+    style: { '--x': `${x}%`, '--y': `${y}%`, '--s': String(s), '--bx': String(base.x), '--by': String(base.y), '--delay': `${(x * 7) % 5}s`, zIndex: 4 } },
+    h('i', { class: 'sc-shadow' }), img, h('b', { class: 'sc-name' }, 'Practice'));
+}
 
-// kind: 'camp' | 'road'. opts: { heroes, act, place, fire }. Safe to call again for the same screen (the stage is rebuilt, the painting kept).
-export function enter(kind, { heroes = [], act = 1, place = '', hot = true } = {}) {
+// kind: 'camp' | 'road'. opts: { heroes, act, place, fire, onDummy }. Safe to call again for the same screen (the stage is rebuilt, the painting kept).
+export function enter(kind, { heroes = [], act = 1, place = '', hot = true, onDummy = null } = {}) {
   const el = ensureLayer(); const token = (el._t = (el._t || 0) + 1);
   const list = kind === 'camp' ? campArt(act) : roadArt(act, place);
   const url = artFor(list);
   const bg = el.querySelector('.sc-bg'); const full = `url("${url}")`;
   if (bg.style.backgroundImage !== full) bg.style.backgroundImage = full;
   void token; el.className = `scene on k-${kind} act-${act}`; document.body.classList.add('has-scene');
-  mountStage(kind, heroes, hot, url);
+  mountStage(kind, heroes, hot, url, onDummy);
 }
 // The figures go inside the screen's own viewport (the screen has just been mounted).
-export function mountStage(kind, heroes, hot = true, backdrop = null) {
+export function mountStage(kind, heroes, hot = true, backdrop = null, onDummy = null) {
   let host = document.querySelector('.sx-viewport');
   if (!host) { // the quest board has no viewport of its own: give it one
     const root = document.getElementById('app'); if (!root || !root.classList.contains('sx-screen')) return false;
@@ -73,9 +84,11 @@ export function mountStage(kind, heroes, hot = true, backdrop = null) {
   }
   host.querySelector(':scope > .sc-stage')?.remove();
   const members = heroes.slice(0, 6).filter((m) => m && D.CLASSES[m.cls]);
-  const slots = kind === 'camp' ? AROUND_FIRE : ROAD_N[members.length] || ON_ROAD;
-  const figs = members.map((m, i) => figure(m, slots[i], {})).sort((a, b) => parseFloat(a.style.getPropertyValue('--y')) - parseFloat(b.style.getPropertyValue('--y')));
-  const stage = h('div', { class: `sc-stage k-${kind} n${members.length} ${reduced() ? 'still' : ''}` }, h('i', { class: 'sc-warm' }), kind === 'camp' && hot ? fireEl() : null, ...figs);
+  const slots = kind === 'camp' ? AROUND_FIRE.map((s, i) => (i === 1 && members.length >= 2 && onDummy ? DUMMY_NUDGE : s)) : ROAD_N[members.length] || ON_ROAD;
+  const figs = members.map((m, i) => figure(m, slots[i], {}));
+  if (kind === 'camp' && onDummy) figs.push(dummyFigure(onDummy));
+  figs.sort((a, b) => parseFloat(a.style.getPropertyValue('--y')) - parseFloat(b.style.getPropertyValue('--y')));
+  const stage = h('div', { class: `sc-stage k-${kind} n${members.length} ${reduced() ? 'still' : ''}${onDummy ? ' has-dummy' : ''}` }, h('i', { class: 'sc-warm' }), kind === 'camp' && hot ? fireEl() : null, ...figs);
   // Fit the painting to the visible camp banner, independently of the full-screen shade.
   if (kind === 'camp' && backdrop) stage.style.backgroundImage = `linear-gradient(#07101c18,#080c1430),url("${backdrop}")`;
   host.prepend(stage);

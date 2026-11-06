@@ -184,7 +184,7 @@ export function sigil(ctx) {
     const { k, st, stored } = p; const on = sel === k.id; const ready = isReady(p, reset);
     const state = st.early ? 'locked' : st.spent ? (reset && canRecharge(k) ? 'recharge' : 'used') : ready ? 'ready' : 'low';
     const pips = k.kind === 'charge' ? h('span', { class: 'pw-pips', 'aria-hidden': 'true' }, Array.from({ length: k.max }, (_, i) => h('i', { class: i < stored ? 'on' : '' }))) : null;
-    const need = !st.early && !st.spent && (p.x ?? k.cost) > b.magic ? (p.x ?? k.cost) - b.magic : 0; // cannot pay yet: greyed, and how much short
+    const need = !st.early && !st.spent && !E.canPay(b, p.x ?? k.cost) ? (p.x ?? k.cost) - b.magic : 0; // cannot pay yet: greyed, and how much short
     const tag = st.early ? `ROUND ${k.minRound}+` : st.spent ? (reset && canRecharge(k) ? 'RECHARGE' : k.atwill ? 'USED' : 'SPENT') : need ? `NEED ${need}` : k.kind === 'super' ? 'SUPER' : null;
     return h('button', { type: 'button', class: `pw-medal at-${slot} t-${toneOf(k)} st-${state} ${on ? 'on' : ''}`, 'data-power': k.id, 'aria-pressed': String(on), 'aria-label': `${slot}: ${k.name}. ${k.text}${need ? ` Need ${need} more magic.` : ''}`, onclick: () => ctx.select(k.id) },
       h('span', { class: 'pw-ring' }, h('span', { class: 'pw-core' }, glyph(k, 'pw-g')), h('b', { class: 'pw-slot' }, slot),
@@ -208,14 +208,14 @@ export function sigil(ctx) {
   const selSlot = powers.find((p) => p.k.id === sel)?.k.slot || '';
   // Available magic and health remain readable above the choices.
   const tally = h('div', { class: 'pw-tally' },
-    h('div', { class: 'pw-center', 'aria-label': `${b.magic} of ${E.magicCapOf(b.hero)} magic` }, HK.icon('magic'), h('b', {}, String(b.magic)), h('small', {}, `/ ${E.magicCapOf(b.hero)} magic`)),
+    h('div', { class: 'pw-center', 'aria-label': b.freeMagic ? 'Unlimited magic' : `${b.magic} of ${E.magicCapOf(b.hero)} magic` }, HK.icon('magic'), h('b', {}, b.freeMagic ? '∞' : String(b.magic)), h('small', {}, b.freeMagic ? 'unlimited magic' : `/ ${E.magicCapOf(b.hero)} magic`)),
     h('div', { class: 'pw-life', 'aria-label': `Health ${b.hp} of ${b.maxHp}` }, HK.icon('heal'), h('b', {}, String(b.hp)), h('small', {}, `/ ${b.maxHp}`)));
   // Helpers sit in a separate row under the class powers, each with its cost.
   // Tapping one when it cannot help (full health, no potions) says so in a short pop-up instead of opening its panel.
   const costBadge = (u) => (u.cost ? h('span', { class: 'pw-cost' }, HK.icon('magic'), h('b', {}, String(u.cost))) : h('span', { class: 'pw-cost free' }, h('b', {}, u.badge || 'FREE')));
   const soft = (u) => /full health|no potions/i.test(u.why || '');
   const pop = (text) => { const host = document.querySelector('.pw-sigil'); if (!host) return; host.querySelector('.pw-pop')?.remove(); const el = h('div', { class: 'pw-pop', role: 'status' }, text); host.append(el); setTimeout(() => el.remove(), 2100); };
-  const needOf = (u) => (u.cost && u.cost > b.magic ? u.cost - b.magic : 0);
+  const needOf = (u) => (u.cost && !E.canPay(b, u.cost) ? u.cost - b.magic : 0);
   const utilTiles = utils.map((u, i) => h('button', { type: 'button',
     class: `pw-medal pw-umedal at-U${i} t-${u.tone} st-${(u.why && !soft(u)) || needOf(u) ? 'low' : 'ready'} ${sel === u.id ? 'on' : ''}`, 'data-power': u.id, 'aria-pressed': String(sel === u.id), 'aria-label': `${u.name}. ${u.text}${needOf(u) ? ` Need ${needOf(u)} more magic.` : ''}`,
     onclick: () => { if (soft(u)) sfx.error?.(); ctx.select(u.id); } }, // a helper that cannot help now still opens its panel, which says why in words and rests its button
@@ -235,8 +235,8 @@ function powerRow(ctx, p, sel) {
   const { b, reset } = ctx; const { k, st, stored } = p; const x = p.x ?? k.cost; const level = p.level || 0;
   const when = k.atwill ? 'Every round' : k.kind === 'super' ? 'Super' : 'Once a battle';
   const rech = reset && st.spent && canRecharge(k); // between rounds a spent once-a-battle power can be recharged; everything else may be used now
-  const why = rech ? (b.magic < ctx.rechargeCost ? `Need ${ctx.rechargeCost}` : '')
-    : reset && E.needsDice(k) ? 'Roll first' : st.spent ? (k.atwill ? 'Used' : 'Spent') : st.early ? `Round ${k.minRound}+` : b.magic < x ? `Need ${x - b.magic}` : '';
+  const why = rech ? (!E.canPay(b, ctx.rechargeCost) ? `Need ${ctx.rechargeCost}` : '')
+    : reset && E.needsDice(k) ? 'Roll first' : st.spent ? (k.atwill ? 'Used' : 'Spent') : st.early ? `Round ${k.minRound}+` : !E.canPay(b, x) ? `Need ${x - b.magic}` : '';
   const tag = why && why !== 'Roll first' ? why : k.kind === 'charge' && stored != null ? `${when} · ${stored}/${k.max}` : when;
   const icons = (() => {
     if (k.kind === 'scale') { const n = E.powerDice(k, x, level); const f = k.dice.to; // mq6 (Dave): one small d6 per magic, then where the total goes
@@ -320,12 +320,12 @@ function detailPanel(ctx, sel) {
     const { k, st, stored } = p; const x = p.x ?? k.cost;
     const when = k.atwill ? 'Every round' : k.kind === 'super' ? `Super · once a battle${k.minRound ? ` · round ${k.minRound}+` : ''}` : 'Once a battle';
     const rech = reset && st.spent && canRecharge(k);
-    const why = rech ? (b.magic < ctx.rechargeCost ? `Needs ${ctx.rechargeCost} magic to recharge.` : '')
+    const why = rech ? (!E.canPay(b, ctx.rechargeCost) ? `Needs ${ctx.rechargeCost} magic to recharge.` : '')
       : reset && E.needsDice(k) ? 'Roll your dice first. A free reroll needs dice to act on.'
-      : st.spent ? (k.atwill ? 'Already used this round.' : 'Already used this battle.') : st.early ? `Unlocks in round ${k.minRound}.` : b.magic < x ? `Need ${x - b.magic} more magic (it costs ${x}, you have ${b.magic}).` : '';
+      : st.spent ? (k.atwill ? 'Already used this round.' : 'Already used this battle.') : st.early ? `Unlocks in round ${k.minRound}.` : !E.canPay(b, x) ? `Need ${x - b.magic} more magic (it costs ${x}, you have ${b.magic}).` : '';
     const step = k.kind === 'scale' && !st.spent ? h('div', { class: 'pw-step', role: 'group', 'aria-label': 'Magic to pour in' },
       h('button', { type: 'button', 'aria-label': 'Less magic, one die fewer', disabled: x <= k.cost, onclick: () => ctx.step(k.id, x - E.scaleStep(k)) }, '–'), h('b', {}, String(x)),
-      h('button', { type: 'button', 'aria-label': 'More magic, one more die', disabled: x + E.scaleStep(k) > Math.min(E.scaleMax(k, p.level || 0), Math.max(k.cost, b.magic)), onclick: () => ctx.step(k.id, x + E.scaleStep(k)) }, '+')) : null;
+      h('button', { type: 'button', 'aria-label': 'More magic, one more die', disabled: x + E.scaleStep(k) > Math.min(E.scaleMax(k, p.level || 0), b.freeMagic ? E.scaleMax(k, p.level || 0) : Math.max(k.cost, b.magic)), onclick: () => ctx.step(k.id, x + E.scaleStep(k)) }, '+')) : null;
     const relOk = k.kind === 'charge' && stored > 0 && !(b.usedRound && (b.usedRound[`${k.id}:release`] || (!k.frogLoad && b.usedRound[k.id]))); // store or release, one a round
     const release = relOk ? h('button', { type: 'button', class: 'pw-btn alt', onclick: () => ctx.use(k.id, { release: true }) }, HK.icon('windup'), `Use ${stored} charge${stored > 1 ? 's' : ''}`) : null;
     const main = rech ? (st.spent && canRecharge(k) ? h('button', { type: 'button', class: 'pw-btn go', disabled: !!why, onclick: () => ctx.recharge(k.id) }, HK.icon('reroll'), `Recharge · ${ctx.rechargeCost}`) : null)

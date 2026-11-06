@@ -30,7 +30,7 @@ export const battleState = B;
 
 const wait = (s) => world.stage.wait(s);
 const campOf = () => B.hero?.campaign || B.b?.fighters?.[0]?.hero?.campaign;
-const foeDef = (e) => (e && (monsterOf(e.id, campOf()) || D.MONSTERS[e.id])) || {};
+const foeDef = (e) => (e && (monsterOf(e.id, campOf()) || D.MONSTERS[e.id] || (e.id === D.TRAINING_DUMMY?.id ? D.TRAINING_DUMMY : null))) || {};
 
 const EPITHET = {
   goblinking: ['THE GOBLIN KING', 'Lord of Stolen Things'], ogre: ['HILL OGRE', 'Breaker of Gates'], lich: ['THE HOLLOW LICH', 'The Dead Organize'],
@@ -371,7 +371,11 @@ function updateHero() {
   const th = B.hud.therm; if (th) { th.querySelector('.th-n').textContent = String(Math.max(0, Math.ceil(b.hp))); th.querySelector('.th-fill').style.height = `${Math.max(0, Math.min(100, (b.hp / b.maxHp) * 100))}%`; th.classList.toggle('low', b.hp / b.maxHp <= 0.3); if (d < -0.5) HK.replay(th, 'ouch'); if (d > 0.5) HK.replay(th, 'mend'); }
   const dv = B.hud.divider; if (dv) { const k = Math.max(0, Math.min(1, b.hp / b.maxHp)); dv.querySelector('.dv-fill').style.width = `${k * 100}%`; dv.querySelector('.dv-n').textContent = `${Math.max(0, Math.ceil(b.hp))} / ${b.maxHp}`; dv.classList.toggle('low', k <= 0.3); if (d < -0.5) HK.replay(dv, 'ouch'); if (d > 0.5) HK.replay(dv, 'mend'); }
   { const dh = B.hud.diff; const d = D.DIFFICULTY[D.normalizeDifficulty(B.hero?.difficulty)]; const id = D.normalizeDifficulty(B.hero?.difficulty); if (dh) { dh.className = `sx-diffchip b3-diffchip dc-${id}`; dh.querySelector('b').textContent = d.name; dh.title = `${d.name}: ${d.text}`; dh.setAttribute('aria-label', `Difficulty: ${d.name}`); } }
-  const mc = B.hud.magchip; if (mc) { mc.querySelector('b').textContent = String(b.magic); let cap = mc.querySelector('small'); if (!cap) { cap = h('small', { class: 'mc-cap' }); mc.append(cap); } cap.textContent = `/${E.magicCapOf(B.hero)}`; mc.title = `Magic: ${b.magic} of ${E.magicCapOf(B.hero)}`; } // 9/12: there is a cap
+  const mc = B.hud.magchip; if (mc) {
+    let cap = mc.querySelector('small'); if (!cap) { cap = h('small', { class: 'mc-cap' }); mc.append(cap); }
+    if (b.freeMagic) { mc.querySelector('b').textContent = '∞'; cap.textContent = ''; mc.title = 'Unlimited magic'; }
+    else { mc.querySelector('b').textContent = String(b.magic); cap.textContent = `/${E.magicCapOf(B.hero)}`; mc.title = `Magic: ${b.magic} of ${E.magicCapOf(B.hero)}`; }
+  } // 9/12: there is a cap; camp practice shows unlimited
   const gc = B.hud.goldchip;
   if (gc) { // your purse plus what this fight has won so far (paid for real at victory), climbing round by round like magic (Dave)
     const mine = B.party ? b.fighters[B.active] || b.fighters.find((f) => f.hero === B.hero) : null; // a team game: this phone's own hero, never the company's sum (Dave)
@@ -519,6 +523,7 @@ function idleTray() {
 // ------------------------------------------------------------------------------------------ reset screen
 function ribbonNodes() {
   const b = B.b; const rep = B.lastRep;
+  if (b.campPractice) return ['Practice dummy — unlimited magic. It does not hit back.'];
   if (!rep) return [`${alive().map((e) => e.name).join(' and ')} ${alive().length > 1 ? 'bar' : 'bars'} the way.`];
   return (rep.party ? V.partyReportLines(rep, b) : V.reportLines(rep, b)).slice(0, 3).flatMap((l, i) => [i ? h('i', { class: 'rb-sep' }) : null, h('span', { class: `rb-${l.kind || 'meh'}` }, HK.rich(l.text))]);
 }
@@ -555,8 +560,8 @@ function utilState(u, shape) {
   const b = B.b; const cost = utilCost(u); let why = '';
   if (!shape && u.id === 'u:heart') why = 'Roll your dice first. The heart turns once your dice are out.'; // heal, charge and magic can all be used before the roll; a potion any time before you lock in
   else if (!shape && b.phase !== 'reset') why = 'Not now.';
-  else if (u.id === 'u:heart') why = E.nudgedThisRound(b) ? 'Used this round. You can turn the heart once a round.' : b.magic < cost ? `Need ${cost - b.magic} more magic (it costs ${cost}, you have ${b.magic}).` : '';
-  else if (u.id === 'u:heal') why = b.hp >= b.maxHp ? 'You are at full health.' : b.magic < cost ? `Need ${cost - b.magic} more magic (it costs ${cost}, you have ${b.magic}).` : '';
+  else if (u.id === 'u:heart') why = E.nudgedThisRound(b) ? 'Used this round. You can turn the heart once a round.' : !E.canPay(b, cost) ? `Need ${cost - b.magic} more magic (it costs ${cost}, you have ${b.magic}).` : '';
+  else if (u.id === 'u:heal') why = b.hp >= b.maxHp ? 'You are at full health.' : !E.canPay(b, cost) ? `Need ${cost - b.magic} more magic (it costs ${cost}, you have ${b.magic}).` : '';
   else if (E.potionsLeft(b) <= 0) why = 'No potions left. Buy more at camp.'; else if (b.hp >= b.maxHp) why = 'You are at full health.';
   return { cost, why };
 }
@@ -565,9 +570,9 @@ function cardTiles(reset) {
   const powers = E.cardsOf(hero).map((k) => {
     const st = E.powerState(b, k); const stored = (b.charge && b.charge[k.id]) || 0;
     const x = E.powerCost(k, B.powerX[k.id] ?? k.cost, E.powerLevel(hero, k.id)); B.powerX[k.id] = x;
-    const superReady = k.kind === 'super' && !st.early && !st.spent && b.magic >= x && !reset;
+    const superReady = k.kind === 'super' && !st.early && !st.spent && E.canPay(b, x) && !reset;
     if (superReady && B.superSeen !== b.round) { B.superSeen = b.round; if (!B.superToast) { B.superToast = true; setTimeout(() => toast(`${k.name} is ready!`), 200); } }
-    return { k, st, stored, x, level: E.powerLevel(hero, k.id), afford: b.magic >= x };
+    return { k, st, stored, x, level: E.powerLevel(hero, k.id), afford: E.canPay(b, x) };
   });
   const util = (id) => { const u = UTIL.find((x) => x.id === id); return { u, ...utilState(u, !reset) }; };
   const pot = util('u:bigheal'); const heal = util('u:heal'); const heart = util('u:heart');
@@ -615,15 +620,15 @@ function showPowerDetail(id) {
   const how = PW.effectLine(k, { x, round: b.round, level: E.powerLevel(hero, id), stored }); // the same words as the powers sheet, from the engine's numbers
   const reasons = !shape && E.needsDice(k) ? 'Roll your dice first. A free reroll needs dice to act on.'
     : st.spent ? (k.atwill ? 'Already used this round.' : 'Already used this battle.')
-    : st.early ? `Unlocks in round ${k.minRound}.` : b.magic < x ? `Needs ${x} magic. You have ${b.magic}.` : '';
+    : st.early ? `Unlocks in round ${k.minRound}.` : !E.canPay(b, x) ? `Needs ${x} magic. You have ${b.magic}.` : '';
   const close = () => { B.hud.info.classList.remove('open'); B.hud.info.replaceChildren(); };
   const again = () => showPowerDetail(id);
   const stepRow = k.kind === 'scale' && !st.spent ? h('div', { class: 'pd-step' }, h('span', {}, 'Magic to spend'),
     h('button', { type: 'button', class: 'pd-sq', 'aria-label': 'One less magic', onclick: () => { B.powerX[id] = E.powerCost(k, x - E.scaleStep(k), E.powerLevel(hero, id)); again(); } }, '–'), h('b', {}, String(x)),
-    h('button', { type: 'button', class: 'pd-sq', 'aria-label': 'One more magic', onclick: () => { B.powerX[id] = E.powerCost(k, Math.min(x + E.scaleStep(k), Math.max(k.cost, b.magic)), E.powerLevel(hero, id)); again(); } }, '+')) : null;
+    h('button', { type: 'button', class: 'pd-sq', 'aria-label': 'One more magic', onclick: () => { B.powerX[id] = E.powerCost(k, Math.min(x + E.scaleStep(k), b.freeMagic ? E.scaleMax(k, E.powerLevel(hero, id)) : Math.max(k.cost, b.magic)), E.powerLevel(hero, id)); again(); } }, '+')) : null;
   const releaseRow = k.kind === 'charge' && stored > 0 && !(b.usedRound && (b.usedRound[`${k.id}:release`] || (!k.frogLoad && b.usedRound[k.id])))
     ? h('button', { type: 'button', class: 'pd-btn alt', onclick: () => { close(); doCard(k.id, { release: true }); } }, `Release ${stored} stored charge${stored > 1 ? 's' : ''}`) : null;
-  const rechargeBtn = !shape && st.spent && canRecharge ? h('button', { type: 'button', class: 'pd-btn go', disabled: b.magic < D.RECHARGE_COST, onclick: () => { close(); doRecharge(id); } }, `Recharge · ${D.RECHARGE_COST} magic`) : null;
+  const rechargeBtn = !shape && st.spent && canRecharge ? h('button', { type: 'button', class: 'pd-btn go', disabled: !E.canPay(b, D.RECHARGE_COST), onclick: () => { close(); doRecharge(id); } }, `Recharge · ${D.RECHARGE_COST} magic`) : null;
   // Verse for a friend (CLASS2.verse, the lab): at a table, Lucky Verse asks who it is for. You: attack as now. A friend: healing.
   const verse = k.kind === 'luck' && B.party && D.CLASS2.on && D.CLASS2.verse && !rechargeBtn;
   const friends = verse ? B.b.fighters.map((f, j) => ({ f, j })).filter(({ f, j }) => j !== B.active && f.hp > 0) : [];
@@ -713,13 +718,14 @@ const teamBtn = () => h('button', { type: 'button', class: 'b3-powers b3-team', 
 const sideBtns = () => (B.party ? [teamBtn(), powersBtn()] : [powersBtn()]);
 const powersBtn = () => {
   const b = B.b; const list = E.cardsOf(B.hero);
-  const ready = list.filter((k) => { const st = E.powerState(b, k); return !st.spent && !st.early && b.magic >= k.cost; }).length;
-  const superReady = list.some((k) => k.kind === 'super' && !E.powerState(b, k).spent && !E.powerState(b, k).early && b.magic >= k.cost);
+  const ready = list.filter((k) => { const st = E.powerState(b, k); return !st.spent && !st.early && E.canPay(b, k.cost); }).length;
+  const superReady = list.some((k) => k.kind === 'super' && !E.powerState(b, k).spent && !E.powerState(b, k).early && E.canPay(b, k.cost));
   return h('button', { type: 'button', class: `b3-powers ${superReady ? 'super' : ''}`, 'aria-label': `Magical powers. ${ready} ready.`, onclick: () => togglePowers() },
     h('span', { class: 'bp-tri' }, HK.icon('magic')), h('b', {}, 'Magic powers'));
 };
 
 export function renderReset() {
+  if (B.b?.phase === 'practice-end') return renderPracticeEnd();
   try { B.fit?.(); } catch { /* ignore */ }
   B.bw?.tray?.setLink?.(null); B.bw?.tray?.setStraight?.(null); B.bw?.tray?.setHeart?.(null);
   B.resets = (B.resets || 0) + 1;
@@ -763,6 +769,34 @@ function e0Warn() {
   return 'Roll the dice.';
 }
 
+function renderPracticeEnd() {
+  if (B.ended || !B.b?.campPractice) return;
+  const b = B.b; const T = B.lastRep?.T || {}; const ev = B.lastRep?.ev || {};
+  setHud({ phase: 'practice-end' });
+  updatePlates(); paintHeroes();
+  B.fb.setTarget(b.enemies[B.target]?.uid || null);
+  HK.setForecast(B.hud.forecast, {
+    atk: T.atk || 0, pierce: T.pierce || 0, block: T.block || 0, heal: T.heal || 0,
+    gold: (T.gold || 0) + (b.roundGold || 0), magic: T.magic || 0,
+    splash: (ev.splash || 0) + (b.mods?.splash || 0) + (ev.fire || 0),
+  });
+  B.hud.forecast.classList.remove('idle');
+  B.hud.caption.replaceChildren(caption('Your practice totals. Tap Again to start at zero, or Back to camp.'));
+  B.hud.bar.replaceChildren(h('div', { class: 'b3-acts b3-acts3 b3-practice' },
+    HK.button({ kind: 'cta', icon: 'dice', label: 'Again', sub: 'start at zero', onclick: againPractice, cls: 'blue', aria: 'Start another practice round at zero' }),
+    HK.button({ kind: 'ghost', label: 'Back to camp', onclick: donePractice, aria: 'Leave practice and return to camp' })));
+  if (B.sheetOpen) togglePowers(false);
+  B.hud.cards.replaceChildren();
+  B.hud.again.hidden = true;
+}
+function againPractice() {
+  if (B.busy || B.ended || !B.b?.campPractice) return;
+  E.resetPracticeRound(B.b);
+  B.pickRound = null; B.picked = true; B.shownRound = 0; B.powerX = {}; B.lastRep = null; B.lastCard = null; B.tlock = null;
+  hideCard();
+  renderReset();
+}
+function donePractice() { C.leaveCampPractice?.(); }
 
 // ------------------------------------------------------------------------------------------ roll & shape
 async function doRoll() {
@@ -795,6 +829,7 @@ function rerollText(info) {
 }
 export function renderShape() {
   if (B.ended) return;
+  if (B.b?.phase === 'practice-end') return renderPracticeEnd();
   const b = B.b; const hero = B.hero; const bw = B.bw;
   if (B.net && !B.resolving) { const st = myStage(); if (st === 'locked') return renderLocked(); if (st === 'skipped' || st === 'down') return renderLocked(st); }
   if (b.phase !== 'shape') return renderReset();
@@ -882,7 +917,7 @@ async function doNudge(dir, { from = null, round = null, hero = null, reveal = f
   B.busy = true;
   try {
     if (B.net) { if (!(await netDo({ type: 'nudge', dir }))) return false; b = B.b; }
-    else if (!E.nudge(b, dir)) { sfx.error(); toast(E.nudgedThisRound(b) ? 'You already turned the heart this round.' : b.magic < D.NUDGE_COST ? 'Not enough ✦ Magic.' : 'The heart cannot go that way.'); return false; }
+    else if (!E.nudge(b, dir)) { sfx.error(); toast(E.nudgedThisRound(b) ? 'You already turned the heart this round.' : !E.canPay(b, D.NUDGE_COST) ? 'Not enough ✦ Magic.' : 'The heart cannot go that way.'); return false; }
     B.pwNote = { id: 'u:heart', icon: 'magic', big: String(b.board.C.v), text: `heart turned ${dir > 0 ? 'up' : 'down'} · ${D.NUDGE_COST} magic` };
     if (reveal) { togglePowers(false); B.hud.info.classList.remove('open'); hideCard(); }
     sfx.magic();
@@ -931,7 +966,7 @@ async function doCard(id, opts = {}) {
   // what the power actually added this round (the counters before and after)
   const gains = {};
   for (const [key, v] of Object.entries(b.mods)) { const d = (v || 0) - (modsBefore[key] || 0); if (d > 0) gains[key] = d; }
-  const mg = b.magic - (magicBefore - (r.cost || 0)); if (mg > 0) gains.magic = mg;
+  const paid = b.freeMagic ? 0 : (r.cost || 0); const mg = b.magic - (magicBefore - paid); if (mg > 0) gains.magic = mg;
   const gg = (b.goldEarned || 0) - goldBefore; if (gg > 0) gains.gold = gg;
   const fr = (b.freeActions || []).length - freeBefore; if (fr > 0) gains.free = b.freeActions[b.freeActions.length - 1];
   r.foes = b.enemies.filter((e) => e.hp > 0).length;
@@ -976,6 +1011,11 @@ function refreshReset() {
   B.hud.caption.replaceChildren(caption(e0Warn(), B.picked === false ? 'captarget' : ''));
   B.fb.setLock?.(B.tlock);
   if (B.sheetOpen) renderSheet(true); else B.hud.cards.replaceChildren(...cardTiles(true));
+  if (B.b?.campPractice) { // cards used before the roll still fill the colour counters after Continue
+    const z = { atk: 0, pierce: 0, block: 0, magic: 0, heal: 0, gold: 0, splash: 0, fire: 0 };
+    HK.setForecast(B.hud.forecast, HK.forecastValues(z, B.b.mods, B.b));
+    B.hud.forecast.classList.remove('idle');
+  }
 }
 function refresh() { if (B.b.phase === 'shape') renderShape(); else refreshReset(); }
 
@@ -1205,7 +1245,7 @@ function closeCard() { hideCard(); const r = B.flourishLater; B.flourishLater = 
 // (after a boss or elite's title card), and each later round shows them again in place of the old plan board.
 // The card on top is your current target; Attack keeps it or switches to the card you brought forward (selectTarget, every targeting rule
 // stays there), then straight to the battle. ?nominicards brings back the old plan board.
-const wantPicker = () => MC.on() && B.b?.round === 1 && B.mcFor !== B.b && alive().length > 0;
+const wantPicker = () => MC.on() && !B.b?.campPractice && B.b?.round === 1 && B.mcFor !== B.b && alive().length > 0;
 function openPicker(afterTitle = false) {
   const b = B.b; B.mcFor = b; const t0 = Date.now();
   const hold = () => (B.b === b && B.root?.querySelector('.b3-titlecard') && Date.now() - t0 < 6000 ? setTimeout(hold, 200) : showCards(b, { reveal: true }));
@@ -1256,6 +1296,7 @@ function showCards(b = B.b, { top = null, reveal = false } = {}) {
 // The round-start look at the monsters: the cards each round, or the optional legacy plan board.
 function showPlan() {
   B.root?.querySelector('.sp-plan')?.remove();
+  if (B.b?.campPractice) return; // the dummy is not a monster encounter; skip its card
   if (MC.on()) { showCards(B.b, { reveal: true }); return; }
   const el = SP.planFor(B.b, { imgOf: (uid) => { const e = B.b?.enemies.find((x) => x.uid === uid); const d = e && (monsterOf(e.id, B.b.hero?.campaign) || D.MONSTERS[e.id]); return d?.img || ''; }, onFight: () => {} });
   if (el) B.root.append(el);
@@ -1298,7 +1339,7 @@ async function lockInInner() {
   targetEnemy();
   const rep = E.resolve(b, { target: B.target, straight: B.straight });
   B.lastRep = rep;
-  const card = makeCard(rep);
+  const card = b.campPractice ? null : makeCard(rep);
   if (ev.offense3 || ev.defense3 || ev.straight) {
     sfx.synergy(); banner(ev.triples?.length ? `${ev.triples[0].name.toUpperCase()}!  +${ev.triples[0].bonus ?? 10}` : `${ev.straight}-STRAIGHT!`, 'gold');
     const l = (ev.triples || []).flatMap((t) => t.slots);
@@ -1308,8 +1349,8 @@ async function lockInInner() {
   await critMoment(critsOf(ev));
   const me = B.fb.hero(0);
 
-  // ---------- initiative: who goes first this round
-  {
+  // ---------- initiative: who goes first this round (skipped for the camp dummy: it does not hit back)
+  if (!b.campPractice) {
     const ini = rep.init; const nm = (uid) => b.enemies.find((e) => e.uid === uid)?.name || 'Monster';
     if (ini.forced) { banner('YOU STRIKE FIRST', 'gold'); }
     else {
@@ -1336,6 +1377,12 @@ async function lockInInner() {
     a.hit(Math.min(1, sp.dealt / 20)); a.num(`−${sp.dealt}`, 'splash', { dy: 54 }); // pink, a little lower than the main hit: damage that spilled past your target
   }
   for (const e of b.enemies) updatePlate(e);
+  if (b.campPractice) {
+    bw.tray.unlock?.();
+    B.busy = false;
+    renderPracticeEnd();
+    return;
+  }
   await wait(0.2);
   await killMoment(rep.killed);
   await wait(rep.killed.length ? 0.6 : 0.15);
