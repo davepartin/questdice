@@ -1404,7 +1404,7 @@ export function resolve(b, { target = 0, straight = 'atk' } = {}) {
   // Splash is not pierce (Dave, 5 Nov 2026): each other monster's guard stops splash, as it always stopped a Fire arrow. One guard a
   // round per monster, shared by every splash that reaches it (a power's, a weapon's, a Fire arrow's).
   const guardSpent = new Map();
-  const stopSplash = (e, n) => { const g = Math.max(0, (GUARD_VERBS.has(e.intent?.v) ? e.mag : 0) + (e.arm || 0) - (guardSpent.get(e.uid) || 0)); const stop = Math.min(g, n); guardSpent.set(e.uid, (guardSpent.get(e.uid) || 0) + stop); return stop; };
+  const stopSplash = (e, n) => { const g = Math.max(0, (GUARD_VERBS.has(e.intent?.v) ? e.mag : 0) + (e.arm || 0) + shieldGuard(e, 0) - (guardSpent.get(e.uid) || 0)); const stop = Math.min(g, n); guardSpent.set(e.uid, (guardSpent.get(e.uid) || 0) + stop); return stop; };
   // After your blow: a Fire arrow's splash (each other monster's guard can stop it) and a Frost arrow's chill on the target.
   const arrows = () => {
     if (ev.fire > 0) for (const e of b.enemies) {

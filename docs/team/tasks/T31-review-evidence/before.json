@@ -1,0 +1,3973 @@
+{
+  "release": true,
+  "scope": "Exact card arithmetic and controlled diagnostic states; not a new campaign balance table.",
+  "oldPointWeights": {
+    "atk": 1,
+    "pierce": 1.05,
+    "splash": 1.16,
+    "block": 0.55,
+    "heal": 0.88
+  },
+  "cards": [
+    {
+      "cls": "knight",
+      "id": "cleave",
+      "name": "Cleave",
+      "type": "Dice Card",
+      "rank": 1,
+      "start": true,
+      "casts": [
+        {
+          "cost": 3,
+          "n": 2,
+          "s": 6,
+          "gain": {
+            "atk": 7,
+            "splash": 3.2499999999999996
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 3.59
+        },
+        {
+          "cost": 5,
+          "n": 4,
+          "s": 6,
+          "gain": {
+            "atk": 14,
+            "splash": 6.750000000000001
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 4.366
+        }
+      ]
+    },
+    {
+      "cls": "knight",
+      "id": "cleave",
+      "name": "Cleave",
+      "type": "Dice Card",
+      "rank": 2,
+      "start": true,
+      "casts": [
+        {
+          "cost": 3,
+          "n": 3,
+          "s": 6,
+          "gain": {
+            "atk": 10.5,
+            "splash": 5.000000000000001
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 5.433333333333334
+        },
+        {
+          "cost": 5,
+          "n": 5,
+          "s": 6,
+          "gain": {
+            "atk": 17.5,
+            "splash": 8.499999999999998
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 5.4719999999999995
+        }
+      ]
+    },
+    {
+      "cls": "knight",
+      "id": "cleave",
+      "name": "Cleave",
+      "type": "Dice Card",
+      "rank": 3,
+      "start": true,
+      "casts": [
+        {
+          "cost": 3,
+          "n": 4,
+          "s": 6,
+          "gain": {
+            "atk": 14,
+            "splash": 6.750000000000001
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 7.276666666666666
+        },
+        {
+          "cost": 5,
+          "n": 6,
+          "s": 6,
+          "gain": {
+            "atk": 21,
+            "splash": 10.250000000000002
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 6.578
+        }
+      ]
+    },
+    {
+      "cls": "knight",
+      "id": "cleave",
+      "name": "Cleave",
+      "type": "Dice Card",
+      "rank": 4,
+      "start": true,
+      "casts": [
+        {
+          "cost": 3,
+          "n": 5,
+          "s": 6,
+          "gain": {
+            "atk": 17.5,
+            "splash": 8.499999999999998
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 9.12
+        },
+        {
+          "cost": 5,
+          "n": 7,
+          "s": 6,
+          "gain": {
+            "atk": 24.5,
+            "splash": 12
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 7.684
+        }
+      ]
+    },
+    {
+      "cls": "knight",
+      "id": "judgment",
+      "name": "Judgment",
+      "type": "Finisher Card",
+      "rank": 1,
+      "start": false
+    },
+    {
+      "cls": "knight",
+      "id": "judgment",
+      "name": "Judgment",
+      "type": "Finisher Card",
+      "rank": 2,
+      "start": false
+    },
+    {
+      "cls": "knight",
+      "id": "judgment",
+      "name": "Judgment",
+      "type": "Finisher Card",
+      "rank": 3,
+      "start": false
+    },
+    {
+      "cls": "knight",
+      "id": "judgment",
+      "name": "Judgment",
+      "type": "Finisher Card",
+      "rank": 4,
+      "start": false
+    },
+    {
+      "cls": "knight",
+      "id": "shieldwall",
+      "name": "Shield Up",
+      "type": "Every-Round Card",
+      "rank": 1,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "block": 4
+      },
+      "conditional": false
+    },
+    {
+      "cls": "knight",
+      "id": "shieldwall",
+      "name": "Shield Up",
+      "type": "Every-Round Card",
+      "rank": 2,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "block": 5
+      },
+      "conditional": false
+    },
+    {
+      "cls": "knight",
+      "id": "shieldwall",
+      "name": "Shield Up",
+      "type": "Every-Round Card",
+      "rank": 3,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "block": 6
+      },
+      "conditional": false
+    },
+    {
+      "cls": "knight",
+      "id": "shieldwall",
+      "name": "Shield Up",
+      "type": "Every-Round Card",
+      "rank": 4,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "block": 8
+      },
+      "conditional": false
+    },
+    {
+      "cls": "knight",
+      "id": "riposte",
+      "name": "Counterstrike",
+      "type": "Every-Round Card",
+      "rank": 1,
+      "start": true,
+      "cost": 2,
+      "gain": {
+        "block": 4
+      },
+      "conditional": true
+    },
+    {
+      "cls": "knight",
+      "id": "riposte",
+      "name": "Counterstrike",
+      "type": "Every-Round Card",
+      "rank": 2,
+      "start": true,
+      "cost": 2,
+      "gain": {
+        "block": 5
+      },
+      "conditional": true
+    },
+    {
+      "cls": "knight",
+      "id": "riposte",
+      "name": "Counterstrike",
+      "type": "Every-Round Card",
+      "rank": 3,
+      "start": true,
+      "cost": 2,
+      "gain": {
+        "block": 6
+      },
+      "conditional": true
+    },
+    {
+      "cls": "knight",
+      "id": "riposte",
+      "name": "Counterstrike",
+      "type": "Every-Round Card",
+      "rank": 4,
+      "start": true,
+      "cost": 2,
+      "gain": {
+        "block": 8
+      },
+      "conditional": true
+    },
+    {
+      "cls": "knight",
+      "id": "press",
+      "name": "Press the Attack",
+      "type": "Every-Round Card",
+      "rank": 1,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "atk": 3
+      },
+      "conditional": false
+    },
+    {
+      "cls": "knight",
+      "id": "press",
+      "name": "Press the Attack",
+      "type": "Every-Round Card",
+      "rank": 2,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "atk": 4
+      },
+      "conditional": false
+    },
+    {
+      "cls": "knight",
+      "id": "press",
+      "name": "Press the Attack",
+      "type": "Every-Round Card",
+      "rank": 3,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "atk": 5
+      },
+      "conditional": false
+    },
+    {
+      "cls": "knight",
+      "id": "press",
+      "name": "Press the Attack",
+      "type": "Every-Round Card",
+      "rank": 4,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "atk": 7
+      },
+      "conditional": false
+    },
+    {
+      "cls": "knight",
+      "id": "rally",
+      "name": "Rally Cry",
+      "type": "Charge Card",
+      "rank": 1,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "atk": 2,
+            "block": 1
+          },
+          "printedEquivalentsPerMagic": 2.55
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "atk": 20,
+            "block": 16
+          },
+          "printedEquivalentsPerMagic": 7.2
+        }
+      ]
+    },
+    {
+      "cls": "knight",
+      "id": "rally",
+      "name": "Rally Cry",
+      "type": "Charge Card",
+      "rank": 2,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "atk": 4,
+            "block": 3
+          },
+          "printedEquivalentsPerMagic": 5.65
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "atk": 28,
+            "block": 24
+          },
+          "printedEquivalentsPerMagic": 10.3
+        }
+      ]
+    },
+    {
+      "cls": "knight",
+      "id": "rally",
+      "name": "Rally Cry",
+      "type": "Charge Card",
+      "rank": 3,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "atk": 6,
+            "block": 5
+          },
+          "printedEquivalentsPerMagic": 8.75
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "atk": 36,
+            "block": 32
+          },
+          "printedEquivalentsPerMagic": 13.4
+        }
+      ]
+    },
+    {
+      "cls": "knight",
+      "id": "rally",
+      "name": "Rally Cry",
+      "type": "Charge Card",
+      "rank": 4,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "atk": 8,
+            "block": 7
+          },
+          "printedEquivalentsPerMagic": 11.850000000000001
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "atk": 44,
+            "block": 40
+          },
+          "printedEquivalentsPerMagic": 16.5
+        }
+      ]
+    },
+    {
+      "cls": "knight",
+      "id": "secondwind",
+      "name": "Second Wind",
+      "type": "Charge Card",
+      "rank": 1,
+      "start": false,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "heal": 4
+          },
+          "printedEquivalentsPerMagic": 3.52
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "heal": 28
+          },
+          "printedEquivalentsPerMagic": 6.16
+        }
+      ]
+    },
+    {
+      "cls": "knight",
+      "id": "secondwind",
+      "name": "Second Wind",
+      "type": "Charge Card",
+      "rank": 2,
+      "start": false,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "heal": 6
+          },
+          "printedEquivalentsPerMagic": 5.28
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "heal": 36
+          },
+          "printedEquivalentsPerMagic": 7.92
+        }
+      ]
+    },
+    {
+      "cls": "knight",
+      "id": "secondwind",
+      "name": "Second Wind",
+      "type": "Charge Card",
+      "rank": 3,
+      "start": false,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "heal": 8
+          },
+          "printedEquivalentsPerMagic": 7.04
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "heal": 44
+          },
+          "printedEquivalentsPerMagic": 9.68
+        }
+      ]
+    },
+    {
+      "cls": "knight",
+      "id": "secondwind",
+      "name": "Second Wind",
+      "type": "Charge Card",
+      "rank": 4,
+      "start": false,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "heal": 10
+          },
+          "printedEquivalentsPerMagic": 8.8
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "heal": 52
+          },
+          "printedEquivalentsPerMagic": 11.44
+        }
+      ]
+    },
+    {
+      "cls": "knight",
+      "id": "showboat",
+      "name": "Showboat",
+      "type": "Side-Game Card",
+      "rank": 1,
+      "start": false,
+      "cost": 2,
+      "groups": [
+        {
+          "to": "atk",
+          "n": 1,
+          "s": 6,
+          "mean": 3.5,
+          "table": null
+        },
+        {
+          "to": "gold",
+          "n": 1,
+          "s": 6,
+          "mean": 1.6666666666666667,
+          "table": [
+            [
+              4,
+              0
+            ],
+            [
+              6,
+              5
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "knight",
+      "id": "showboat",
+      "name": "Showboat",
+      "type": "Side-Game Card",
+      "rank": 2,
+      "start": false,
+      "cost": 2,
+      "groups": [
+        {
+          "to": "atk",
+          "n": 2,
+          "s": 6,
+          "mean": 7,
+          "table": null
+        },
+        {
+          "to": "gold",
+          "n": 1,
+          "s": 6,
+          "mean": 2,
+          "table": [
+            [
+              4,
+              0
+            ],
+            [
+              6,
+              5
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "knight",
+      "id": "showboat",
+      "name": "Showboat",
+      "type": "Side-Game Card",
+      "rank": 3,
+      "start": false,
+      "cost": 2,
+      "groups": [
+        {
+          "to": "atk",
+          "n": 3,
+          "s": 6,
+          "mean": 10.5,
+          "table": null
+        },
+        {
+          "to": "gold",
+          "n": 1,
+          "s": 6,
+          "mean": 2.6666666666666665,
+          "table": [
+            [
+              4,
+              0
+            ],
+            [
+              6,
+              5
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "knight",
+      "id": "showboat",
+      "name": "Showboat",
+      "type": "Side-Game Card",
+      "rank": 4,
+      "start": false,
+      "cost": 2,
+      "groups": [
+        {
+          "to": "atk",
+          "n": 4,
+          "s": 6,
+          "mean": 14,
+          "table": null
+        },
+        {
+          "to": "gold",
+          "n": 1,
+          "s": 6,
+          "mean": 3.3333333333333335,
+          "table": [
+            [
+              4,
+              0
+            ],
+            [
+              6,
+              5
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "knight",
+      "id": "dressing",
+      "name": "Field Dressing",
+      "type": "Side-Game Card",
+      "rank": 1,
+      "start": false,
+      "cost": 2,
+      "groups": [
+        {
+          "to": "heal",
+          "n": 1,
+          "s": 6,
+          "mean": 3.5,
+          "table": null
+        },
+        {
+          "to": "block",
+          "n": 1,
+          "s": 6,
+          "mean": 3.5,
+          "table": null
+        }
+      ]
+    },
+    {
+      "cls": "knight",
+      "id": "dressing",
+      "name": "Field Dressing",
+      "type": "Side-Game Card",
+      "rank": 2,
+      "start": false,
+      "cost": 2,
+      "groups": [
+        {
+          "to": "heal",
+          "n": 2,
+          "s": 6,
+          "mean": 7,
+          "table": null
+        },
+        {
+          "to": "block",
+          "n": 1,
+          "s": 6,
+          "mean": 3.5,
+          "table": null
+        }
+      ]
+    },
+    {
+      "cls": "knight",
+      "id": "dressing",
+      "name": "Field Dressing",
+      "type": "Side-Game Card",
+      "rank": 3,
+      "start": false,
+      "cost": 2,
+      "groups": [
+        {
+          "to": "heal",
+          "n": 3,
+          "s": 6,
+          "mean": 10.5,
+          "table": null
+        },
+        {
+          "to": "block",
+          "n": 1,
+          "s": 6,
+          "mean": 3.5,
+          "table": null
+        }
+      ]
+    },
+    {
+      "cls": "knight",
+      "id": "dressing",
+      "name": "Field Dressing",
+      "type": "Side-Game Card",
+      "rank": 4,
+      "start": false,
+      "cost": 2,
+      "groups": [
+        {
+          "to": "heal",
+          "n": 4,
+          "s": 6,
+          "mean": 14,
+          "table": null
+        },
+        {
+          "to": "block",
+          "n": 1,
+          "s": 6,
+          "mean": 3.5,
+          "table": null
+        }
+      ]
+    },
+    {
+      "cls": "ranger",
+      "id": "aimed",
+      "name": "Aimed Shot",
+      "type": "Dice Card",
+      "rank": 1,
+      "start": true,
+      "casts": [
+        {
+          "cost": 1,
+          "n": 1,
+          "s": 6,
+          "gain": {
+            "pierce": 3.5
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 3.6750000000000003
+        },
+        {
+          "cost": 4,
+          "n": 4,
+          "s": 6,
+          "gain": {
+            "pierce": 14
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 3.6750000000000003
+        }
+      ]
+    },
+    {
+      "cls": "ranger",
+      "id": "aimed",
+      "name": "Aimed Shot",
+      "type": "Dice Card",
+      "rank": 2,
+      "start": true,
+      "casts": [
+        {
+          "cost": 1,
+          "n": 2,
+          "s": 6,
+          "gain": {
+            "pierce": 7
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 7.3500000000000005
+        },
+        {
+          "cost": 4,
+          "n": 5,
+          "s": 6,
+          "gain": {
+            "pierce": 17.5
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 4.59375
+        }
+      ]
+    },
+    {
+      "cls": "ranger",
+      "id": "aimed",
+      "name": "Aimed Shot",
+      "type": "Dice Card",
+      "rank": 3,
+      "start": true,
+      "casts": [
+        {
+          "cost": 1,
+          "n": 3,
+          "s": 6,
+          "gain": {
+            "pierce": 10.5
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 11.025
+        },
+        {
+          "cost": 4,
+          "n": 6,
+          "s": 6,
+          "gain": {
+            "pierce": 21
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 5.5125
+        }
+      ]
+    },
+    {
+      "cls": "ranger",
+      "id": "aimed",
+      "name": "Aimed Shot",
+      "type": "Dice Card",
+      "rank": 4,
+      "start": true,
+      "casts": [
+        {
+          "cost": 1,
+          "n": 4,
+          "s": 6,
+          "gain": {
+            "pierce": 14
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 14.700000000000001
+        },
+        {
+          "cost": 4,
+          "n": 7,
+          "s": 6,
+          "gain": {
+            "pierce": 24.5
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 6.43125
+        }
+      ]
+    },
+    {
+      "cls": "ranger",
+      "id": "rain",
+      "name": "Rain of Arrows",
+      "type": "Finisher Card",
+      "rank": 1,
+      "start": false
+    },
+    {
+      "cls": "ranger",
+      "id": "rain",
+      "name": "Rain of Arrows",
+      "type": "Finisher Card",
+      "rank": 2,
+      "start": false
+    },
+    {
+      "cls": "ranger",
+      "id": "rain",
+      "name": "Rain of Arrows",
+      "type": "Finisher Card",
+      "rank": 3,
+      "start": false
+    },
+    {
+      "cls": "ranger",
+      "id": "rain",
+      "name": "Rain of Arrows",
+      "type": "Finisher Card",
+      "rank": 4,
+      "start": false
+    },
+    {
+      "cls": "ranger",
+      "id": "quickdraw",
+      "name": "Quick Draw",
+      "type": "Every-Round Card",
+      "rank": 1,
+      "start": false,
+      "cost": 1,
+      "gain": {},
+      "conditional": true
+    },
+    {
+      "cls": "ranger",
+      "id": "quickdraw",
+      "name": "Quick Draw",
+      "type": "Every-Round Card",
+      "rank": 2,
+      "start": false,
+      "cost": 1,
+      "gain": {},
+      "conditional": true
+    },
+    {
+      "cls": "ranger",
+      "id": "quickdraw",
+      "name": "Quick Draw",
+      "type": "Every-Round Card",
+      "rank": 3,
+      "start": false,
+      "cost": 1,
+      "gain": {},
+      "conditional": true
+    },
+    {
+      "cls": "ranger",
+      "id": "quickdraw",
+      "name": "Quick Draw",
+      "type": "Every-Round Card",
+      "rank": 4,
+      "start": false,
+      "cost": 1,
+      "gain": {},
+      "conditional": true
+    },
+    {
+      "cls": "ranger",
+      "id": "mark",
+      "name": "Hunter's Mark",
+      "type": "Every-Round Card",
+      "rank": 1,
+      "start": true,
+      "cost": 2,
+      "gain": {
+        "pierce": 4
+      },
+      "conditional": true
+    },
+    {
+      "cls": "ranger",
+      "id": "mark",
+      "name": "Hunter's Mark",
+      "type": "Every-Round Card",
+      "rank": 2,
+      "start": true,
+      "cost": 2,
+      "gain": {
+        "pierce": 5
+      },
+      "conditional": true
+    },
+    {
+      "cls": "ranger",
+      "id": "mark",
+      "name": "Hunter's Mark",
+      "type": "Every-Round Card",
+      "rank": 3,
+      "start": true,
+      "cost": 2,
+      "gain": {
+        "pierce": 6
+      },
+      "conditional": true
+    },
+    {
+      "cls": "ranger",
+      "id": "mark",
+      "name": "Hunter's Mark",
+      "type": "Every-Round Card",
+      "rank": 4,
+      "start": true,
+      "cost": 2,
+      "gain": {
+        "pierce": 8
+      },
+      "conditional": true
+    },
+    {
+      "cls": "ranger",
+      "id": "snare",
+      "name": "Snare",
+      "type": "Every-Round Card",
+      "rank": 1,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "weaken": 2
+      },
+      "conditional": true
+    },
+    {
+      "cls": "ranger",
+      "id": "snare",
+      "name": "Snare",
+      "type": "Every-Round Card",
+      "rank": 2,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "weaken": 3
+      },
+      "conditional": true
+    },
+    {
+      "cls": "ranger",
+      "id": "snare",
+      "name": "Snare",
+      "type": "Every-Round Card",
+      "rank": 3,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "weaken": 4
+      },
+      "conditional": true
+    },
+    {
+      "cls": "ranger",
+      "id": "snare",
+      "name": "Snare",
+      "type": "Every-Round Card",
+      "rank": 4,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "weaken": 6
+      },
+      "conditional": true
+    },
+    {
+      "cls": "ranger",
+      "id": "volley",
+      "name": "Volley",
+      "type": "Charge Card",
+      "rank": 1,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "pierce": 4
+          },
+          "printedEquivalentsPerMagic": 4.2
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "pierce": 28
+          },
+          "printedEquivalentsPerMagic": 7.3500000000000005
+        }
+      ]
+    },
+    {
+      "cls": "ranger",
+      "id": "volley",
+      "name": "Volley",
+      "type": "Charge Card",
+      "rank": 2,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "pierce": 6
+          },
+          "printedEquivalentsPerMagic": 6.300000000000001
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "pierce": 36
+          },
+          "printedEquivalentsPerMagic": 9.450000000000001
+        }
+      ]
+    },
+    {
+      "cls": "ranger",
+      "id": "volley",
+      "name": "Volley",
+      "type": "Charge Card",
+      "rank": 3,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "pierce": 8
+          },
+          "printedEquivalentsPerMagic": 8.4
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "pierce": 44
+          },
+          "printedEquivalentsPerMagic": 11.55
+        }
+      ]
+    },
+    {
+      "cls": "ranger",
+      "id": "volley",
+      "name": "Volley",
+      "type": "Charge Card",
+      "rank": 4,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "pierce": 10
+          },
+          "printedEquivalentsPerMagic": 10.5
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "pierce": 52
+          },
+          "printedEquivalentsPerMagic": 13.65
+        }
+      ]
+    },
+    {
+      "cls": "ranger",
+      "id": "vanish",
+      "name": "Vanish",
+      "type": "Charge Card",
+      "rank": 1,
+      "start": false,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "block": 4
+          },
+          "printedEquivalentsPerMagic": 2.2
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "block": 28
+          },
+          "printedEquivalentsPerMagic": 3.8500000000000005
+        }
+      ]
+    },
+    {
+      "cls": "ranger",
+      "id": "vanish",
+      "name": "Vanish",
+      "type": "Charge Card",
+      "rank": 2,
+      "start": false,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "block": 6
+          },
+          "printedEquivalentsPerMagic": 3.3000000000000003
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "block": 36
+          },
+          "printedEquivalentsPerMagic": 4.95
+        }
+      ]
+    },
+    {
+      "cls": "ranger",
+      "id": "vanish",
+      "name": "Vanish",
+      "type": "Charge Card",
+      "rank": 3,
+      "start": false,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "block": 8
+          },
+          "printedEquivalentsPerMagic": 4.4
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "block": 44
+          },
+          "printedEquivalentsPerMagic": 6.050000000000001
+        }
+      ]
+    },
+    {
+      "cls": "ranger",
+      "id": "vanish",
+      "name": "Vanish",
+      "type": "Charge Card",
+      "rank": 4,
+      "start": false,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "block": 10
+          },
+          "printedEquivalentsPerMagic": 5.5
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "block": 52
+          },
+          "printedEquivalentsPerMagic": 7.15
+        }
+      ]
+    },
+    {
+      "cls": "ranger",
+      "id": "gambit",
+      "name": "Thief's Gambit",
+      "type": "Side-Game Card",
+      "rank": 1,
+      "start": false,
+      "cost": 2,
+      "groups": [
+        {
+          "to": "pierce",
+          "n": 1,
+          "s": 4,
+          "mean": 2.5,
+          "table": null
+        },
+        {
+          "to": "gold",
+          "n": 1,
+          "s": 6,
+          "mean": 1.6666666666666667,
+          "table": [
+            [
+              4,
+              0
+            ],
+            [
+              6,
+              5
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "ranger",
+      "id": "gambit",
+      "name": "Thief's Gambit",
+      "type": "Side-Game Card",
+      "rank": 2,
+      "start": false,
+      "cost": 2,
+      "groups": [
+        {
+          "to": "pierce",
+          "n": 2,
+          "s": 4,
+          "mean": 5,
+          "table": null
+        },
+        {
+          "to": "gold",
+          "n": 1,
+          "s": 6,
+          "mean": 2,
+          "table": [
+            [
+              4,
+              0
+            ],
+            [
+              6,
+              5
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "ranger",
+      "id": "gambit",
+      "name": "Thief's Gambit",
+      "type": "Side-Game Card",
+      "rank": 3,
+      "start": false,
+      "cost": 2,
+      "groups": [
+        {
+          "to": "pierce",
+          "n": 3,
+          "s": 4,
+          "mean": 7.5,
+          "table": null
+        },
+        {
+          "to": "gold",
+          "n": 1,
+          "s": 6,
+          "mean": 2.6666666666666665,
+          "table": [
+            [
+              4,
+              0
+            ],
+            [
+              6,
+              5
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "ranger",
+      "id": "gambit",
+      "name": "Thief's Gambit",
+      "type": "Side-Game Card",
+      "rank": 4,
+      "start": false,
+      "cost": 2,
+      "groups": [
+        {
+          "to": "pierce",
+          "n": 4,
+          "s": 4,
+          "mean": 10,
+          "table": null
+        },
+        {
+          "to": "gold",
+          "n": 1,
+          "s": 6,
+          "mean": 3.3333333333333335,
+          "table": [
+            [
+              4,
+              0
+            ],
+            [
+              6,
+              5
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "wizard",
+      "id": "arcbolt",
+      "name": "Arc Bolt",
+      "type": "Dice Card",
+      "rank": 1,
+      "start": true,
+      "casts": [
+        {
+          "cost": 2,
+          "n": 1,
+          "s": 8,
+          "gain": {
+            "atk": 4.5,
+            "splash": 2
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 3.41
+        },
+        {
+          "cost": 12,
+          "n": 6,
+          "s": 8,
+          "gain": {
+            "atk": 27,
+            "splash": 13.25
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 3.5308333333333333
+        }
+      ]
+    },
+    {
+      "cls": "wizard",
+      "id": "arcbolt",
+      "name": "Arc Bolt",
+      "type": "Dice Card",
+      "rank": 2,
+      "start": true,
+      "casts": [
+        {
+          "cost": 2,
+          "n": 2,
+          "s": 8,
+          "gain": {
+            "atk": 9,
+            "splash": 4.25
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 6.965
+        },
+        {
+          "cost": 10,
+          "n": 6,
+          "s": 8,
+          "gain": {
+            "atk": 27,
+            "splash": 13.25
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 4.237
+        }
+      ]
+    },
+    {
+      "cls": "wizard",
+      "id": "arcbolt",
+      "name": "Arc Bolt",
+      "type": "Dice Card",
+      "rank": 3,
+      "start": true,
+      "casts": [
+        {
+          "cost": 2,
+          "n": 3,
+          "s": 8,
+          "gain": {
+            "atk": 13.5,
+            "splash": 6.5
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 10.52
+        },
+        {
+          "cost": 8,
+          "n": 6,
+          "s": 8,
+          "gain": {
+            "atk": 27,
+            "splash": 13.25
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 5.29625
+        }
+      ]
+    },
+    {
+      "cls": "wizard",
+      "id": "arcbolt",
+      "name": "Arc Bolt",
+      "type": "Dice Card",
+      "rank": 4,
+      "start": true,
+      "casts": [
+        {
+          "cost": 2,
+          "n": 4,
+          "s": 8,
+          "gain": {
+            "atk": 18,
+            "splash": 8.75
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 14.075
+        },
+        {
+          "cost": 6,
+          "n": 6,
+          "s": 8,
+          "gain": {
+            "atk": 27,
+            "splash": 13.25
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 7.0616666666666665
+        }
+      ]
+    },
+    {
+      "cls": "wizard",
+      "id": "meteor",
+      "name": "Meteor",
+      "type": "Finisher Card",
+      "rank": 1,
+      "start": false
+    },
+    {
+      "cls": "wizard",
+      "id": "meteor",
+      "name": "Meteor",
+      "type": "Finisher Card",
+      "rank": 2,
+      "start": false
+    },
+    {
+      "cls": "wizard",
+      "id": "meteor",
+      "name": "Meteor",
+      "type": "Finisher Card",
+      "rank": 3,
+      "start": false
+    },
+    {
+      "cls": "wizard",
+      "id": "meteor",
+      "name": "Meteor",
+      "type": "Finisher Card",
+      "rank": 4,
+      "start": false
+    },
+    {
+      "cls": "wizard",
+      "id": "bolt",
+      "name": "Magic Missile",
+      "type": "Every-Round Card",
+      "rank": 1,
+      "start": true,
+      "cost": 1,
+      "gain": {
+        "pierce": 2
+      },
+      "conditional": false
+    },
+    {
+      "cls": "wizard",
+      "id": "bolt",
+      "name": "Magic Missile",
+      "type": "Every-Round Card",
+      "rank": 2,
+      "start": true,
+      "cost": 1,
+      "gain": {
+        "pierce": 3
+      },
+      "conditional": false
+    },
+    {
+      "cls": "wizard",
+      "id": "bolt",
+      "name": "Magic Missile",
+      "type": "Every-Round Card",
+      "rank": 3,
+      "start": true,
+      "cost": 1,
+      "gain": {
+        "pierce": 4
+      },
+      "conditional": false
+    },
+    {
+      "cls": "wizard",
+      "id": "bolt",
+      "name": "Magic Missile",
+      "type": "Every-Round Card",
+      "rank": 4,
+      "start": true,
+      "cost": 1,
+      "gain": {
+        "pierce": 6
+      },
+      "conditional": false
+    },
+    {
+      "cls": "wizard",
+      "id": "barrier",
+      "name": "Barrier",
+      "type": "Every-Round Card",
+      "rank": 1,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "block": 4
+      },
+      "conditional": false
+    },
+    {
+      "cls": "wizard",
+      "id": "barrier",
+      "name": "Barrier",
+      "type": "Every-Round Card",
+      "rank": 2,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "block": 5
+      },
+      "conditional": false
+    },
+    {
+      "cls": "wizard",
+      "id": "barrier",
+      "name": "Barrier",
+      "type": "Every-Round Card",
+      "rank": 3,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "block": 6
+      },
+      "conditional": false
+    },
+    {
+      "cls": "wizard",
+      "id": "barrier",
+      "name": "Barrier",
+      "type": "Every-Round Card",
+      "rank": 4,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "block": 8
+      },
+      "conditional": false
+    },
+    {
+      "cls": "wizard",
+      "id": "coil",
+      "name": "Storm Coil",
+      "type": "Charge Card",
+      "rank": 1,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "atk": 2,
+            "splash": 1
+          },
+          "printedEquivalentsPerMagic": 3.16
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "atk": 20,
+            "splash": 10
+          },
+          "printedEquivalentsPerMagic": 7.9
+        }
+      ]
+    },
+    {
+      "cls": "wizard",
+      "id": "coil",
+      "name": "Storm Coil",
+      "type": "Charge Card",
+      "rank": 2,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "atk": 4,
+            "splash": 2
+          },
+          "printedEquivalentsPerMagic": 6.32
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "atk": 28,
+            "splash": 14
+          },
+          "printedEquivalentsPerMagic": 11.059999999999999
+        }
+      ]
+    },
+    {
+      "cls": "wizard",
+      "id": "coil",
+      "name": "Storm Coil",
+      "type": "Charge Card",
+      "rank": 3,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "atk": 6,
+            "splash": 3
+          },
+          "printedEquivalentsPerMagic": 9.48
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "atk": 36,
+            "splash": 18
+          },
+          "printedEquivalentsPerMagic": 14.219999999999999
+        }
+      ]
+    },
+    {
+      "cls": "wizard",
+      "id": "coil",
+      "name": "Storm Coil",
+      "type": "Charge Card",
+      "rank": 4,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "atk": 8,
+            "splash": 4
+          },
+          "printedEquivalentsPerMagic": 12.64
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "atk": 44,
+            "splash": 22
+          },
+          "printedEquivalentsPerMagic": 17.38
+        }
+      ]
+    },
+    {
+      "cls": "wizard",
+      "id": "light",
+      "name": "Healing Light",
+      "type": "Charge Card",
+      "rank": 1,
+      "start": false,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "heal": 5
+          },
+          "printedEquivalentsPerMagic": 4.4
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "heal": 32
+          },
+          "printedEquivalentsPerMagic": 7.04
+        }
+      ]
+    },
+    {
+      "cls": "wizard",
+      "id": "light",
+      "name": "Healing Light",
+      "type": "Charge Card",
+      "rank": 2,
+      "start": false,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "heal": 7
+          },
+          "printedEquivalentsPerMagic": 6.16
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "heal": 40
+          },
+          "printedEquivalentsPerMagic": 8.8
+        }
+      ]
+    },
+    {
+      "cls": "wizard",
+      "id": "light",
+      "name": "Healing Light",
+      "type": "Charge Card",
+      "rank": 3,
+      "start": false,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "heal": 9
+          },
+          "printedEquivalentsPerMagic": 7.92
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "heal": 48
+          },
+          "printedEquivalentsPerMagic": 10.56
+        }
+      ]
+    },
+    {
+      "cls": "wizard",
+      "id": "light",
+      "name": "Healing Light",
+      "type": "Charge Card",
+      "rank": 4,
+      "start": false,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "heal": 11
+          },
+          "printedEquivalentsPerMagic": 9.68
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "heal": 56
+          },
+          "printedEquivalentsPerMagic": 12.32
+        }
+      ]
+    },
+    {
+      "cls": "dwarf",
+      "id": "anvil",
+      "name": "Anvil Strike",
+      "type": "Dice Card",
+      "rank": 1,
+      "start": true,
+      "casts": [
+        {
+          "cost": 1,
+          "n": 1,
+          "s": 8,
+          "gain": {
+            "block": 4.5
+          },
+          "gold": 0.375,
+          "printedEquivalentsPerMagic": 2.475
+        },
+        {
+          "cost": 6,
+          "n": 6,
+          "s": 8,
+          "gain": {
+            "block": 27
+          },
+          "gold": 2.25,
+          "printedEquivalentsPerMagic": 2.475
+        }
+      ]
+    },
+    {
+      "cls": "dwarf",
+      "id": "anvil",
+      "name": "Anvil Strike",
+      "type": "Dice Card",
+      "rank": 2,
+      "start": true,
+      "casts": [
+        {
+          "cost": 1,
+          "n": 2,
+          "s": 8,
+          "gain": {
+            "block": 9
+          },
+          "gold": 0.75,
+          "printedEquivalentsPerMagic": 4.95
+        },
+        {
+          "cost": 5,
+          "n": 6,
+          "s": 8,
+          "gain": {
+            "block": 27
+          },
+          "gold": 2.25,
+          "printedEquivalentsPerMagic": 2.97
+        }
+      ]
+    },
+    {
+      "cls": "dwarf",
+      "id": "anvil",
+      "name": "Anvil Strike",
+      "type": "Dice Card",
+      "rank": 3,
+      "start": true,
+      "casts": [
+        {
+          "cost": 1,
+          "n": 3,
+          "s": 8,
+          "gain": {
+            "block": 13.5
+          },
+          "gold": 1.125,
+          "printedEquivalentsPerMagic": 7.425000000000001
+        },
+        {
+          "cost": 4,
+          "n": 6,
+          "s": 8,
+          "gain": {
+            "block": 27
+          },
+          "gold": 2.25,
+          "printedEquivalentsPerMagic": 3.7125000000000004
+        }
+      ]
+    },
+    {
+      "cls": "dwarf",
+      "id": "anvil",
+      "name": "Anvil Strike",
+      "type": "Dice Card",
+      "rank": 4,
+      "start": true,
+      "casts": [
+        {
+          "cost": 1,
+          "n": 4,
+          "s": 8,
+          "gain": {
+            "block": 18
+          },
+          "gold": 1.5,
+          "printedEquivalentsPerMagic": 9.9
+        },
+        {
+          "cost": 3,
+          "n": 6,
+          "s": 8,
+          "gain": {
+            "block": 27
+          },
+          "gold": 2.25,
+          "printedEquivalentsPerMagic": 4.95
+        }
+      ]
+    },
+    {
+      "cls": "dwarf",
+      "id": "avalanche",
+      "name": "Avalanche",
+      "type": "Finisher Card",
+      "rank": 1,
+      "start": false
+    },
+    {
+      "cls": "dwarf",
+      "id": "avalanche",
+      "name": "Avalanche",
+      "type": "Finisher Card",
+      "rank": 2,
+      "start": false
+    },
+    {
+      "cls": "dwarf",
+      "id": "avalanche",
+      "name": "Avalanche",
+      "type": "Finisher Card",
+      "rank": 3,
+      "start": false
+    },
+    {
+      "cls": "dwarf",
+      "id": "avalanche",
+      "name": "Avalanche",
+      "type": "Finisher Card",
+      "rank": 4,
+      "start": false
+    },
+    {
+      "cls": "dwarf",
+      "id": "grudge",
+      "name": "Grudge",
+      "type": "Every-Round Card",
+      "rank": 1,
+      "start": true,
+      "cost": 2,
+      "gain": {},
+      "conditional": true
+    },
+    {
+      "cls": "dwarf",
+      "id": "grudge",
+      "name": "Grudge",
+      "type": "Every-Round Card",
+      "rank": 2,
+      "start": true,
+      "cost": 2,
+      "gain": {},
+      "conditional": true
+    },
+    {
+      "cls": "dwarf",
+      "id": "grudge",
+      "name": "Grudge",
+      "type": "Every-Round Card",
+      "rank": 3,
+      "start": true,
+      "cost": 2,
+      "gain": {},
+      "conditional": true
+    },
+    {
+      "cls": "dwarf",
+      "id": "grudge",
+      "name": "Grudge",
+      "type": "Every-Round Card",
+      "rank": 4,
+      "start": true,
+      "cost": 2,
+      "gain": {},
+      "conditional": true
+    },
+    {
+      "cls": "dwarf",
+      "id": "bulwark",
+      "name": "Shield Bash",
+      "type": "Every-Round Card",
+      "rank": 1,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "atk": 4
+      },
+      "conditional": false
+    },
+    {
+      "cls": "dwarf",
+      "id": "bulwark",
+      "name": "Shield Bash",
+      "type": "Every-Round Card",
+      "rank": 2,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "atk": 5
+      },
+      "conditional": false
+    },
+    {
+      "cls": "dwarf",
+      "id": "bulwark",
+      "name": "Shield Bash",
+      "type": "Every-Round Card",
+      "rank": 3,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "atk": 6
+      },
+      "conditional": false
+    },
+    {
+      "cls": "dwarf",
+      "id": "bulwark",
+      "name": "Shield Bash",
+      "type": "Every-Round Card",
+      "rank": 4,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "atk": 8
+      },
+      "conditional": false
+    },
+    {
+      "cls": "dwarf",
+      "id": "brace",
+      "name": "Brace",
+      "type": "Every-Round Card",
+      "rank": 1,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "block": 4
+      },
+      "conditional": false
+    },
+    {
+      "cls": "dwarf",
+      "id": "brace",
+      "name": "Brace",
+      "type": "Every-Round Card",
+      "rank": 2,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "block": 5
+      },
+      "conditional": false
+    },
+    {
+      "cls": "dwarf",
+      "id": "brace",
+      "name": "Brace",
+      "type": "Every-Round Card",
+      "rank": 3,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "block": 6
+      },
+      "conditional": false
+    },
+    {
+      "cls": "dwarf",
+      "id": "brace",
+      "name": "Brace",
+      "type": "Every-Round Card",
+      "rank": 4,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "block": 8
+      },
+      "conditional": false
+    },
+    {
+      "cls": "dwarf",
+      "id": "stonehide",
+      "name": "Stonehide",
+      "type": "Charge Card",
+      "rank": 1,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "block": 7
+          },
+          "printedEquivalentsPerMagic": 3.8500000000000005
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "block": 40
+          },
+          "printedEquivalentsPerMagic": 5.5
+        }
+      ]
+    },
+    {
+      "cls": "dwarf",
+      "id": "stonehide",
+      "name": "Stonehide",
+      "type": "Charge Card",
+      "rank": 2,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "block": 9
+          },
+          "printedEquivalentsPerMagic": 4.95
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "block": 48
+          },
+          "printedEquivalentsPerMagic": 6.6000000000000005
+        }
+      ]
+    },
+    {
+      "cls": "dwarf",
+      "id": "stonehide",
+      "name": "Stonehide",
+      "type": "Charge Card",
+      "rank": 3,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "block": 11
+          },
+          "printedEquivalentsPerMagic": 6.050000000000001
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "block": 56
+          },
+          "printedEquivalentsPerMagic": 7.700000000000001
+        }
+      ]
+    },
+    {
+      "cls": "dwarf",
+      "id": "stonehide",
+      "name": "Stonehide",
+      "type": "Charge Card",
+      "rank": 4,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "block": 13
+          },
+          "printedEquivalentsPerMagic": 7.15
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "block": 64
+          },
+          "printedEquivalentsPerMagic": 8.8
+        }
+      ]
+    },
+    {
+      "cls": "dwarf",
+      "id": "forgefury",
+      "name": "Forge Fury",
+      "type": "Charge Card",
+      "rank": 1,
+      "start": false,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "atk": 3,
+            "block": 1
+          },
+          "printedEquivalentsPerMagic": 3.55
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "atk": 24,
+            "block": 16
+          },
+          "printedEquivalentsPerMagic": 8.2
+        }
+      ]
+    },
+    {
+      "cls": "dwarf",
+      "id": "forgefury",
+      "name": "Forge Fury",
+      "type": "Charge Card",
+      "rank": 2,
+      "start": false,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "atk": 5,
+            "block": 3
+          },
+          "printedEquivalentsPerMagic": 6.65
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "atk": 32,
+            "block": 24
+          },
+          "printedEquivalentsPerMagic": 11.3
+        }
+      ]
+    },
+    {
+      "cls": "dwarf",
+      "id": "forgefury",
+      "name": "Forge Fury",
+      "type": "Charge Card",
+      "rank": 3,
+      "start": false,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "atk": 7,
+            "block": 5
+          },
+          "printedEquivalentsPerMagic": 9.75
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "atk": 40,
+            "block": 32
+          },
+          "printedEquivalentsPerMagic": 14.4
+        }
+      ]
+    },
+    {
+      "cls": "dwarf",
+      "id": "forgefury",
+      "name": "Forge Fury",
+      "type": "Charge Card",
+      "rank": 4,
+      "start": false,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "atk": 9,
+            "block": 7
+          },
+          "printedEquivalentsPerMagic": 12.850000000000001
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "atk": 48,
+            "block": 40
+          },
+          "printedEquivalentsPerMagic": 17.5
+        }
+      ]
+    },
+    {
+      "cls": "dwarf",
+      "id": "whirlwind",
+      "name": "Whirlwind",
+      "type": "Dice Card",
+      "rank": 1,
+      "start": false,
+      "casts": [
+        {
+          "cost": 2,
+          "n": 1,
+          "s": 4,
+          "gain": {
+            "atk": 2.5,
+            "splash": 2.5
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 2.7
+        },
+        {
+          "cost": 12,
+          "n": 6,
+          "s": 4,
+          "gain": {
+            "atk": 15,
+            "splash": 15
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 2.6999999999999997
+        }
+      ]
+    },
+    {
+      "cls": "dwarf",
+      "id": "whirlwind",
+      "name": "Whirlwind",
+      "type": "Dice Card",
+      "rank": 2,
+      "start": false,
+      "casts": [
+        {
+          "cost": 2,
+          "n": 2,
+          "s": 4,
+          "gain": {
+            "atk": 5,
+            "splash": 5
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 5.4
+        },
+        {
+          "cost": 10,
+          "n": 6,
+          "s": 4,
+          "gain": {
+            "atk": 15,
+            "splash": 15
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 3.2399999999999998
+        }
+      ]
+    },
+    {
+      "cls": "dwarf",
+      "id": "whirlwind",
+      "name": "Whirlwind",
+      "type": "Dice Card",
+      "rank": 3,
+      "start": false,
+      "casts": [
+        {
+          "cost": 2,
+          "n": 3,
+          "s": 4,
+          "gain": {
+            "atk": 7.5,
+            "splash": 7.5
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 8.1
+        },
+        {
+          "cost": 8,
+          "n": 6,
+          "s": 4,
+          "gain": {
+            "atk": 15,
+            "splash": 15
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 4.05
+        }
+      ]
+    },
+    {
+      "cls": "dwarf",
+      "id": "whirlwind",
+      "name": "Whirlwind",
+      "type": "Dice Card",
+      "rank": 4,
+      "start": false,
+      "casts": [
+        {
+          "cost": 2,
+          "n": 4,
+          "s": 4,
+          "gain": {
+            "atk": 10,
+            "splash": 10
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 10.8
+        },
+        {
+          "cost": 6,
+          "n": 6,
+          "s": 4,
+          "gain": {
+            "atk": 15,
+            "splash": 15
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 5.3999999999999995
+        }
+      ]
+    },
+    {
+      "cls": "bard",
+      "id": "mending",
+      "name": "Mending Song",
+      "type": "Dice Card",
+      "rank": 1,
+      "start": true,
+      "casts": [
+        {
+          "cost": 1,
+          "n": 1,
+          "s": 6,
+          "gain": {
+            "heal": 3.5
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 3.08
+        },
+        {
+          "cost": 6,
+          "n": 6,
+          "s": 6,
+          "gain": {
+            "heal": 21
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 3.08
+        }
+      ]
+    },
+    {
+      "cls": "bard",
+      "id": "mending",
+      "name": "Mending Song",
+      "type": "Dice Card",
+      "rank": 2,
+      "start": true,
+      "casts": [
+        {
+          "cost": 1,
+          "n": 2,
+          "s": 6,
+          "gain": {
+            "heal": 7
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 6.16
+        },
+        {
+          "cost": 5,
+          "n": 6,
+          "s": 6,
+          "gain": {
+            "heal": 21
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 3.696
+        }
+      ]
+    },
+    {
+      "cls": "bard",
+      "id": "mending",
+      "name": "Mending Song",
+      "type": "Dice Card",
+      "rank": 3,
+      "start": true,
+      "casts": [
+        {
+          "cost": 1,
+          "n": 3,
+          "s": 6,
+          "gain": {
+            "heal": 10.5
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 9.24
+        },
+        {
+          "cost": 4,
+          "n": 6,
+          "s": 6,
+          "gain": {
+            "heal": 21
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 4.62
+        }
+      ]
+    },
+    {
+      "cls": "bard",
+      "id": "mending",
+      "name": "Mending Song",
+      "type": "Dice Card",
+      "rank": 4,
+      "start": true,
+      "casts": [
+        {
+          "cost": 1,
+          "n": 4,
+          "s": 6,
+          "gain": {
+            "heal": 14
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 12.32
+        },
+        {
+          "cost": 3,
+          "n": 6,
+          "s": 6,
+          "gain": {
+            "heal": 21
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 6.16
+        }
+      ]
+    },
+    {
+      "cls": "bard",
+      "id": "finale",
+      "name": "Finale",
+      "type": "Finisher Card",
+      "rank": 1,
+      "start": false
+    },
+    {
+      "cls": "bard",
+      "id": "finale",
+      "name": "Finale",
+      "type": "Finisher Card",
+      "rank": 2,
+      "start": false
+    },
+    {
+      "cls": "bard",
+      "id": "finale",
+      "name": "Finale",
+      "type": "Finisher Card",
+      "rank": 3,
+      "start": false
+    },
+    {
+      "cls": "bard",
+      "id": "finale",
+      "name": "Finale",
+      "type": "Finisher Card",
+      "rank": 4,
+      "start": false
+    },
+    {
+      "cls": "bard",
+      "id": "luckyverse",
+      "name": "Lucky Verse",
+      "type": "Side-Game Card",
+      "rank": 1,
+      "start": true
+    },
+    {
+      "cls": "bard",
+      "id": "luckyverse",
+      "name": "Lucky Verse",
+      "type": "Side-Game Card",
+      "rank": 2,
+      "start": true
+    },
+    {
+      "cls": "bard",
+      "id": "luckyverse",
+      "name": "Lucky Verse",
+      "type": "Side-Game Card",
+      "rank": 3,
+      "start": true
+    },
+    {
+      "cls": "bard",
+      "id": "luckyverse",
+      "name": "Lucky Verse",
+      "type": "Side-Game Card",
+      "rank": 4,
+      "start": true
+    },
+    {
+      "cls": "bard",
+      "id": "discord",
+      "name": "Discord",
+      "type": "Every-Round Card",
+      "rank": 1,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "weaken": 2
+      },
+      "conditional": true
+    },
+    {
+      "cls": "bard",
+      "id": "discord",
+      "name": "Discord",
+      "type": "Every-Round Card",
+      "rank": 2,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "weaken": 3
+      },
+      "conditional": true
+    },
+    {
+      "cls": "bard",
+      "id": "discord",
+      "name": "Discord",
+      "type": "Every-Round Card",
+      "rank": 3,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "weaken": 4
+      },
+      "conditional": true
+    },
+    {
+      "cls": "bard",
+      "id": "discord",
+      "name": "Discord",
+      "type": "Every-Round Card",
+      "rank": 4,
+      "start": false,
+      "cost": 1,
+      "gain": {
+        "weaken": 6
+      },
+      "conditional": true
+    },
+    {
+      "cls": "bard",
+      "id": "ballad",
+      "name": "Rising Ballad",
+      "type": "Charge Card",
+      "rank": 1,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "atk": 2,
+            "heal": 1
+          },
+          "printedEquivalentsPerMagic": 2.88
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "atk": 20,
+            "heal": 16
+          },
+          "printedEquivalentsPerMagic": 8.52
+        }
+      ]
+    },
+    {
+      "cls": "bard",
+      "id": "ballad",
+      "name": "Rising Ballad",
+      "type": "Charge Card",
+      "rank": 2,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "atk": 4,
+            "heal": 3
+          },
+          "printedEquivalentsPerMagic": 6.640000000000001
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "atk": 28,
+            "heal": 24
+          },
+          "printedEquivalentsPerMagic": 12.280000000000001
+        }
+      ]
+    },
+    {
+      "cls": "bard",
+      "id": "ballad",
+      "name": "Rising Ballad",
+      "type": "Charge Card",
+      "rank": 3,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "atk": 6,
+            "heal": 5
+          },
+          "printedEquivalentsPerMagic": 10.4
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "atk": 36,
+            "heal": 32
+          },
+          "printedEquivalentsPerMagic": 16.04
+        }
+      ]
+    },
+    {
+      "cls": "bard",
+      "id": "ballad",
+      "name": "Rising Ballad",
+      "type": "Charge Card",
+      "rank": 4,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "atk": 8,
+            "heal": 7
+          },
+          "printedEquivalentsPerMagic": 14.16
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "atk": 44,
+            "heal": 40
+          },
+          "printedEquivalentsPerMagic": 19.8
+        }
+      ]
+    },
+    {
+      "cls": "bard",
+      "id": "goldhymn",
+      "name": "Hymn of Gold",
+      "type": "Charge Card",
+      "rank": 1,
+      "start": false,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "gold": 3
+          },
+          "printedEquivalentsPerMagic": 0
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "gold": 24
+          },
+          "printedEquivalentsPerMagic": 0
+        }
+      ]
+    },
+    {
+      "cls": "bard",
+      "id": "goldhymn",
+      "name": "Hymn of Gold",
+      "type": "Charge Card",
+      "rank": 2,
+      "start": false,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "gold": 5
+          },
+          "printedEquivalentsPerMagic": 0
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "gold": 32
+          },
+          "printedEquivalentsPerMagic": 0
+        }
+      ]
+    },
+    {
+      "cls": "bard",
+      "id": "goldhymn",
+      "name": "Hymn of Gold",
+      "type": "Charge Card",
+      "rank": 3,
+      "start": false,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "gold": 7
+          },
+          "printedEquivalentsPerMagic": 0
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "gold": 40
+          },
+          "printedEquivalentsPerMagic": 0
+        }
+      ]
+    },
+    {
+      "cls": "bard",
+      "id": "goldhymn",
+      "name": "Hymn of Gold",
+      "type": "Charge Card",
+      "rank": 4,
+      "start": false,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "gold": 9
+          },
+          "printedEquivalentsPerMagic": 0
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "gold": 48
+          },
+          "printedEquivalentsPerMagic": 0
+        }
+      ]
+    },
+    {
+      "cls": "bard",
+      "id": "crowd",
+      "name": "Crowd Pleaser",
+      "type": "Side-Game Card",
+      "rank": 1,
+      "start": false,
+      "cost": 2,
+      "groups": [
+        {
+          "to": "gold",
+          "n": 1,
+          "s": 6,
+          "mean": 5,
+          "table": [
+            [
+              2,
+              0
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              6,
+              10
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "bard",
+      "id": "crowd",
+      "name": "Crowd Pleaser",
+      "type": "Side-Game Card",
+      "rank": 2,
+      "start": false,
+      "cost": 2,
+      "groups": [
+        {
+          "to": "gold",
+          "n": 1,
+          "s": 6,
+          "mean": 6.333333333333333,
+          "table": [
+            [
+              2,
+              0
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              6,
+              10
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "bard",
+      "id": "crowd",
+      "name": "Crowd Pleaser",
+      "type": "Side-Game Card",
+      "rank": 3,
+      "start": false,
+      "cost": 2,
+      "groups": [
+        {
+          "to": "gold",
+          "n": 1,
+          "s": 6,
+          "mean": 7.666666666666667,
+          "table": [
+            [
+              2,
+              0
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              6,
+              10
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "bard",
+      "id": "crowd",
+      "name": "Crowd Pleaser",
+      "type": "Side-Game Card",
+      "rank": 4,
+      "start": false,
+      "cost": 2,
+      "groups": [
+        {
+          "to": "gold",
+          "n": 1,
+          "s": 6,
+          "mean": 10,
+          "table": [
+            [
+              2,
+              0
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              6,
+              10
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "cls": "bard",
+      "id": "hymn",
+      "name": "Battle Hymn",
+      "type": "Side-Game Card",
+      "rank": 1,
+      "start": false,
+      "cost": 3,
+      "groups": [
+        {
+          "to": "heal",
+          "n": 2,
+          "s": 6,
+          "mean": 7,
+          "table": null
+        },
+        {
+          "to": "splash",
+          "n": 1,
+          "s": 4,
+          "mean": 2.5,
+          "table": null
+        }
+      ]
+    },
+    {
+      "cls": "bard",
+      "id": "hymn",
+      "name": "Battle Hymn",
+      "type": "Side-Game Card",
+      "rank": 2,
+      "start": false,
+      "cost": 3,
+      "groups": [
+        {
+          "to": "heal",
+          "n": 3,
+          "s": 6,
+          "mean": 10.5,
+          "table": null
+        },
+        {
+          "to": "splash",
+          "n": 1,
+          "s": 4,
+          "mean": 2.5,
+          "table": null
+        }
+      ]
+    },
+    {
+      "cls": "bard",
+      "id": "hymn",
+      "name": "Battle Hymn",
+      "type": "Side-Game Card",
+      "rank": 3,
+      "start": false,
+      "cost": 3,
+      "groups": [
+        {
+          "to": "heal",
+          "n": 4,
+          "s": 6,
+          "mean": 14,
+          "table": null
+        },
+        {
+          "to": "splash",
+          "n": 1,
+          "s": 4,
+          "mean": 2.5,
+          "table": null
+        }
+      ]
+    },
+    {
+      "cls": "bard",
+      "id": "hymn",
+      "name": "Battle Hymn",
+      "type": "Side-Game Card",
+      "rank": 4,
+      "start": false,
+      "cost": 3,
+      "groups": [
+        {
+          "to": "heal",
+          "n": 5,
+          "s": 6,
+          "mean": 17.5,
+          "table": null
+        },
+        {
+          "to": "splash",
+          "n": 1,
+          "s": 4,
+          "mean": 2.5,
+          "table": null
+        }
+      ]
+    }
+  ],
+  "rankOneStarters": [
+    {
+      "cls": "knight",
+      "id": "cleave",
+      "name": "Cleave",
+      "type": "Dice Card",
+      "rank": 1,
+      "start": true,
+      "casts": [
+        {
+          "cost": 3,
+          "n": 2,
+          "s": 6,
+          "gain": {
+            "atk": 7,
+            "splash": 3.2499999999999996
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 3.59
+        },
+        {
+          "cost": 5,
+          "n": 4,
+          "s": 6,
+          "gain": {
+            "atk": 14,
+            "splash": 6.750000000000001
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 4.366
+        }
+      ]
+    },
+    {
+      "cls": "knight",
+      "id": "riposte",
+      "name": "Counterstrike",
+      "type": "Every-Round Card",
+      "rank": 1,
+      "start": true,
+      "cost": 2,
+      "gain": {
+        "block": 4
+      },
+      "conditional": true
+    },
+    {
+      "cls": "knight",
+      "id": "rally",
+      "name": "Rally Cry",
+      "type": "Charge Card",
+      "rank": 1,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "atk": 2,
+            "block": 1
+          },
+          "printedEquivalentsPerMagic": 2.55
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "atk": 20,
+            "block": 16
+          },
+          "printedEquivalentsPerMagic": 7.2
+        }
+      ]
+    },
+    {
+      "cls": "ranger",
+      "id": "aimed",
+      "name": "Aimed Shot",
+      "type": "Dice Card",
+      "rank": 1,
+      "start": true,
+      "casts": [
+        {
+          "cost": 1,
+          "n": 1,
+          "s": 6,
+          "gain": {
+            "pierce": 3.5
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 3.6750000000000003
+        },
+        {
+          "cost": 4,
+          "n": 4,
+          "s": 6,
+          "gain": {
+            "pierce": 14
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 3.6750000000000003
+        }
+      ]
+    },
+    {
+      "cls": "ranger",
+      "id": "mark",
+      "name": "Hunter's Mark",
+      "type": "Every-Round Card",
+      "rank": 1,
+      "start": true,
+      "cost": 2,
+      "gain": {
+        "pierce": 4
+      },
+      "conditional": true
+    },
+    {
+      "cls": "ranger",
+      "id": "volley",
+      "name": "Volley",
+      "type": "Charge Card",
+      "rank": 1,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "pierce": 4
+          },
+          "printedEquivalentsPerMagic": 4.2
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "pierce": 28
+          },
+          "printedEquivalentsPerMagic": 7.3500000000000005
+        }
+      ]
+    },
+    {
+      "cls": "wizard",
+      "id": "arcbolt",
+      "name": "Arc Bolt",
+      "type": "Dice Card",
+      "rank": 1,
+      "start": true,
+      "casts": [
+        {
+          "cost": 2,
+          "n": 1,
+          "s": 8,
+          "gain": {
+            "atk": 4.5,
+            "splash": 2
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 3.41
+        },
+        {
+          "cost": 12,
+          "n": 6,
+          "s": 8,
+          "gain": {
+            "atk": 27,
+            "splash": 13.25
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 3.5308333333333333
+        }
+      ]
+    },
+    {
+      "cls": "wizard",
+      "id": "bolt",
+      "name": "Magic Missile",
+      "type": "Every-Round Card",
+      "rank": 1,
+      "start": true,
+      "cost": 1,
+      "gain": {
+        "pierce": 2
+      },
+      "conditional": false
+    },
+    {
+      "cls": "wizard",
+      "id": "coil",
+      "name": "Storm Coil",
+      "type": "Charge Card",
+      "rank": 1,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "atk": 2,
+            "splash": 1
+          },
+          "printedEquivalentsPerMagic": 3.16
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "atk": 20,
+            "splash": 10
+          },
+          "printedEquivalentsPerMagic": 7.9
+        }
+      ]
+    },
+    {
+      "cls": "dwarf",
+      "id": "anvil",
+      "name": "Anvil Strike",
+      "type": "Dice Card",
+      "rank": 1,
+      "start": true,
+      "casts": [
+        {
+          "cost": 1,
+          "n": 1,
+          "s": 8,
+          "gain": {
+            "block": 4.5
+          },
+          "gold": 0.375,
+          "printedEquivalentsPerMagic": 2.475
+        },
+        {
+          "cost": 6,
+          "n": 6,
+          "s": 8,
+          "gain": {
+            "block": 27
+          },
+          "gold": 2.25,
+          "printedEquivalentsPerMagic": 2.475
+        }
+      ]
+    },
+    {
+      "cls": "dwarf",
+      "id": "grudge",
+      "name": "Grudge",
+      "type": "Every-Round Card",
+      "rank": 1,
+      "start": true,
+      "cost": 2,
+      "gain": {},
+      "conditional": true
+    },
+    {
+      "cls": "dwarf",
+      "id": "stonehide",
+      "name": "Stonehide",
+      "type": "Charge Card",
+      "rank": 1,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "block": 7
+          },
+          "printedEquivalentsPerMagic": 3.8500000000000005
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "block": 40
+          },
+          "printedEquivalentsPerMagic": 5.5
+        }
+      ]
+    },
+    {
+      "cls": "bard",
+      "id": "mending",
+      "name": "Mending Song",
+      "type": "Dice Card",
+      "rank": 1,
+      "start": true,
+      "casts": [
+        {
+          "cost": 1,
+          "n": 1,
+          "s": 6,
+          "gain": {
+            "heal": 3.5
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 3.08
+        },
+        {
+          "cost": 6,
+          "n": 6,
+          "s": 6,
+          "gain": {
+            "heal": 21
+          },
+          "gold": 0,
+          "printedEquivalentsPerMagic": 3.08
+        }
+      ]
+    },
+    {
+      "cls": "bard",
+      "id": "luckyverse",
+      "name": "Lucky Verse",
+      "type": "Side-Game Card",
+      "rank": 1,
+      "start": true
+    },
+    {
+      "cls": "bard",
+      "id": "ballad",
+      "name": "Rising Ballad",
+      "type": "Charge Card",
+      "rank": 1,
+      "start": true,
+      "releases": [
+        {
+          "charges": 1,
+          "earliestReleaseRound": 2,
+          "cost": 1,
+          "gain": {
+            "atk": 2,
+            "heal": 1
+          },
+          "printedEquivalentsPerMagic": 2.88
+        },
+        {
+          "charges": 4,
+          "earliestReleaseRound": 5,
+          "cost": 4,
+          "gain": {
+            "atk": 20,
+            "heal": 16
+          },
+          "printedEquivalentsPerMagic": 8.52
+        }
+      ]
+    }
+  ],
+  "findings": {
+    "soloPartyShield": {
+      "offTargetSplash": 3,
+      "specialBlock": 20,
+      "soloShieldDamage": 3,
+      "partyShieldDamage": 0,
+      "reproduced": true
+    },
+    "counterstrike": {
+      "kind": "block",
+      "amount": 3,
+      "monsterDamage": 3,
+      "heroHp": 0,
+      "oldToolWouldRecordForBlue": 0
+    },
+    "shieldMarginals": [
+      {
+        "kind": "atk",
+        "amount": 3,
+        "monsterDamage": 0,
+        "heroHp": 0
+      },
+      {
+        "kind": "pierce",
+        "amount": 3,
+        "monsterDamage": 3,
+        "heroHp": 0
+      },
+      {
+        "kind": "splash",
+        "amount": 3,
+        "monsterDamage": 3,
+        "heroHp": 0
+      }
+    ],
+    "partyMending": [
+      {
+        "heroes": 2,
+        "spell": "Mending Song",
+        "oneMagicHealRoll": 4,
+        "totalAdditionalHeroHp": 8
+      },
+      {
+        "heroes": 4,
+        "spell": "Mending Song",
+        "oneMagicHealRoll": 4,
+        "totalAdditionalHeroHp": 16
+      },
+      {
+        "heroes": 6,
+        "spell": "Mending Song",
+        "oneMagicHealRoll": 4,
+        "totalAdditionalHeroHp": 24
+      }
+    ]
+  },
+  "ordinaryMoveGuardProbabilities": [
+    {
+      "id": "goblin",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "wolf",
+      "oldMoveGuardProbability": 0,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "cultist",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0.25
+    },
+    {
+      "id": "ogre",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0.25
+    },
+    {
+      "id": "bigwheel",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0.25
+    },
+    {
+      "id": "mungo",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0.25
+    },
+    {
+      "id": "goblinking",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "skeleton",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0.25
+    },
+    {
+      "id": "wraith",
+      "oldMoveGuardProbability": 0,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "spider",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "bonewarden",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "lich",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "shieldbearer",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0.25
+    },
+    {
+      "id": "gloomstalker",
+      "oldMoveGuardProbability": 0,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "chainbinder",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "dirgesinger",
+      "oldMoveGuardProbability": 0,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "ironwarden",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0.25
+    },
+    {
+      "id": "fallenchampion",
+      "oldMoveGuardProbability": 0,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "cinderling",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0.25
+    },
+    {
+      "id": "frostwhelp",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "ashwyrm",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0.25
+    },
+    {
+      "id": "vharaxis",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "goldbelly",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "blazemorrow",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "magpieking",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "magpies",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "foxrogue",
+      "oldMoveGuardProbability": 0,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "treant",
+      "oldMoveGuardProbability": 0,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "puffball",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0.25
+    },
+    {
+      "id": "raincloud",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "bonfire",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0.25
+    },
+    {
+      "id": "wisp",
+      "oldMoveGuardProbability": 0,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "lampsnuffer",
+      "oldMoveGuardProbability": 0,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "moonjelly",
+      "oldMoveGuardProbability": 0,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "visitor",
+      "oldMoveGuardProbability": 0,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "hedgeboar",
+      "oldMoveGuardProbability": 0,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "silkwood",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "gargoyle",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0.25
+    },
+    {
+      "id": "yeti",
+      "oldMoveGuardProbability": 0,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "direbear",
+      "oldMoveGuardProbability": 0,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "tuskraider",
+      "oldMoveGuardProbability": 0,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "tuskwarlord",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "barrowrider",
+      "oldMoveGuardProbability": 0,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "stormtyrant",
+      "oldMoveGuardProbability": 0,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "hivedrone",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "hivequeen",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "nightblade",
+      "oldMoveGuardProbability": 0,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "basilisk",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0
+    },
+    {
+      "id": "slagcolossus",
+      "oldMoveGuardProbability": 0.16666666666666666,
+      "d4MoveGuardProbability": 0.25
+    },
+    {
+      "id": "frostgiant",
+      "oldMoveGuardProbability": 0,
+      "d4MoveGuardProbability": 0
+    }
+  ]
+}

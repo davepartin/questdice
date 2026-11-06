@@ -121,3 +121,7 @@ plays close to the one it replaces (Act III cleared within one or two of 20). Cr
 (2,041 against 1,371 a campaign): the trade Dave wanted. Whirlwind first sat in slot A and cost the Dwarf its Anvil Strike (Act III 3 of 20
 against 9); moved beside Grudge it plays level (8 against 9). Real taps in battle: `node dev/side-games-check.mjs` (each card casts, rolls
 its colours and sizes, pays its counters). Paintings are borrowed; Grok, real ones are welcome.
+
+## Director review, 6 November 2026
+
+**REVIEWED, with limitations.** Current prices retained. The earlier table is a useful solo sample, not a universal price law for the D4 release. Exact half-splash rounding gives rank-I minimum Cleave 3.59 and Arc Bolt 3.41 under the old factors. Current Wizard starter is Magic Missile; full four-charge use first arrives on round 5. Controlled checks also show Counterstrike's offensive block value and party healing need additional outcome metrics. A confirmed solo-only omission of the Shield Special from splash protection is repaired in build `20261106cr1`, enforcing the already-approved rule without changing prices. Full verdict, evidence, 578 passing tests and a focused measurement handoff: [T31-director-review.md](T31-director-review.md).

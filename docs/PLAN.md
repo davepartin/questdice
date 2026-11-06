@@ -1678,3 +1678,9 @@ All 580 tests pass after preserving concurrent build 20261106a3 (mixed-dice magi
 ## 5 November 2026 — visible monster Special rhythms
 
 Build `20261106mr1` adds a highlighted Wind-Up → Slam/Inferno → Normal strip and truthful next-turn warnings to the Special footer. Other Specials show Every round with remaining summons, Until broken/Until hit, or a Bounty countdown. Finished abilities are grey. The pure readout follows the real intent and Special state, including interrupted Slams; no combat timing or save rules changed. Removed the duplicate upper Wind-Up warning. All 586 tests pass; 45 phone/state/text layouts and an actual three-monster battle were checked in Chromium. Three example cards and phone screenshots: docs/team/tasks/T33-special-rhythms.md.
+
+## 6 November 2026 — magic-colour price review and solo Shield consistency
+
+Completed the Director's T31 review against a12 and the D4 monsters. Keep prices provisionally; old solo scalar factors omit Counterstrike's returned damage, do not cover party healing or gold, and need a fresh current-release study before retuning. Exact half-splash arithmetic and charge timing corrected in the review; no card costs, ranks, templates or monster stats changed.
+
+Build `20261106cr1` repairs a confirmed rules inconsistency: solo splash omitted an off-target Shield Special, while party splash already respected it. One added guard term preserves overflow, a single shared pool across power/Fire-arrow splash, and the approved finisher exception. Six regressions and all 578 current tests pass. Reproducible before/after evidence, current card arithmetic and concrete measurement handoff: docs/team/tasks/T31-director-review.md.
