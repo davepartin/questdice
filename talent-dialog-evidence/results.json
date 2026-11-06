@@ -1,0 +1,74 @@
+{
+  "results": [
+    {
+      "width": 390,
+      "height": 844,
+      "selectionNoScroll": true,
+      "cancelNoCost": true,
+      "buyOnce": true,
+      "persisted": true
+    },
+    {
+      "width": 430,
+      "height": 932,
+      "selectionNoScroll": true,
+      "cancelNoCost": true,
+      "buyOnce": true,
+      "persisted": true
+    },
+    {
+      "width": 375,
+      "height": 667,
+      "selectionNoScroll": true,
+      "cancelNoCost": true,
+      "buyOnce": true,
+      "persisted": true
+    },
+    {
+      "width": 375,
+      "height": 548,
+      "selectionNoScroll": true,
+      "cancelNoCost": true,
+      "buyOnce": true,
+      "persisted": true
+    },
+    {
+      "dieImageAndAllSixFaces": true
+    },
+    {
+      "growthPreservesSymbols": true,
+      "newFacePurchase": true
+    },
+    {
+      "limits": true,
+      "focusTrap": true,
+      "escape": true
+    },
+    {
+      "poorCannotBuy": true,
+      "backdropCancel": true
+    },
+    {
+      "occupiedDoneKeepsSymbol": true,
+      "clearNoRefund": true
+    },
+    {
+      "unlockSecondDie": true,
+      "editSecondDie": true
+    },
+    {
+      "allFiveHeroes": true
+    },
+    {
+      "actOneGrowthAvailable": true
+    },
+    {
+      "d10Face10": true,
+      "largeTextAndShortPhone": true
+    },
+    {
+      "navigationCleansDialog": true
+    }
+  ],
+  "errors": []
+}

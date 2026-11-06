@@ -13,7 +13,7 @@ import * as R from '../roads.js';
 import * as Net from '../net.js';
 import * as Coach from '../coach.js';
 import { sfx } from '../audio.js';
-import { strengthCard, talentsCard, heartCard, weaponCard as cbWeaponCard } from './cardboard.js';
+import { strengthCard, heartCard, weaponCard as cbWeaponCard } from './cardboard.js';
 import { world } from './world.js';
 import * as SCR from './screens.js';
 import { ico, CLASS_ICON } from './icons.js';
@@ -1346,6 +1346,7 @@ function slotSheet(slot) {
   const head = SHEET.inline ? h('div', { class: 'sh-head-float' }, h('span', { class: 'sh-head-name', id: 'camp-inspector-title' }, label), h('button', { class: 'sh-x qd-float-close', type: 'button', 'aria-label': `Close ${label}`, onclick: closeSlot }, 'Close'))
     : h('header', { class: 'sh-head' }, h('div', { class: 'sh-title' }, h('small', {}, E.isActive(hero, slot) ? `d${E.sidesOf(hero, slot)}` : 'Locked'), h('b', { id: 'camp-inspector-title' }, label)),
     h('span', { class: 'sh-purse' }, ico('coin'), h('b', {}, String(hero.gold))), h('button', { class: 'sh-x', type: 'button', onclick: closeSlot }, 'Close'));
+  if (slot === 'SW' || slot === 'SE') return [head, ...talentSheet(hero, slot)];
   if (!E.isActive(hero, slot)) {
     const u = E.unlockInfo(hero, slot);
     return [head, shStage(h('span', { class: 'sh-locked' }, ico('lock'))), h('p', { class: 'sh-role' }, slot === 'NE' ? 'A second weapon die. Hold a weapon in each hand.' : 'A new die. You pick a symbol for each face.'),
@@ -1426,90 +1427,139 @@ function powerSheet(id) {
   return [head, h('p', { class: 'sh-text' }, k.text), h('p', { class: 'sh-cost' }, ico('spark'), `Uses ${k.cost}${k.kind === 'scale' ? `–${k.max}` : ''} magic`, row.equipped ? h('em', {}, 'In use') : null),
     h('p', { class: 'sh-sec' }, 'Levels'), levels, act];
 }
-// Camp talent workbench: inspect first, preview a symbol, then use the existing purchase command.
-// After a talent die is unlocked or grown, glide down to the symbol choosing area (the numbered faces, then the symbols under them) so the next step is on screen.
-function toTalentSymbols() {
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    const pop = $('.cw-pop'); const side = pop || $('.sx-camp .sx-side'), el = pop ? ($('.cw-pop .tw-symbols') || $('.cw-pop .tw-detail') || $('.cw-pop .tw-face-heading')) : ($('.tw-symbols') || $('.tw-detail') || $('.tw-face-heading')); if (!side || !el) return; // in the pop-up: straight to the symbol choice
-    const stick = pop ? -12 : (parseFloat(side.style.getPropertyValue('--stick')) || 0);
-    const top = side.scrollTop + el.getBoundingClientRect().top - side.getBoundingClientRect().top - stick - 24; // tz1: clear the camp header
-    const calm = !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    side.scrollTo({ top: Math.max(0, top), behavior: calm ? 'auto' : 'smooth' });
-  }));
+// Talent editing is a focused dialog: choices never rebuild or scroll the card behind it.
+let dismissTalentDialog = null;
+function talentDialog(hero, slot, face, title, build) {
+  dismissTalentDialog?.();
+  const context = X, name = hero.name, sheetSlot = SHEET.slot;
+  const parent = document.querySelector('body > .cw-pop') || $('#modal.open');
+  const scroll = parent?.scrollTop || 0, wasInert = !!parent?.inert;
+  const previous = document.activeElement;
+  let changed = false, closed = false;
+  const getHero = () => X === context && X.S.hero?.name === name && SHEET.slot === sheetSlot ? X.S.hero : null;
+  const close = () => {
+    if (closed) return; closed = true; overlay.remove(); dismissTalentDialog = null;
+    if (parent) parent.inert = wasInert;
+    if (!getHero()) return;
+    if (changed) {
+      TAL.slot = slot; TAL.face = face; TAL.sym = null;
+      if (SHEET.inline) X.renderCamp(SHEET.fromBoard); else { refreshSheet(); }
+    }
+    const current = document.querySelector('body > .cw-pop') || $('#modal.open');
+    if (current) current.scrollTop = scroll;
+    const target = face == null ? $(`.td-column[data-slot="${slot}"] .td-face.empty, .td-unlock[data-slot="${slot}"]`) : $(`.td-face[data-slot="${slot}"][data-face="${face}"]`);
+    (target || (previous?.isConnected ? previous : SHEET.el))?.focus({ preventScroll: true });
+  };
+  const panel = h('section', { class: 'td-dialog', tabindex: '-1' });
+  const overlay = h('div', { class: 'td-overlay', role: 'dialog', 'aria-modal': 'true', 'aria-label': title,
+    onclick: e => { if (e.target === overlay) close(); }, onkeydown: e => {
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); }
+      if (e.key === 'Tab') {
+        const nodes = [...panel.querySelectorAll('button:not([disabled]), [tabindex="0"]')];
+        const first = nodes[0], last = nodes.at(-1);
+        if (e.shiftKey && (document.activeElement === first || document.activeElement === panel)) { e.preventDefault(); last?.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
+      }
+    } }, panel);
+  const api = { hero: getHero, close, changed: () => { changed = true; }, render: () => {
+    if (!getHero()) return close();
+    const y = panel.querySelector('.td-content')?.scrollTop || 0;
+    const { body, actions } = build(api);
+    panel.replaceChildren(h('header', { class: 'td-dialog-head' }, h('h2', {}, title), h('button', { class: 'td-cancel', type: 'button', onclick: close }, 'Cancel')), body, h('footer', { class: 'td-dialog-actions' }, ...actions));
+    if (panel.querySelector('.td-content')) panel.querySelector('.td-content').scrollTop = y;
+  } };
+  if (parent) parent.inert = true;
+  dismissTalentDialog = close; document.body.append(overlay); api.render();
+  (panel.querySelector('.td-option.selected, .td-option:not(:disabled), .td-confirm') || panel).focus({ preventScroll: true });
+  return api;
+}
+function talentFaceDialog(hero, slot, face) {
+  const info = E.talentInfo(hero, slot); if (!E.isActive(hero, slot) || face < 0 || face >= info.faces) return;
+  let selected = null, error = '';
+  const n = info.nums[face];
+  talentDialog(hero, slot, face, `Face ${n} · Talent ${slot === 'SW' ? '1' : '2'}`, api => {
+    const now = api.hero(), t = E.talentInfo(now, slot), entry = now.talent?.[slot]?.[face];
+    const current = Array.isArray(entry) ? entry[0] : entry, pick = current || selected, cost = t.costs[face];
+    const can = !current && !!selected && now.gold >= cost && E.talentCount(now, slot, selected) < t.same;
+    const choose = k => { selected = k; error = ''; api.render(); $(`.td-overlay [data-symbol="${k}"]`)?.focus({ preventScroll: true }); };
+    const preview = h('div', { class: `td-preview ${pick ? SYM_ICO[pick][1] : ''}`, 'aria-live': 'polite' },
+      h('span', { class: 'td-preview-die' }, pick ? ico(SYM_ICO[pick][0]) : ico('dice'), h('b', {}, `+${n}`)),
+      h('b', {}, pick ? `Gives +${n} ${D.TALENT_SYMS[pick].name}` : 'Choose a symbol'));
+    const options = current ? null : h('div', { class: 'td-options', role: 'group', 'aria-label': 'Choose a talent symbol' }, Object.entries(D.TALENT_SYMS).map(([k, def]) => {
+      const count = E.talentCount(now, slot, k), full = count >= t.same;
+      return h('button', { type: 'button', class: `td-option ${SYM_ICO[k][1]} ${selected === k ? 'selected' : ''}`, 'data-symbol': k, 'aria-pressed': String(selected === k), disabled: full,
+        onclick: () => choose(k), 'aria-label': `${def.name}, ${full ? 'limit reached' : `${t.same - count} available`}` }, ico(SYM_ICO[k][0]), h('b', {}, def.name), h('small', {}, full ? 'Limit reached' : `${count} / ${t.same} used`));
+    }));
+    const message = error || (!current && now.gold < cost ? `Need ${cost - now.gold} more gold.` : '');
+    const body = h('div', { class: 'td-content' }, preview, options,
+      h('p', { class: 'td-limit' }, `Max ${t.same} of each symbol per die.`),
+      current ? h('p', { class: 'td-note' }, `No refund · a new symbol costs ${cost} gold.`) : h('div', { class: 'td-price' }, priceChip(cost, { poor: now.gold < cost }), h('span', {}, `${now.gold} gold available`)),
+      h('p', { class: 'td-error', role: 'status' }, message));
+    const done = h('button', { class: 'td-confirm', type: 'button', disabled: !current && !can, onclick: () => {
+      if (current) return api.close();
+      const latest = api.hero(); if (!latest) return api.close();
+      if (selected && E.isActive(latest, slot) && HE.addTalent(latest, slot, face, selected)) { api.changed(); sfx.coin(); X.persist(); api.close(); }
+      else { error = 'That face could not be updated. Check your gold and symbol limit.'; api.render(); }
+    } }, 'Done', current ? null : priceChip(cost, { poor: now.gold < cost }));
+    const clear = current ? h('button', { class: 'td-clear', type: 'button', onclick: () => {
+      const latest = api.hero(); if (!latest) return api.close();
+      if (HE.removeTalent(latest, slot, face, 0)) { api.changed(); sfx.card(); X.persist(); api.close(); }
+      else { error = 'That symbol could not be cleared.'; api.render(); }
+    } }, 'Clear symbol') : null;
+    return { body, actions: [clear, done].filter(Boolean) };
+  });
+}
+function talentGrowDialog(hero, slot, target) {
+  let error = '';
+  talentDialog(hero, slot, null, `${E.isActive(hero, slot) ? 'Grow' : 'Unlock'} Talent ${slot === 'SW' ? '1' : '2'}`, api => {
+    const now = api.hero(), active = E.isActive(now, slot), size = now.special[slot];
+    const info = active ? E.specialUpgrade(now, slot) : E.unlockInfo(now, slot);
+    const next = active ? target : 4, matches = !active || info.next === target;
+    const cost = active ? D.SPECIAL_STEPS[{ 6: 4, 8: 6, 10: 8 }[target]]?.[0] : info.cost;
+    const ok = matches && info.ok;
+    const why = error || (!matches ? `Grow to d${info.next || size} first.` : !info.ok ? info.why === 'gold' ? `Need ${Math.max(0, info.cost - now.gold)} more gold.` : info.why || 'Not available yet.' : '');
+    const body = h('div', { class: 'td-content' }, h('div', { class: 'td-growth-preview' }, active ? campDie(now, slot, size) : ico('lock'), ico('chevron'), campDie(now, slot, next)),
+      h('h3', {}, active ? `d${size} → d${next}` : 'A new d4 talent die'),
+      h('p', { class: 'td-note' }, active ? 'Adds empty faces. Your symbols stay.' : 'Choose a symbol for its empty face.'),
+      h('div', { class: 'td-price' }, priceChip(cost || 0, { poor: now.gold < cost }), h('span', {}, `${now.gold} gold available`)), h('p', { class: 'td-error', role: 'status' }, why));
+    return { body, actions: [h('button', { class: 'td-confirm', type: 'button', disabled: !ok, onclick: () => {
+      const latest = api.hero(); if (!latest) return api.close();
+      const fresh = active ? E.specialUpgrade(latest, slot) : E.unlockInfo(latest, slot);
+      if ((!active || fresh.next === target) && fresh.ok && (active ? HE.upgradeDie(latest, 'special', slot) : HE.unlockDie(latest, slot))) { api.changed(); sfx.level(); X.persist(); api.close(); }
+      else { error = 'This upgrade is no longer available.'; api.render(); }
+    } }, 'Done', priceChip(cost || 0, { poor: now.gold < cost }))] };
+  });
 }
 function talentWorkshop(hero, slot) {
-  const size = hero.special[slot], info = E.talentInfo(hero, slot), up = E.specialUpgrade(hero, slot);
-  const stored = hero.talent?.[slot] || [];
-  const symbol = (f) => Array.isArray(stored[f]) ? stored[f][0] : stored[f];
-  const face = TAL.slot === slot && TAL.face != null && TAL.face >= 0 && TAL.face < info.faces ? TAL.face : Math.max(0, info.nums.findIndex((_, f) => !symbol(f)));
-  TAL.slot = slot; TAL.face = face;
-  const current = face != null ? symbol(face) : null, chosen = current || TAL.sym;
-  const refresh = (selector) => { X.renderCamp(SHEET.fromBoard); $(selector)?.focus({ preventScroll: true }); };
-  const fixed = [1, 2, 3].map((n) => h('div', { class: `tw-face fixed ${n === 2 ? 'double' : ''}`, 'aria-label': `Face ${n}: ${n === 2 ? 'doubles this hand' : 'blank'}. Fixed.` },
-    h('b', {}, String(n)), h('span', {}, n === 2 ? '×2' : '·'), h('small', {}, n === 2 ? 'Hand' : 'Blank')));
-  const editable = info.nums.map((n, f) => {
-    const k = symbol(f), active = face === f;
-    return h('button', { type: 'button', class: `tw-face ${k ? SYM_ICO[k][1] : 'tw-unset'} ${active ? 'selected' : ''}`, 'data-face': String(f), 'aria-pressed': String(active),
-      'aria-label': `Face ${n}: ${k ? `${n} ${D.TALENT_SYMS[k].name}` : `empty, ${info.costs[f]} gold to set`}. Inspect face.`,
-      onclick: tap(() => { TAL.slot = slot; TAL.face = f; TAL.sym = null; refresh(`.tw-face[data-face="${f}"]`); toTalentSymbols(); }) },
-    h('b', {}, String(n)), k ? ico(SYM_ICO[k][0]) : h('span', { class: 'tw-add' }, '+'), k ? h('small', { class: 'tw-gives' }, `Gives +${n}`) : priceChip(info.costs[f], { poor: hero.gold < info.costs[f] }));
-  });
-  let detail;
-  if (face == null) detail = h('div', { class: 'tw-empty' }, ico('dice'), h('b', {}, 'Choose a numbered face'), h('p', {}, 'Inspect its symbol or choose what an empty face will give you.'));
-  else {
-    const n = info.nums[face], cost = info.costs[face];
-    const left = chosen ? info.same - E.talentCount(hero, slot, chosen) : 0;
-    const can = !!chosen && left > 0 && hero.gold >= cost;
-    const preview = h('div', { class: `tw-result ${chosen ? SYM_ICO[chosen][1] : ''}`, 'aria-live': 'polite' },
-      h('span', { class: 'tw-result-icon' }, chosen ? ico(SYM_ICO[chosen][0]) : ico('dice')),
-      h('div', {}, h('small', {}, `FACE ${n}${current ? ' · CURRENT' : ' · PREVIEW'}`), h('b', {}, chosen ? `Gives +${n} ${D.TALENT_SYMS[chosen].name}` : 'Choose a symbol'),
-        null));
-    const options = !current ? h('div', { class: `tw-symbols ${chosen ? '' : 'tw-next'}`, role: 'group', 'aria-label': 'Choose a talent symbol' }, /* the next thing to tap glows (Dave, 3 Nov 2026) */ Object.entries(D.TALENT_SYMS).map(([k, def]) => {
-      const count = E.talentCount(hero, slot, k), full = count >= info.same;
-      return h('button', { type: 'button', class: `tw-symbol ${SYM_ICO[k][1]} ${TAL.sym === k ? 'selected' : ''}`, disabled: full, 'data-symbol': k, 'aria-pressed': String(TAL.sym === k),
-        'aria-label': `${def.name}, ${count} of ${info.same} used${full ? ', limit reached' : ''}`,
-        onclick: full ? null : tap(() => { TAL.sym = k; refresh(`.tw-symbol[data-symbol="${k}"]`); requestAnimationFrame(() => $('.cw-pop .tw-purchase, .tw-purchase')?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' })); }) }, ico(SYM_ICO[k][0]), h('b', {}, def.name), h('small', {}, full ? 'Limit reached' : `${count} / ${info.same} used`));
-    })) : null;
-    const action = current ? h('div', { class: 'tw-clear' }, h('p', {}, `No refund · a new symbol costs ${cost} gold.`),
-      h('button', { type: 'button', class: 'tw-clear-btn', 'aria-label': `Clear face ${n} without refund`, onclick: tap(() => {
-        if (HE.removeTalent(hero, slot, face, 0)) { TAL.sym = null; sfx.card(); X.persist(); refresh(`.tw-face[data-face="${face}"]`); }
-      }) }, 'Clear this face'))
-      : h('div', { class: `tw-purchase ${chosen ? 'tw-next' : ''}` }, shBuy(hero, { label: chosen ? `Set ${n} ${D.TALENT_SYMS[chosen].name}` : 'Choose a symbol first', cost, ok: can,
-        onBuy: () => { if (chosen && HE.addTalent(hero, slot, face, chosen)) { TAL.sym = null; shBought(); } } }),
-        null);
-    detail = h('section', { class: 'tw-detail', 'aria-label': `Face ${n} editor` }, preview, options, action);
-  }
-  const grow = !up.next && !up.act ? shDone('Biggest size') : up.act && String(up.why).startsWith('Act') ? shLock(`Grows again in ${up.why}`)
-    : shBuy(hero, { label: `Grow to d${up.next}`, cost: up.cost, ok: up.ok, onBuy: () => { if (HE.upgradeDie(hero, 'special', slot)) { shBought(); toTalentSymbols(); } } });
-  return h('div', { class: 'tw-workshop' },
-    talentsCard(hero, slot, { selected: face != null ? [slot, face] : null, say: (t) => toast(t), // Crockpot: the cardboard TALENTS card; taps go to the existing editor / purchases
-      onFace: (s2, f) => { if (s2 !== slot) { openSlot(s2); } TAL.slot = s2; TAL.face = f; TAL.sym = null; refresh(`.tw-face[data-face="${f}"]`); toTalentSymbols(); }, // tz1 (Dave): glide down to Choose a face. (Restored 3 Nov 2026, Dave: "revert back to this real dice look": the cardboard TALENTS card and the real-dice growth)
-      onGrow: (s2) => { if (HE.upgradeDie(hero, 'special', s2)) { shBought(); toTalentSymbols(); } }, onUnlock: (s2) => { if (HE.unlockDie(hero, s2)) { shBought(); toTalentSymbols(); } } }),
-    h('div', { class: 'tw-face-heading' }, h('b', {}, 'Choose a face'), h('span', {}, `d${size} · ${size} faces`)),
-    h('div', { class: 'sh-faces tw-faces', style: { '--cols': String(size <= 6 ? (size === 4 ? 4 : 3) : size / 2) } }, ...fixed, ...editable),
-    h('p', { class: 'tw-max' }, `Max ${info.same} of each symbol per die.`), detail, // (one line: Dave, 3 Nov 2026 "too many words")
-    h('details', { class: 'tw-grow ww-pack' }, h('summary', {}, ico('dice'), up.next ? `Grow this die · d${size} → d${up.next}` : 'Die growth'),
-      h('div', { class: 'tw-grow-body' }, h('p', {}, 'A bigger die adds empty faces. Your existing symbols stay.'),
-        up.next ? h('div', { class: 'cw-compare' }, campDie(hero, slot, size), ico('chevron'), campDie(hero, slot, up.next)) : null, grow)));
+  const column = s => {
+    const active = E.isActive(hero, s), size = hero.special[s], info = E.talentInfo(hero, s), stored = hero.talent?.[s] || [];
+    const symbol = f => Array.isArray(stored[f]) ? stored[f][0] : stored[f];
+    const faceButton = f => {
+      const n = info.nums[f], k = symbol(f), selected = TAL.slot === s && TAL.face === f;
+      return h('button', { type: 'button', class: `td-face ${k ? SYM_ICO[k][1] : 'empty'} ${selected ? 'selected' : ''}`, 'data-slot': s, 'data-face': String(f), 'aria-label': `Talent ${s === 'SW' ? '1' : '2'}, face ${n}: ${k ? `${n} ${D.TALENT_SYMS[k].name}` : `empty, ${info.costs[f]} gold`}`,
+        onclick: () => talentFaceDialog(hero, s, f) }, h('b', {}, String(n)), k ? ico(SYM_ICO[k][0]) : priceChip(info.costs[f], { poor: hero.gold < info.costs[f] }));
+    };
+    const fixed = active ? [1, 2, 3].map(n => h('div', { class: 'td-fixed-face', 'aria-label': `Face ${n}: ${n === 2 ? 'double hand' : 'blank'}` },
+      h('b', {}, String(n)), h('span', {}, n === 2 ? '×2' : '—'))) : [];
+    const faces = active ? h('div', { class: 'td-face-list' }, ...fixed, ...Array.from({ length: info.faces }, (_, f) => faceButton(f))) : null;
+    const growth = [4, 6, 8, 10].filter(z => !active || z > size).map(z => {
+      const from = { 6: 4, 8: 6, 10: 8 }[z], cost = D.SPECIAL_STEPS[from]?.[0];
+      if (!active && z === 4) { const u = E.unlockInfo(hero, s); return h('button', { class: 'td-unlock td-size next', type: 'button', 'data-slot': s, onclick: () => talentGrowDialog(hero, s, 4) }, ico('lock'), h('span', {}, h('b', {}, 'Unlock d4')), priceChip(u.cost, { poor: hero.gold < u.cost })); }
+      const next = active && D.NEXT_SIZE[size] === z;
+      return h('button', { class: `td-size ${next ? 'next' : 'later'}`, type: 'button', 'data-size': z, disabled: !active, onclick: () => talentGrowDialog(hero, s, z) }, ico(`d${z}`), h('span', {}, h('b', {}, `d${z}`), h('small', {}, next ? 'Grow die' : active ? `After d${from}` : 'Unlock first')), priceChip(cost || 0, { poor: hero.gold < cost }));
+    });
+    return h('section', { class: `td-column ${s === slot ? 'focused' : ''}`, 'data-slot': s },
+      h('header', {}, h('b', {}, `Talent ${s === 'SW' ? '1' : '2'}`)),
+      h('div', { class: `td-die-context ${active ? '' : 'locked'}` }, active ? campDie(hero, s, size) : h('span', { class: 'td-locked-die' }, ico('d4', '', 76)), h('span', {}, active ? `d${size}` : 'Locked')),
+      faces, h('div', { class: 'td-growth-list' }, ...growth));
+  };
+  const info = E.talentInfo(hero, slot);
+  return h('div', { class: 'tw-workshop td-workshop' }, h('div', { class: 'td-card' },
+    h('header', { class: 'td-card-title' }, h('h2', {}, 'Talent dice'), h('p', {}, 'Tap a face to choose its symbol.')),
+    h('div', { class: 'td-columns' }, column('SW'), column('SE')),
+    h('div', { class: 'td-fixed' }, '2 ×2 doubles the hand above.'), h('p', { class: 'td-limit' }, `Max ${info.same} of each symbol per die.`)));
 }
-// a talent die: grow it, then tap an empty number face to pick its symbol
-function talentSheet(hero, slot) {
-  if (SHEET.inline) return [talentWorkshop(hero, slot)];
-  const size = hero.special[slot]; const up = E.specialUpgrade(hero, slot); const info = E.talentInfo(hero, slot); const faces = hero.talent?.[slot] || [];
-  const sym = (f) => { const e = faces[f]; return Array.isArray(e) ? e[0] : e; };
-  const pickFace = TAL.slot === slot && TAL.face != null && TAL.face < info.faces && !sym(TAL.face) ? TAL.face : null;
-  const fixed = [h('div', { class: 'sh-face fixed' }, h('b', {}, '1'), h('small', {}, 'blank')), h('div', { class: 'sh-face fixed x2' }, h('b', {}, '2'), h('small', {}, '×2 hand')), h('div', { class: 'sh-face fixed' }, h('b', {}, '3'), h('small', {}, 'blank'))];
-  const nums = info.nums.map((n, f) => { const k = sym(f); const cost = info.costs[f];
-    if (k) return h('button', { class: `sh-face set ${SYM_ICO[k][1]}`, type: 'button', 'aria-label': `Face ${n}: ${n} ${D.TALENT_SYMS[k].name}. Tap to clear.`, onclick: tap(() => { HE.removeTalent(hero, slot, f, 0); sfx.card(); X.persist(); X.renderCamp(); }) }, h('b', {}, String(n)), ico(SYM_ICO[k][0]));
-    return h('button', { class: `sh-face open ${pickFace === f ? 'picking' : ''} ${hero.gold >= cost ? '' : 'poor'}`, type: 'button', 'aria-label': `Face ${n}: empty. ${cost} gold.`, onclick: tap(() => { TAL.slot = slot; TAL.face = pickFace === f ? null : f; X.renderCamp(); }) }, h('b', {}, String(n)), priceChip(cost, { poor: hero.gold < cost })); });
-  const picker = pickFace != null ? h('div', { class: 'sh-picker' }, h('p', { class: 'sh-sec' }, `Face ${info.nums[pickFace]} pays ${info.nums[pickFace]} of…`),
-    h('div', { class: 'sh-syms' }, Object.keys(D.TALENT_SYMS).map((k) => { const left = info.same - E.talentCount(hero, slot, k); const can = left > 0 && hero.gold >= info.costs[pickFace];
-      return h('button', { class: `sh-sym ${SYM_ICO[k][1]}`, type: 'button', disabled: !can, onclick: can ? tap(() => { if (HE.addTalent(hero, slot, pickFace, k)) { TAL.face = null; sfx.coin(); X.persist(); X.renderCamp(); } else sfx.error(); }) : null }, ico(SYM_ICO[k][0]), h('b', {}, D.TALENT_SYMS[k].name), left > 0 ? null : h('small', {}, 'used twice')); })),
-    h('p', { class: 'sh-role' }, `${info.costs[pickFace]} gold, once. Tap a symbol to buy it.`)) : null;
-  const grow = !up.next && !up.act ? shDone('Biggest size') : up.act && String(up.why).startsWith('Act') ? shLock(`Grows again in ${up.why}`)
-    : shBuy(hero, { label: `Grow to d${up.next}`, cost: up.cost, ok: up.ok, onBuy: () => { if (HE.upgradeDie(hero, 'special', slot)) shBought(); } });
-  return [shStage(...shGrow(size, up.next && !up.act ? up.next : null)), h('p', { class: 'sh-sec' }, 'Faces · tap a number to give it a symbol'), h('div', { class: 'sh-faces', style: { '--cols': String((3 + nums.length) <= 6 ? 3 + nums.length : Math.ceil((3 + nums.length) / 2)) } }, ...fixed, ...nums), picker, grow];
-}
+function talentSheet(hero, slot) { return [talentWorkshop(hero, slot)]; }
 function closeSlot() {
   const slot = SHEET.slot, inline = SHEET.inline;
   SHEET.slot = null; SHEET.inline = false; SHEET.el = null;
@@ -1889,7 +1939,7 @@ function campContent(hero) {
 export function camp(fromBoard) {
   const S = X.S; const hero = S.hero;
   const identity = `${hero.name}:${hero.cls}`;
-  if (SHEET.hero !== identity) { SHEET.slot = null; SHEET.inline = false; SHEET.el = null; SHEET.hero = identity; S.holdScroll = false; }
+  if (SHEET.hero !== identity) { dismissTalentDialog?.(); SHEET.slot = null; SHEET.inline = false; SHEET.el = null; SHEET.hero = identity; S.holdScroll = false; }
   SHEET.fromBoard = fromBoard;
   if (S.tab === 'hero' || S.tab === 'gear' || S.tab === 'store') { S.campPage = S.tab; S.tab = 'forge'; }
   S.campPage = PAGE_ALIAS[S.campPage] || S.campPage || 'camp'; if (!CAMP_PAGES.some(([id]) => id === S.campPage)) S.campPage = 'camp';
@@ -1924,6 +1974,7 @@ export function camp(fromBoard) {
 // ------------------------------------------------------------------------------------------------ plumbing
 // Phones: the page is one tall scroll (the 3D picture is the first screenful and scrolls away with everything else).
 function mountAs(cls, ...nodes) {
+  if (cls.trim().split(/\s+/)[0] !== 'camp') dismissTalentDialog?.();
   if (cls.trim().split(/\s+/)[0] !== 'camp' && SHEET.inline) { SHEET.slot = null; SHEET.inline = false; SHEET.el = null; }
   if (cls.trim().split(/\s+/)[0] !== 'camp') document.querySelectorAll('body > .cw-pop').forEach((el) => el.remove());
   const app = $('#app'); const prev = $('.sx-side, .sx-board-main'); const kind = cls.trim().split(/\s+/)[0];
