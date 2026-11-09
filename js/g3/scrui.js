@@ -129,22 +129,10 @@ function heroChip(hero = X.S.hero, { xp = true } = {}) {
     return h('div', { class: 'sx-chip' }, h('span', { class: 'sx-emblem' }, ico('people')), h('div', { class: 'ch-copy' }, h('b', {}, S.company.name), h('small', {}, `${n} ${n === 1 ? 'hero' : 'heroes'}`)), coin(E.companyGold(S.company.members)));
   }
   const need = D.xpToNext(hero.level); const maxed = hero.level >= D.MAX_LEVEL;
-  const goldEl = coin(hero.gold);
-  goldEl.title = 'Tap to refill to 5,000 gold';
-  goldEl.style.cursor = 'pointer';
-  goldEl.addEventListener('click', (e) => {
-    e.stopPropagation();
-    hero.gold = 5000;
-    sfx.coin();
-    X.persist?.();
-    if ($('.sx-camp')) X.renderCamp?.(SHEET.fromBoard);
-    else goldEl.querySelector('b').textContent = '5000';
-    toast('Purse refilled to 5,000 gold');
-  });
   return h('div', { class: 'sx-chip' }, emblem(hero.cls, '', D.lookDef(hero)?.hue),
     h('div', { class: 'ch-copy' }, h('b', {}, hero.name), h('small', {}, `Level ${hero.level} ${clsName(hero.cls)}`),
       xp ? h('span', { class: 'ch-xp', title: maxed ? 'Max level' : `${hero.xp}/${need} XP` }, h('i', { style: { width: `${maxed ? 100 : Math.min(100, (hero.xp / need) * 100)}%` } })) : null),
-    goldEl);
+    coin(hero.gold));
 }
 
 // Camp changes to my own hero. Solo: straight to the rules. At a shared table (g3/online.js): done here at once so the screen

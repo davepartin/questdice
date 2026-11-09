@@ -97,7 +97,82 @@ check('dummy is large enough to tap on a phone', camp.tap, JSON.stringify(camp))
 check('dummy is to the right of the hero', camp.dummyX > camp.heroX, JSON.stringify(camp));
 check('PRACTICE sits below the dummy’s round base', camp.gap >= 4 && camp.labelUnderDummy && camp.labelW >= 40, JSON.stringify(camp));
 
-await p.locator('.sc-dummy').click();
+const goldTap = await p.evaluate(() => {
+  const before = window.QD.S.hero.gold;
+  document.querySelector('.sx-chip .ch-copy b')?.click();
+  document.querySelector('.sx-chip .sx-coin')?.click();
+  document.querySelector('.sx-chip')?.click();
+  return { before, after: window.QD.S.hero.gold };
+});
+check('tapping the camp name and gold does not grant 5000', goldTap.after === goldTap.before && goldTap.after !== 5000, JSON.stringify(goldTap));
+
+const CAMP_TABS = [['camp', 'Camp Store'], ['dice', 'Dice Upgrades'], ['magic', 'Magic Upgrades'], ['upgrades', 'All Upgrades'], ['hero', 'Hero']];
+const cdp = await p.context().newCDPSession(p);
+const swipeSheet = async () => {
+  const box = await p.evaluate(() => {
+    const side = document.querySelector('.sx-side');
+    const body = document.querySelector('.sx-camp-scroll') || side;
+    const sr = side.getBoundingClientRect();
+    const r = body.getBoundingClientRect();
+    const y = Math.round(Math.min(sr.bottom - 140, Math.max(sr.top + 220, r.top + Math.min(r.height, 240) * 0.55)));
+    return { x: Math.round(sr.left + sr.width * 0.5), y, h: sr.height };
+  });
+  const dist = Math.min(280, Math.max(160, Math.round(box.h * 0.28)));
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: box.x, y: box.y, id: 0 }] });
+  for (let i = 1; i <= 12; i++) {
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: box.x, y: box.y - Math.round((dist * i) / 12), id: 0 }] });
+  }
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await p.waitForTimeout(80);
+};
+const tabScroll = {};
+for (const [id, label] of CAMP_TABS) {
+  await p.evaluate((page) => { window.QD.S.campPage = page; window.QD.S.holdScroll = false; window.QD.showCamp(); }, id);
+  await p.waitForSelector('.sx-side', { timeout: 10000 });
+  await pump(0.2);
+  const prepared = await p.evaluate(() => {
+    const side = document.querySelector('.sx-side');
+    const body = document.querySelector('.sx-camp-scroll');
+    const pe = side ? getComputedStyle(side).pointerEvents : '';
+    const overflowY = side ? getComputedStyle(side).overflowY : '';
+    if (body && side && side.scrollHeight <= side.clientHeight + 24) body.dataset.qdPad = '1', body.style.minHeight = `${side.clientHeight + 900}px`;
+    side.scrollTop = 0;
+    return {
+      pe, overflowY, can: side.scrollHeight > side.clientHeight + 20,
+      hole: pe === 'none',
+      hit: !!document.querySelector('.camp-dummy-hit:not([hidden])'),
+    };
+  });
+  const before = await p.evaluate(() => document.querySelector('.sx-side')?.scrollTop || 0);
+  await swipeSheet();
+  const after = await p.evaluate(() => {
+    const side = document.querySelector('.sx-side');
+    const body = document.querySelector('.sx-camp-scroll');
+    const y = side?.scrollTop || 0;
+    if (body?.dataset.qdPad) { delete body.dataset.qdPad; body.style.minHeight = ''; }
+    return { y, pe: side ? getComputedStyle(side).pointerEvents : '' };
+  });
+  tabScroll[id] = { label, ...prepared, before, after: after.y };
+  check(`camp tab ${label} sheet scrolls on iPhone touch`, !prepared.hole && prepared.pe !== 'none' && /auto|scroll/.test(prepared.overflowY) && after.y > before + 8, JSON.stringify(tabScroll[id]));
+}
+await p.evaluate(() => { window.QD.S.campPage = 'camp'; window.QD.S.holdScroll = false; window.QD.showCamp(); });
+await p.waitForSelector('.sc-dummy', { timeout: 20000 });
+await pump(0.3);
+const dummyHit = await p.evaluate(() => {
+  const hit = document.querySelector('.camp-dummy-hit');
+  const r = hit?.getBoundingClientRect();
+  const sidePe = getComputedStyle(document.querySelector('.sx-side')).pointerEvents;
+  return { present: !!hit, hidden: !!hit?.hidden, w: r?.width || 0, h: r?.height || 0, sidePe };
+});
+check('dummy hit overlay is on the banner, sheet still receives events', dummyHit.present && !dummyHit.hidden && dummyHit.w >= 24 && dummyHit.h >= 24 && dummyHit.sidePe !== 'none', JSON.stringify(dummyHit));
+
+const tapDummy = async () => {
+  const hit = p.locator('.camp-dummy-hit:not([hidden])');
+  await hit.waitFor({ state: 'visible', timeout: 8000 }).catch(() => null);
+  if (await hit.count()) await hit.click({ timeout: 8000 });
+  else await p.locator('.sc-dummy').click();
+};
+await tapDummy();
 await waitPractice();
 const entered = await p.evaluate(() => {
   const B = window.QD.B3.battleState; const chips = B.hud?.forecast?._chips || {};
@@ -146,7 +221,8 @@ const midRestored = await p.evaluate(() => {
 });
 check('mid-round Back to camp restores camp and the real run (gold, potions, XP)', midRestored.gold === setup.gold && midRestored.xp === setup.xp && midRestored.potions === setup.potions && !midRestored.practice && midRestored.dummy && !midRestored.battle, JSON.stringify({ setup, midRestored }));
 
-await p.locator('.sc-dummy').click();
+await pump(0.3);
+await tapDummy();
 await waitPractice();
 
 await p.evaluate(() => { const B = window.QD.B3.battleState; B.b.magic = 0; });
@@ -251,7 +327,7 @@ const restored = await p.evaluate(() => {
 check('Done restores camp and the real run (gold, potions, XP)', restored.gold === setup.gold && restored.xp === setup.xp && restored.potions === setup.potions && !restored.practice && restored.dummy, JSON.stringify({ setup, restored }));
 check('no page errors', !errs.length, errs.slice(0, 3).join(' | '));
 
-const summary = { setup, camp, entered, midLeave, midRestored, scored, endState, endLeave, zeroed, restored, errors: errs, bad };
+const summary = { setup, camp, goldTap, dummyHit, tabScroll, entered, midLeave, midRestored, scored, endState, endLeave, zeroed, restored, errors: errs, bad };
 fs.writeFileSync(path.join(OUT, 'results.json'), JSON.stringify(summary, null, 2));
 console.log(bad ? `${bad} failed` : 'all passed');
 await br.close();

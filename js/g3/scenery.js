@@ -37,7 +37,10 @@ function ensureLayer() {
   if (frame) frame.insertBefore(layer, app || null);
   return layer;
 }
-export function hide() { if (layer) { layer.classList.remove('on'); document.body.classList.remove('has-scene'); } }
+export function hide() {
+  clearDummyHit();
+  if (layer) { layer.classList.remove('on'); document.body.classList.remove('has-scene'); }
+}
 export const active = () => !!layer?.classList.contains('on');
 
 const fireEl = () => h('div', { class: 'sc-fire' },
@@ -60,9 +63,66 @@ function dummyFigure(onTap) {
   const [x, y, flip, s] = DUMMY_SLOT; const d = D.TRAINING_DUMMY;
   const base = d.imgBase || { x: 0.5, y: 0.98, w: 0.7 };
   const img = h('img', { class: 'sc-img', src: d.img, alt: d.name, draggable: 'false', decoding: 'async' });
-  return h('button', { type: 'button', class: `sc-fig sc-dummy ${flip ? 'right' : ''}`, 'aria-label': 'Practice dummy', onclick: onTap,
+  const el = h('button', { type: 'button', class: `sc-fig sc-dummy ${flip ? 'right' : ''}`, 'aria-label': 'Practice dummy', onclick: onTap,
     style: { '--x': `${x}%`, '--y': `${y}%`, '--s': String(s), '--bx': String(base.x), '--by': String(base.y), '--delay': `${(x * 7) % 5}s`, zIndex: 4 } },
     h('i', { class: 'sc-shadow' }), img, h('b', { class: 'sc-name' }, 'Practice'));
+  el._onTap = onTap;
+  return el;
+}
+
+// On a phone the camp sheet covers the banner, so the painted dummy cannot receive taps. A small
+// transparent button in the sheet sits over the dummy (not pointer-events:none on the scroller —
+// iPhone Safari will not pan a scroller that is itself a hole).
+let dummyHit = null;
+let dummyRo = null;
+let dummyListen = false;
+function clearDummyHit() {
+  dummyHit?.remove(); dummyHit = null;
+  dummyRo?.disconnect(); dummyRo = null;
+}
+export function syncDummyHit() {
+  const dummy = document.querySelector('.sc-dummy');
+  const side = document.querySelector('.cw-camp .sx-side');
+  const port = document.querySelector('.cw-camp .sx-viewport');
+  const onTap = dummy?._onTap;
+  if (!dummy || !side || !onTap) { clearDummyHit(); return; }
+  if (!dummyHit || !dummyHit.isConnected || dummyHit.parentElement !== side) {
+    dummyHit?.remove();
+    dummyHit = h('button', { type: 'button', class: 'camp-dummy-hit', 'aria-label': 'Practice dummy', onclick: onTap });
+    side.append(dummyHit);
+  }
+  const dr = dummy.getBoundingClientRect();
+  const sr = side.getBoundingClientRect();
+  const pr = port?.getBoundingClientRect();
+  const left = Math.max(dr.left, pr ? pr.left : dr.left);
+  const top = Math.max(dr.top, pr ? pr.top : dr.top);
+  const right = Math.min(dr.right, pr ? pr.right : dr.right);
+  const bottom = Math.min(dr.bottom, pr ? pr.bottom : dr.bottom);
+  const w = right - left; const ht = bottom - top;
+  if (w < 24 || ht < 24) { dummyHit.hidden = true; return; }
+  dummyHit.hidden = false;
+  dummyHit.style.left = `${left - sr.left + side.scrollLeft}px`;
+  dummyHit.style.top = `${top - sr.top + side.scrollTop}px`;
+  dummyHit.style.width = `${w}px`;
+  dummyHit.style.height = `${ht}px`;
+}
+function watchDummyHit() {
+  dummyRo?.disconnect();
+  const dummy = document.querySelector('.sc-dummy');
+  const port = document.querySelector('.cw-camp .sx-viewport');
+  if (!dummy) { clearDummyHit(); return; }
+  if (window.ResizeObserver) {
+    dummyRo = new ResizeObserver(() => syncDummyHit());
+    dummyRo.observe(dummy);
+    if (port) dummyRo.observe(port);
+  }
+  if (!dummyListen) {
+    dummyListen = true;
+    window.addEventListener('resize', syncDummyHit);
+    window.addEventListener('orientationchange', syncDummyHit);
+  }
+  dummy.querySelector('img')?.addEventListener('load', syncDummyHit);
+  requestAnimationFrame(() => { syncDummyHit(); requestAnimationFrame(syncDummyHit); });
 }
 
 // kind: 'camp' | 'road'. opts: { heroes, act, place, fire, onDummy }. Safe to call again for the same screen (the stage is rebuilt, the painting kept).
@@ -92,5 +152,7 @@ export function mountStage(kind, heroes, hot = true, backdrop = null, onDummy = 
   // Fit the painting to the visible camp banner, independently of the full-screen shade.
   if (kind === 'camp' && backdrop) stage.style.backgroundImage = `linear-gradient(#07101c18,#080c1430),url("${backdrop}")`;
   host.prepend(stage);
+  if (kind === 'camp' && onDummy) watchDummyHit();
+  else clearDummyHit();
   return true;
 }

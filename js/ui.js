@@ -1167,4 +1167,6 @@ export async function boot() {
   await Online.boot(showTitle);
   if (retired) setTimeout(() => toast('Welcome to the beta! Heroes from the test builds have retired to a quiet farm. Forge a fresh one.', 'good'), 1200);
 }
-export const debugApi = { dailyAfter: (w) => dailyAfter(w), S, E, D, TUT, session: Sess, online: Online, startQuest, startCampPractice, leaveCampPractice, showBoard, showCamp, renderBattle, renderReset, world, B3, scr: SCR, showTitle, showCreate, showStories, showRoad, showRoadResult, showVictory, defeat, adopt, showRoadOrBoard, showHeroHub, showStepPick, showCloudLoad, renderVictory, showStory };
+export const debugApi = { dailyAfter: (w) => dailyAfter(w), S, E, D, TUT, session: Sess, online: Online, startQuest, startCampPractice, leaveCampPractice, showBoard, showCamp, renderBattle, renderReset, world, B3, scr: SCR, showTitle, showCreate, showStories, showRoad, showRoadResult, showVictory, defeat, adopt, showRoadOrBoard, showHeroHub, showStepPick, showCloudLoad, renderVictory, showStory,
+  // ?debug only (window.QD). Live camp no longer grants gold on a name/coin tap.
+  grantGold: (n = 5000) => { if (S.hero) { S.hero.gold = n; persist(); } } };
