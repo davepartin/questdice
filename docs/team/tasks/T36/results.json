@@ -17,6 +17,69 @@
     "labelW": 61.60935974121094,
     "labelH": 12
   },
+  "goldTap": {
+    "before": 77,
+    "after": 77
+  },
+  "dummyHit": {
+    "present": true,
+    "hidden": false,
+    "w": 63.171875,
+    "h": 93.234375,
+    "sidePe": "auto"
+  },
+  "tabScroll": {
+    "camp": {
+      "label": "Camp Store",
+      "pe": "auto",
+      "overflowY": "auto",
+      "can": true,
+      "hole": false,
+      "hit": true,
+      "before": 0,
+      "after": 221
+    },
+    "dice": {
+      "label": "Dice Upgrades",
+      "pe": "auto",
+      "overflowY": "auto",
+      "can": true,
+      "hole": false,
+      "hit": false,
+      "before": 0,
+      "after": 318
+    },
+    "magic": {
+      "label": "Magic Upgrades",
+      "pe": "auto",
+      "overflowY": "auto",
+      "can": true,
+      "hole": false,
+      "hit": false,
+      "before": 0,
+      "after": 101
+    },
+    "upgrades": {
+      "label": "All Upgrades",
+      "pe": "auto",
+      "overflowY": "auto",
+      "can": true,
+      "hole": false,
+      "hit": false,
+      "before": 0,
+      "after": 303
+    },
+    "hero": {
+      "label": "Hero",
+      "pe": "auto",
+      "overflowY": "auto",
+      "can": true,
+      "hole": false,
+      "hit": false,
+      "before": 0,
+      "after": 250
+    }
+  },
   "entered": {
     "practice": true,
     "free": true,
@@ -71,21 +134,21 @@
     "phase": "practice-end",
     "again": true,
     "totals": {
-      "atk": "16",
-      "pierce": "2",
+      "atk": "14",
+      "pierce": "5",
       "splash": "0",
-      "block": "12",
-      "magic": "0",
-      "heal": "10",
-      "gold": "3"
+      "block": "4",
+      "magic": "4",
+      "heal": "3",
+      "gold": "1"
     },
     "T": {
-      "atk": 16,
-      "pierce": 2,
-      "block": 12,
-      "heal": 10,
-      "magic": 0,
-      "gold": 3
+      "atk": 14,
+      "pierce": 5,
+      "block": 4,
+      "heal": 3,
+      "magic": 4,
+      "gold": 1
     }
   },
   "endLeave": {

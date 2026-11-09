@@ -29,6 +29,7 @@ export function scrolled(px = 0) {
   // the hero chip (name, level, gold) stays pinned at the top: the choices further down need it in sight (Dave)
   const pinned = (el) => el.matches('.sx-top') && !!el.querySelector('.sx-chip');
   for (const v of document.querySelectorAll('.sx-viewport > *, .sx-board > .sx-top')) v.style.transform = port && px && !pinned(v) ? `translateY(${-px}px)` : '';
+  if (own.mode === 'camp') Scenery.syncDummyHit();
 }
 
 // The hero-choice miniature is seated by CSS (`object-fit: contain` in a padded box). `pin` stays on the

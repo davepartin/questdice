@@ -97,6 +97,18 @@ test('practice resolve: dummy does not hit back, does not end the run, splash st
   assert.ok((rep.T.atk || 0) + (rep.T.block || 0) + (b.mods.splash || 0) > 0);
 });
 
+test('camp sheet is not a pointer-events hole and live gold chip is not a cheat', () => {
+  const campCss = fs.readFileSync(new URL('../css/camp.css', import.meta.url), 'utf8');
+  assert.equal(/\.cw-camp\s+\.sx-side\s*\{[^}]*pointer-events:\s*none/.test(campCss), false);
+  assert.match(campCss, /\.camp-dummy-hit/);
+  const scrui = fs.readFileSync(new URL('../js/g3/scrui.js', import.meta.url), 'utf8');
+  assert.equal(/Purse refilled to 5,000 gold/.test(scrui), false);
+  assert.equal(/Tap to refill to 5,000 gold/.test(scrui), false);
+  assert.equal(/hero\.gold = 5000/.test(scrui), false);
+  const ui = fs.readFileSync(new URL('../js/ui.js', import.meta.url), 'utf8');
+  assert.match(ui, /grantGold:/);
+});
+
 test('Again zeros the colour counters and restores dummy / spent cards', () => {
   const { b } = practice();
   b.magic = 0;
