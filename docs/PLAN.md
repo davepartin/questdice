@@ -1704,3 +1704,8 @@ Dave then tried `20261106pd1` on his iPhone and could not leave mid-practice: Ba
 Dave then liked the dummy on iPhone and asked for two visuals: the Camp **Practice** label clear of the dummy’s round dirt base, and a practice-only night-campsite fight backdrop (same lakeside clearing, different angle). Build `20261106pd4`. Art is `assets/bg/practice-camp.webp`; `camp.webp` and live fight paintings are unchanged.
 
 Dave then tried `pd4` on iPhone: camp tabs would not scroll, and tapping the name/gold chip granted 5,000 gold. Build `20261106pd5` restores sheet scrolling (the PR 54 `pointer-events: none` punch-through was the Safari pan killer; dummy tap is a small overlay now) and removes the live gold cheat.
+
+
+## 2026-11-10: QuestDice2 concept notebook
+
+Dave requested exploration, not code: start battles with basic dice, grow the board between rounds, and let camp purchases improve the options available next battle. Created [QuestDice2](ideas/QUESTDICE2.md). Records Dave's direction separately from proposed rules, Focus as a working replacement name for Magic, covered corners, growth-versus-immediate-help tension, reset/persistence choices, co-op pacing risks, and a future paper comparison. Map/movement shelved. Reviewed Fleet Dice README, QuestDice design excerpts, current team-board records and working guide; no claim of fresh gameplay or balance testing. Verified the saved note matches the authored content. Documentation only; no code, build stamp, saves or live rules changed. No runtime tests run for this concept-only addition.
