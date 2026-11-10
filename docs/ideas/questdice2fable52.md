@@ -4,6 +4,8 @@
 
 Status: ideas only. No code, no rule changes, nothing tested at a table. Every number here is a first guess for a paper test, not a balance claim. I read DESIGN.md, TEAMPLAY.md, the magic card types, Monster Specials (T24) and the QuestDice2 concept notebook before writing. Where I disagree with something, I say so.
 
+Revised the same morning after reading the Fleet Dice repository itself (README, the rules engine's tuning table, the How to Play text and the balance notes). The first draft knew Fleet Dice only secondhand. Four things changed: see "What Fleet Dice itself taught me."
+
 ---
 
 ## The pitch in one breath
@@ -24,6 +26,19 @@ Dave's diagnosis is right, and I think there are three separate causes. Fixing o
 
 **The team has no handoff.** Six heroes rolling side by side on their own phones are six solo games that share a health bar. Team triples and Heart to Heart are lovely when they happen, but they are luck you notice, not a plan you make. A team game needs moments where one player's choice changes what another player should do.
 
+## What Fleet Dice itself taught me
+
+Reading the real rules changed four things in this proposal.
+
+1. **Fleet Dice has a second decision every round, and QuestDice dropped it.** After both volleys are shown, you choose a ship to step in front of the damage. It stops damage equal to its size and sits out the whole next round. That is a sacrifice with a price you feel a round later. It is now the heart of the team rule in Part 3.
+2. **A face does one thing, automatically.** Even numbers attack, odd numbers shield, and "the choosing lives in which dice you send back." My first draft let a bare hand pick its colour from a menu. That broke the house rule, so bare hands now follow it.
+3. **The shipyard has two directions: wider or taller.** More cells and ships, or bigger hulls. My first draft only had "light a new square." It now has kindle and stoke.
+4. **Momentum needs runway.** Fleet Dice's measured match is about twelve rounds (median 12), with War Escalation arriving in round 12. QuestDice battles run four to eight. A six-round battle with one purchase a round is too short to feel a climb, so the target below is longer and the one-a-round cap is gone.
+
+It also confirmed two things I had guessed. The opening cross around the flagship is right, because a row and a column are live from the first roll. And Fleet Dice already has a clock. War Escalation exists because "matches are not allowed to drift." A co-op game needs that clock even more, and sooner.
+
+---
+
 So the design below has three parts: a board that grows (the question), an enemy that grows too (the clock), and two small rules that make heroes need each other (the handoff).
 
 ---
@@ -34,16 +49,20 @@ So the design below has three parts: a board that grows (the question), an enemy
 
 Each battle begins with the five-die body cross live: Heart, Head, Feet and two Hands, all basic d4s around the d6 heart. The four corners are covered.
 
-A hero is useful from the first throw. **A bare hand lets you choose** after the roll: strike with it (red) or guard with it (blue). That is simple, and it sets up a real trade later. A weapon adds its die, its bigger numbers and its icon faces, but the weapon die decides the colour. Bare hands are flexible. Weapons are strong and wilful.
+A hero is useful from the first throw. A bare hand follows Fleet Dice's oldest rule: **an even number strikes, an odd number guards.** No menu on the die. If you wanted a strike and rolled a guard, send it back. Drawing a weapon changes the lane: the weapon die adds its bigger numbers and icon faces, and its colour decides what the lane does, as it does today. Bare hands are simple and a little wild. Weapons are stronger and have a temperament of their own.
 
-### Kindle one square a round
+### Kindle or stoke
 
-Between rounds you may **kindle** one square. A lit square shows a small flame on its frame and changes for the rest of the battle.
+Between rounds you spend at your own small shipyard. There are two verbs, and they are Fleet Dice's wider-or-taller choice.
+
+**Kindle** a dark square. It shows a small flame on its frame and changes for the rest of the battle.
 
 - A **corner** uncovers. Upper corners are weapons ("draw your sword"). Lower corners are your prepared powers and talents.
-- A **body square** steps up into the form you chose at camp. A hand grows from d4 to d6. A head gains an extra reroll die. Feet let you Step In for a friend (Part 3).
+- A **body square** steps up into the form you chose at camp. A hand grows from d4 to d6. A head gains an extra reroll die. Feet can Step In for a friend without sitting out (Part 3).
 
-All nine squares can be lit. One kindle a round is the speed limit.
+**Stoke** a lit square. It grows one more step: a d6 hand becomes a d8, a power rises a rank.
+
+All nine squares can be lit. There is no one-a-round cap. As in Fleet Dice, the price is the speed limit, and saving for a two-purchase round is a legitimate plan.
 
 ### The opening stance is free
 
@@ -51,11 +70,11 @@ Before the first throw, every hero kindles one square at no cost. This is the mo
 
 ### What it costs
 
-After the opening, kindling costs the purple triangles. The price depends on **how many you have lit, not which square**: the second costs 2, then 3, then 4, then 5. Because every square costs the same, the only question is "which one do I want now," never "which one is cheaper."
+After the opening, growth costs the purple triangles. The price depends on **how many purchases you have made this battle, not which square**: 2, then 3, then 4, 5, 6, 7. Kindling and stoking climb the same ladder. Because every step costs the same, the only question is "which one do I want now," never "which one is cheaper."
 
-With the current number language, four d4 body dice pay about 3 triangles a throw on average before the heart joins in (a 3 pays 2 and a 4 pays 1), and only about one throw in sixteen pays nothing before rerolls. If every triangle went to kindling, a hero would have five squares lit going into round five. Powers and paid rerolls want the same triangles, so a typical six-round battle ends with **four lit squares, five if you starve your powers**. That is the heart of the idea:
+With the current number language, four d4 body dice pay about 3 triangles a throw on average before the heart joins in (a 3 pays 2 and a 4 pays 1), and only about one throw in sixteen pays nothing before rerolls. If every triangle went to growth, an eight-round battle would buy about five steps after the free opening. Powers and paid rerolls want the same triangles, so most battles end with **four or five changes to a board that has nine squares, each with a second step**. That is the heart of the idea:
 
-> **You never finish the grid.** Four or five lanterns out of nine. Which hero are you today?
+> **You never finish the grid.** Four or five steps out of eighteen. Which hero are you today?
 
 Against armour you light the spear corner and your right hand. Against a swarm you light the splash power and your head. The same Knight plays two different battles.
 
@@ -91,7 +110,7 @@ My suggestion is **Spark**. The game already has a Spark symbol that produces Ma
 
 The monsters need to warm up too, or the growing board becomes a shopping list with one correct order.
 
-Put a short **Dark track** beside the monsters, five or six steps, drawn as a moon rising or candles going out. It moves one step every round. At marked steps, something visible happens: the monsters' power die grows a size, then a size again, and at the last step, Midnight, they strike twice.
+Put a **Dark track** beside the monsters, about eight steps, drawn as a moon rising or candles going out. It moves one step every round. At marked steps (say 3, 5 and 7), something visible happens: the monsters' power die grows a size. At the last step, Midnight, they strike twice. Fleet Dice does this with War Escalation from round 12. Here it starts early and everyone can see it coming.
 
 Three things follow from one small track.
 
@@ -99,7 +118,9 @@ Three things follow from one small track.
 
 **Nobody farms the last goblin.** Stalling is punished by the track, so no hidden anti-farming rules are needed.
 
-**The peak stays short and sweet.** The battle is pushed to end around rounds five to seven, which leaves two or three rounds to enjoy the hero you built without sliding back into sameness.
+**The peak stays short and sweet.** The battle is pushed to end around round eight, which leaves two or three rounds to enjoy the hero you built without sliding back into sameness.
+
+That is longer than today's four-to-eight-round battle, on purpose. A climb needs room. The trade is fewer, bigger battles on the road: perhaps six quests to an act instead of ten. Try six, eight and ten rounds on paper before believing my number.
 
 Because a Flare pushes the Dark back one step, the two halves of the game talk to each other. Light literally holds off the dark. A party that plans its lines buys itself another round.
 
@@ -113,13 +134,15 @@ Existing monster tricks get a new, better target too. **Bind** can *dim a lit sq
 
 Two rules. Both are one tap or less, and both happen inside the simultaneous round the game already has.
 
-### Called targets and Step In
+### Called targets, Brace and Step In
 
-Right now the lowest Feet draws the attack, and you find out after you have rolled. Flip the timing: when the monsters show their intention, they also **show who they are coming for**. "The Ogre eyes the Wizard."
+Right now the lowest Feet draws the attack, and you find out after you have rolled. Flip the timing: when the monsters show their intention, they also **show who they are coming for**. "The Ogre eyes the Wizard." Now the table has a one-sentence conversation before the dice are thrown: "I've got her."
 
-Now the table has a one-sentence conversation before the dice are thrown: "I've got her." A hero may **Step In** by spending their Feet die that round (it pays nothing else), and take the hit instead. Then everyone rolls, and the whole table watches the Knight's block dice, because the Wizard's turn depends on them.
+Then bring back Fleet Dice's blocking ship. After the monsters' damage is known, a hero may **brace** with one die they rolled this round. It stops damage equal to its size (a d4 stops 4, a d8 stops 8), and that square **sits out the whole next round**. You may brace for yourself, or **Step In** and brace for a friend.
 
-This is the D&D moment Dave is chasing: a friend jumping in front of a blow. It needs no map. It makes Feet matter every round. And it creates the natural team rhythm of a growing board: **someone holds the line while someone else builds.**
+This is the D&D moment Dave is chasing: a friend jumping in front of a blow, and paying for it. It needs no map. It gives every round a second decision after the dice are down, which QuestDice does not have today. It makes growth protective as well as aggressive, because a stoked d8 hand is also a bigger shield for someone else. And it creates the natural team rhythm of a growing board: **someone holds the line while someone else builds.**
+
+Feet earn their place here. A lit Feet square could let the Feet die Step In for a friend without sitting out, which makes "quick on your feet" mean something without a map.
 
 ### Openings: one mark, set up by one hero, cashed by another
 
@@ -145,12 +168,12 @@ Here is the D&D-light part, and it stays on one screen.
 
 | Square | What you slot there | Examples |
 |---|---|---|
-| Upper corners | Weapons | Sword, shield, bow (a two-hander fills both and lights with one kindle at a higher price) |
+| Upper corners | Weapons | Sword, shield, bow (a two-hander fills both and lights with one kindle that climbs two rungs of the price ladder) |
 | Lower corners | Powers and talents | The existing magic cards: a splash, a risky big swing, a steady pierce |
 | Hands | Strength forms | "Grows to d6." Later "grows to d8," or "d6 and every 2 pierces one more" |
 | Head | Tactics | An extra reroll die. See the monsters' power die early. |
 | Heart | Courage | Turn the heart once a round for free. A stronger 5 and 6. |
-| Feet | Footwork | Step In without giving up the Feet payout. Step In and make an Opening. |
+| Feet | Footwork | Step In with your Feet and they do not sit out. Step In and make an Opening. |
 
 This gives camp three clean kinds of purchase, and all three are what Dave described as "upgrading the upgrade options."
 
@@ -170,7 +193,7 @@ Two heroes, a Knight and a Ranger, against an armoured Ogre and two goblins. Ill
 
 **Opening.** The Ogre eyes the Ranger. The Knight opens with shield. The Ranger opens with bow. "I've got you."
 
-**Round 1.** The Knight Steps In and guards with a bare right hand as well. The Ranger rolls two 3s and keeps them: Sparks over damage this round.
+**Round 1.** The Ranger rolls two 3s and keeps them: Sparks over damage this round. The Ogre's blow comes in for 9. The Knight's shield takes most of it, and he Steps In with his left hand to stop the rest. That hand will sit out round two.
 
 **Round 2.** The Ranger kindles her splash power because the goblins are still up. The Knight kindles his left hand to d6. The Dark reaches its first mark, and the Ogre's die grows.
 
@@ -178,7 +201,7 @@ Two heroes, a Knight and a Ranger, against an armoured Ogre and two goblins. Ill
 
 **Round 4.** Both heroes have three lanterns. Company in Stride. They turn their hearts to match and aim at the Ogre together.
 
-**Round 5.** The Ranger has four lit. Rain of Arrows is live. The story the table tells afterwards is "I was going to draw my sword, but the goblins were still alive, so I lit the splash instead."
+**Rounds 5 to 8.** The Knight stokes his right hand to d8 instead of lighting a fifth square: taller, not wider. The Ranger has four lit. Rain of Arrows is live. The story the table tells afterwards is "I was going to draw my sword, but the goblins were still alive, so I lit the splash instead."
 
 ---
 
@@ -230,9 +253,10 @@ The notebook and I agree on the foundation: body cross, covered corners, growth 
 
 - **Too many new ideas at once.** Kindling, the Dark, called targets, Openings and lines are five. Test kindling and the Dark together first, since each needs the other. Add called targets second. Openings and lines last.
 - **Round one may feel thin.** Five d4s and one lit square is a small hero. If the first two rounds drag, start with two free kindles.
-- **Step In could make one player the permanent bodyguard.** If so, limit it (not two rounds running) or let the Dark occasionally call two targets.
+- **Step In could make one player the permanent bodyguard.** The sit-out cost should prevent it, since a hero who braces every round has no board left. Watch for it anyway.
+- **Longer battles may not suit a phone.** Eight rounds with a brace step is more taps than today. If a battle passes ten minutes, shorten the Dark track before cutting the brace.
 - **Flares pushing the Dark back might let a careful party stall forever.** Cap it at one push per hero per battle.
-- **Bare hands that choose their colour may be too good.** If nobody draws a weapon, weapons need more punch, or bare hands need a fixed side.
+- **Bare hands may be too wild or too good.** Even-strikes, odd-guards sits on top of the number language on a single d4. If it reads as noise, give each bare hand a fixed side (left guards, right strikes).
 - **I have not played this.** The arithmetic above is from the tables in DESIGN.md. The fun is a guess until dice hit a table.
 
 ---
@@ -243,14 +267,14 @@ Two players, real dice, nine sticky notes each.
 
 1. Each player takes a d6 heart and four d4s for head, feet and hands. Cover the corners. Use the current number language.
 2. Give each player four forms on sticky notes: one weapon corner, one power corner, "hand grows to d6," and "head: one more reroll die."
-3. One monster with 40 health that hits for d6, with a Monster Special if you like. Put a coin on a five-step track and move it every round. At steps 3 and 5 its die grows a size.
-4. Free opening kindle. After that, 2, 3, 4, 5 Sparks.
-5. The monster names its target before the throw. The other player may Step In with their Feet die.
+3. One monster with 60 health that hits for d6, with a Monster Special if you like. Put a coin on an eight-step track and move it every round. At steps 3, 5 and 7 its die grows a size.
+4. Free opening kindle. After that, each kindle or stoke costs 2, then 3, 4, 5, 6 Sparks.
+5. The monster names its target before the throw. After its damage is rolled, either player may brace with one die: it stops damage equal to its size and sits out the next round.
 6. Play it twice. Then play once more with **no** Dark track and see whether the choices go flat.
 
 Afterwards, ask three things. Did you change your plan mid-battle? Did you say anything to your friend before rolling? Which round was the best one?
 
-If the answers are yes, yes, and "round four," this is worth building.
+If the answers are yes, yes, and "round five or six," this is worth building.
 
 ---
 
@@ -258,6 +282,6 @@ If the answers are yes, yes, and "round four," this is worth building.
 
 1. Does "you never finish the grid" excite you, or do you want the satisfaction of a full board at the end of a long boss fight?
 2. Is the light-and-dark language (kindle, lanterns, the Dark gathers) the right voice for this game, or would you rather keep the plainer "warm up" and "momentum" wording?
-3. Would you rather the monsters call their target before the throw, or keep lowest Feet and add Step In on top of it?
+3. Fleet Dice's blocking ship (stop damage equal to the die, sit out next round) is the rule I most want to borrow. Do you miss it in QuestDice, or did you leave it out on purpose?
 4. Should Second Nature (a square that starts lit) be bought with gold or earned by level?
-5. Which is the first thing you would want to feel at a table: the kindle choice, the Step In moment, or the Opening combo?
+5. Is an eight-round battle acceptable if there are fewer of them, or is four to eight rounds a hard limit for how you and your friends play?
