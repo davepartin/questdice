@@ -1380,3 +1380,8 @@ From Grok: 9 November 2026. **T36 FOLLOW-UP — camp scroll and gold cheat, buil
 ## 2026-11-10: QuestDice2 concept exploration
 
 Status: DONE (initial notebook only; design remains open). Owner: Director with Dave. [QuestDice2 concept note](../ideas/QUESTDICE2.md), creation commit f9bd7416f65c2409112237d222991d55f4761f1d. Dave requested dreaming about within-battle board growth inspired by Fleet Dice, with camp improving next battle's available options. The note separates Dave's direction from proposals, recommends Focus as a working purple-triangle name, and explores starting dice, corner activation, persistent purchases, immediate help versus growth, co-op speed, failure modes and a future paper comparison. Map/movement shelved. Verified saved note against authored content; source review only, no runtime tests or balance claims. No game code, build stamp, saves or live rules changed. No implementation assignment or new gameplay approval follows from this note. Existing QuestDice work continues separately. Next: discuss the starting hero and meaningful first upgrade with Dave.
+
+
+## 2026-11-10: QuestDice2 fresh-eyes proposal ("Nine Lanterns")
+
+Status: PROPOSAL for Dave to compare with the other pitches; nothing approved or assigned. [questdice2fable52](../ideas/questdice2fable52.md). Kindle one square a round, never finish the grid, a Dark track as the battle clock, called targets with Step In, one Opening mark for team combos, and the grid as the character sheet. Ideas only; no game code, build stamp, saves or live rules changed. Next: Dave reads it beside the other proposals and answers the five questions at the end.
