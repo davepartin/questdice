@@ -49,7 +49,7 @@ So the design below has three parts: a board that grows (the question), an enemy
 
 Each battle begins with the five-die body cross live: Heart, Head, Feet and two Hands, all basic d4s around the d6 heart. The four corners are covered.
 
-A hero is useful from the first throw. A bare hand follows Fleet Dice's oldest rule: **an even number strikes, an odd number guards.** No menu on the die. If you wanted a strike and rolled a guard, send it back. Drawing a weapon changes the lane: the weapon die adds its bigger numbers and icon faces, and its colour decides what the lane does, as it does today. Bare hands are simple and a little wild. Weapons are stronger and have a temperament of their own.
+A hero is useful from the first throw. A bare hand follows Fleet Dice's oldest rule: **an even number strikes, an odd number shields.** No menu on the die. If you wanted a strike and rolled a shield, send it back. Drawing a weapon changes the lane: the weapon die adds its bigger numbers and icon faces, and its colour decides what the lane does, as it does today. Bare hands are simple and a little wild. Weapons are stronger and have a temperament of their own.
 
 ### Kindle or stoke
 
@@ -82,7 +82,7 @@ Against armour you light the spear corner and your right hand. Against a swarm y
 
 QuestDice already says "every row attacks, every column guards." Let the lit squares use the same rule. When three lit squares make a row or a column, that is a **Flare**:
 
-- A lit **row** flares for attack. A lit **column** flares for guard. One big moment (the size of a triple) on the round it completes.
+- A lit **row** flares for attack. A lit **column** flares for shields. One big moment (the size of a triple) on the round it completes.
 - Each Flare **pushes the Dark back one step** (Part 2).
 
 This gives build order a shape without forcing it. Five lanterns can be a row plus a column that cross. A player who wants the Flare on round three plans for it from the opening stance. And it is readable from across the table: "she is one square from a line."
@@ -134,11 +134,11 @@ Existing monster tricks get a new, better target too. **Bind** can *dim a lit sq
 
 Two rules. Both are one tap or less, and both happen inside the simultaneous round the game already has.
 
-### Called targets, Brace and Step In
+### Called targets, Block and Step In
 
 Right now the lowest Feet draws the attack, and you find out after you have rolled. Flip the timing: when the monsters show their intention, they also **show who they are coming for**. "The Ogre eyes the Wizard." Now the table has a one-sentence conversation before the dice are thrown: "I've got her."
 
-Then bring back Fleet Dice's blocking ship. After the monsters' damage is known, a hero may **brace** with one die they rolled this round. It stops damage equal to its size (a d4 stops 4, a d8 stops 8), and that square **sits out the whole next round**. You may brace for yourself, or **Step In** and brace for a friend.
+Then bring back Fleet Dice's blocking ship. After the monsters' damage is known, a hero may **block** with one die they rolled this round. It stops damage equal to its size (a d4 stops 4, a d8 stops 8), and that square **sits out the whole next round**. You may block for yourself, or **Step In** and block for a friend. (Dave's words, 10 November: the blue dice roll **Shields**; **Block** is what a die does when it steps in front of damage. The same two words Fleet Dice uses.)
 
 This is the D&D moment Dave is chasing: a friend jumping in front of a blow, and paying for it. It needs no map. It gives every round a second decision after the dice are down, which QuestDice does not have today. It makes growth protective as well as aggressive, because a stoked d8 hand is also a bigger shield for someone else. And it creates the natural team rhythm of a growing board: **someone holds the line while someone else builds.**
 
@@ -197,7 +197,7 @@ Two heroes, a Knight and a Ranger, against an armoured Ogre and two goblins. Ill
 
 **Round 2.** The Ranger kindles her splash power because the goblins are still up. The Knight kindles his left hand to d6. The Dark reaches its first mark, and the Ogre's die grows.
 
-**Round 3.** The Knight's shield bash makes an Opening on the Ogre. The Ranger cashes it with a doubled pierce. The Knight lights his lower-left corner and completes his left column: Flare. A wall of block, and the Dark slides back a step.
+**Round 3.** The Knight's shield bash makes an Opening on the Ogre. The Ranger cashes it with a doubled pierce. The Knight lights his lower-left corner and completes his left column: Flare. A wall of shields, and the Dark slides back a step.
 
 **Round 4.** Both heroes have three lanterns. Company in Stride. They turn their hearts to match and aim at the Ogre together.
 
@@ -253,10 +253,10 @@ The notebook and I agree on the foundation: body cross, covered corners, growth 
 
 - **Too many new ideas at once.** Kindling, the Dark, called targets, Openings and lines are five. Test kindling and the Dark together first, since each needs the other. Add called targets second. Openings and lines last.
 - **Round one may feel thin.** Five d4s and one lit square is a small hero. If the first two rounds drag, start with two free kindles.
-- **Step In could make one player the permanent bodyguard.** The sit-out cost should prevent it, since a hero who braces every round has no board left. Watch for it anyway.
-- **Longer battles may not suit a phone.** Eight rounds with a brace step is more taps than today. If a battle passes ten minutes, shorten the Dark track before cutting the brace.
+- **Step In could make one player the permanent bodyguard.** The sit-out cost should prevent it, since a hero who blocks every round has no board left. Watch for it anyway.
+- **Longer battles may not suit a phone.** Eight rounds with a block step is more taps than today. If a battle passes ten minutes, shorten the Dark track before cutting the block.
 - **Flares pushing the Dark back might let a careful party stall forever.** Cap it at one push per hero per battle.
-- **Bare hands may be too wild or too good.** Even-strikes, odd-guards sits on top of the number language on a single d4. If it reads as noise, give each bare hand a fixed side (left guards, right strikes).
+- **Bare hands may be too wild or too good.** Even-strikes, odd-shields sits on top of the number language on a single d4. If it reads as noise, give each bare hand a fixed side (left shields, right strikes).
 - **I have not played this.** The arithmetic above is from the tables in DESIGN.md. The fun is a guess until dice hit a table.
 
 ---
@@ -269,7 +269,7 @@ Two players, real dice, nine sticky notes each.
 2. Give each player four forms on sticky notes: one weapon corner, one power corner, "hand grows to d6," and "head: one more reroll die."
 3. One monster with 60 health that hits for d6, with a Monster Special if you like. Put a coin on an eight-step track and move it every round. At steps 3, 5 and 7 its die grows a size.
 4. Free opening kindle. After that, each kindle or stoke costs 2, then 3, 4, 5, 6 Sparks.
-5. The monster names its target before the throw. After its damage is rolled, either player may brace with one die: it stops damage equal to its size and sits out the next round.
+5. The monster names its target before the throw. After its damage is rolled, either player may block with one die: it stops damage equal to its size and sits out the next round.
 6. Play it twice. Then play once more with **no** Dark track and see whether the choices go flat.
 
 Afterwards, ask three things. Did you change your plan mid-battle? Did you say anything to your friend before rolling? Which round was the best one?
